@@ -1,0 +1,12 @@
+[submodule "ORBit_perception"]
+	path = ORBit_perception
+	url = https://github.com/AV-Lab/ORBit_perception.git
+[submodule "ORBit_planning"]
+	path = ORBit_planning
+	url = https://github.com/AV-Lab/ORBit_planning.git
+[submodule "ORBit_localization"]
+	path = ORBit_localization
+	url = https://github.com/AV-Lab/ORBit_localization.git
+[submodule "ORBit_control"]
+	path = ORBit_control
+	url = https://github.com/AV-Lab/ORBit_control.git
