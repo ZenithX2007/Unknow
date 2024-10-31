@@ -49,7 +49,7 @@
     </scene>
 
     <model name="san">
-      <pose>0 0 0 1.57079632679 0 0</pose>
+      <pose>-18.50 7.38 0 1.57079632679 0 0.54</pose>
       <static>true</static>
       <link name="body">
         <visual name="visual">
@@ -71,7 +71,7 @@
 
     <model name="gen0_model">
       <self_collide>true</self_collide>
-      <pose>-20.6991 -22.4324 2.85 0 0 -0.5406</pose>
+      <pose>0.0 0.0 2.85 0 0 0.0</pose>
       <include merge="true">
         <uri>../urdf/gen0_model.sdf</uri>
       </include>

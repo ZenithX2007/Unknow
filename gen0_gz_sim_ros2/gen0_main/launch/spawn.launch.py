@@ -55,8 +55,8 @@ def generate_launch_description():
             default_value= "false", 
             choices=['true', 'false']
     )
-    autoware_arg=DeclareLaunchArgument(
-            'autoware', 
+    ground_turth_arg=DeclareLaunchArgument(
+            'ground_truth_localization', 
             default_value= "false", 
             choices=['true', 'false']
     )
@@ -78,7 +78,7 @@ def generate_launch_description():
         sim_arg,
         actors_arg,
         rviz_arg,
-        autoware_arg,
+        ground_turth_arg,
         OpaqueFunction(function=actors_launch),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
@@ -117,16 +117,8 @@ def generate_launch_description():
         Node(
             package='gen0_main',
             executable='ground_truth_publisher',
-            parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time')}],
-            condition=UnlessCondition(LaunchConfiguration('autoware'))
-        ),
-        Node(
-            package='tf2_ros',
-            executable='static_transform_publisher',
-            name='world_lanelet_map_tf',
-            namespace='',
-            arguments=['-20.6991', '-22.4324', '-2.8500', '1.0302', '0.0', '0.0', 'world', 'lanelet_map'],
-            parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+            condition=IfCondition(LaunchConfiguration('ground_truth_localization')),
+            parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time')}]
         ),
         Node(
             package='tf2_ros',
