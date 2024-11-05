@@ -725,8 +725,8 @@
             <axis>
                 <xyz>0 0 1</xyz>
                 <limit>
-                    <lower>-0.5</lower>
-                    <upper>0.5</upper>
+                    <lower>-0.31</lower>
+                    <upper>0.31</upper>
                     <velocity>1000</velocity>
                     <effort>10000</effort>
                 </limit>
@@ -760,8 +760,8 @@
             <axis>
                 <xyz>0 0 1</xyz>
                 <limit>
-                    <lower>-0.5</lower>
-                    <upper>0.5</upper>
+                    <lower>-0.31</lower>
+                    <upper>0.31</upper>
                     <velocity>1000</velocity>
                     <effort>10000</effort>
                 </limit>
@@ -795,8 +795,8 @@
             <axis>
                 <xyz>0 0 1</xyz>
                 <limit>
-                    <lower>-0.5</lower>
-                    <upper>0.5</upper>
+                    <lower>-0.31</lower>
+                    <upper>0.31</upper>
                     <velocity>1000</velocity>
                     <effort>10000</effort>
                 </limit>
@@ -830,8 +830,8 @@
             <axis>
                 <xyz>0 0 1</xyz>
                 <limit>
-                    <lower>-0.5</lower>
-                    <upper>0.5</upper>
+                    <lower>-0.31</lower>
+                    <upper>0.31</upper>
                     <velocity>1000</velocity>
                     <effort>10000</effort>
                 </limit>
@@ -861,7 +861,7 @@
         </joint>
 
         <!-- The ackermann plugin is only being used for speed control -->
-        <plugin
+        <!-- <plugin
             filename="ignition-gazebo-ackermann-steering-system"
             name="gz::sim::systems::AckermannSteering">
             <topic>/model/gen0_model/speed_cmd</topic>
@@ -879,7 +879,7 @@
             <max_velocity>7</max_velocity>
             <min_acceleration>-6.25</min_acceleration> 
             <max_acceleration>3</max_acceleration>
-        </plugin>
+        </plugin> -->
 
         <plugin
             filename="ignition-gazebo-joint-state-publisher-system"
@@ -892,8 +892,6 @@
             <joint_name>front_left_steering_joint</joint_name>
             <topic>/model/gen0_model/joint/front_left_steering_joint/cmd_pos</topic>
             <use_velocity_commands>true</use_velocity_commands>
-            <!-- <cmd_max>0.6</cmd_max>
-            <cmd_min>-0.6</cmd_min> -->
         </plugin>
 
         <plugin
@@ -902,8 +900,48 @@
             <joint_name>front_right_steering_joint</joint_name>
             <topic>/model/gen0_model/joint/front_right_steering_joint/cmd_pos</topic>
             <use_velocity_commands>true</use_velocity_commands>
-            <!-- <cmd_max>0.6</cmd_max>
-            <cmd_min>-0.6</cmd_min> -->
+        </plugin>
+
+        <plugin
+            filename="ignition-gazebo-joint-position-controller-system"
+            name="gz::sim::systems::JointPositionController">
+            <joint_name>back_left_steering_joint</joint_name>
+            <topic>/model/gen0_model/joint/back_left_steering_joint/cmd_pos</topic>
+            <use_velocity_commands>true</use_velocity_commands>
+        </plugin>
+
+        <plugin
+            filename="ignition-gazebo-joint-position-controller-system"
+            name="gz::sim::systems::JointPositionController">
+            <joint_name>back_right_steering_joint</joint_name>
+            <topic>/model/gen0_model/joint/back_right_steering_joint/cmd_pos</topic>
+            <use_velocity_commands>true</use_velocity_commands>
+        </plugin>
+
+        <!-- <plugin
+            filename="ignition-gazebo-joint-controller-system"
+            name="gz::sim::systems::JointController">
+            <joint_name>front_left_wheel_joint</joint_name>
+        </plugin>
+
+        <plugin
+            filename="ignition-gazebo-joint-controller-system"
+            name="gz::sim::systems::JointController">
+            <joint_name>front_right_wheel_joint</joint_name>
+        </plugin> -->
+
+        <plugin
+            filename="ignition-gazebo-joint-controller-system"
+            name="gz::sim::systems::JointController">
+            <joint_name>back_left_wheel_joint</joint_name>
+            <topic>/model/gen0_model/joint/back_left_wheel_joint/cmd_pos</topic>
+        </plugin>
+
+        <plugin
+            filename="ignition-gazebo-joint-controller-system"
+            name="gz::sim::systems::JointController">
+            <joint_name>back_right_wheel_joint</joint_name>
+            <topic>/model/gen0_model/joint/back_right_wheel_joint/cmd_pos</topic>
         </plugin>
 
         <plugin

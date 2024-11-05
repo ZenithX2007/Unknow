@@ -18,10 +18,7 @@ find_package(rclpy REQUIRED)
 ament_python_install_package(${PROJECT_NAME})
 # Install Python executables
 install(PROGRAMS
-  src/steering_status_publisher.py
-  src/velocity_status_publisher.py
-  src/ackermann_to_vehicle.py
-  src/gnss_publisher.py
+  src/cmdvel_to_vehicle.py
   src/path_subscriber.py
   src/keyboard_teleop.py
   DESTINATION lib/${PROJECT_NAME}
