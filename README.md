@@ -154,3 +154,16 @@ TBC
 - Sometimes the pedestirans secenario does not get updated until the package has been built twice, in rare situations you will have to delete the install and build folders, and rebuild the package.
 
 - The 3D lidar provide a pointcloud messsage which has no intenstiy values.
+
+
+# Commands to use submodules:
+
+- First initialize and update the first level submodules  
+    ```
+    git submodule update --init --depth 1 
+    ```
+
+- Then initialize only the second level submodules
+    ``` 
+    git submodule foreach 'git submodule update --init --depth 1' 
+    ```
