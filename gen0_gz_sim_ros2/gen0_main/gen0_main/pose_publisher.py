@@ -2,10 +2,11 @@
 
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import TransformStamped, Vector3, Quaternion, PoseArray
+from geometry_msgs.msg import TransformStamped, Vector3, Quaternion, PoseArray, PoseStamped, Twist
 from nav_msgs.msg import Odometry
 import tf2_ros
-import time
+from geometry_msgs.msg import Quaternion
+from tf_transformations import euler_from_quaternion, quaternion_from_euler
 import math
 
 class GroundTruthPublisher(Node):
@@ -14,86 +15,80 @@ class GroundTruthPublisher(Node):
         self.subscription = self.create_subscription(PoseArray, '/gen0_model/links/poses', self.pose_callback, 10)
         self.publisher = self.create_publisher(Odometry, '/odom', 10)
         self.tf_broadcaster = tf2_ros.TransformBroadcaster(self)
-
+        
+        # Odometry and timing
         self.location = Odometry()
         self.last_position = None
+        self.last_orientation = None
         self.last_time = None
 
     def pose_callback(self, msg):
+        # Retrieve current time
         current_time = self.get_clock().now()
-        current_position = msg.poses[14].position
+        
+        # Update location message
+        self.location.header.stamp = current_time.to_msg()
+        self.location.header.frame_id = "map"
+        self.location.child_frame_id = "odom"
+        self.location.pose.pose.position = msg.poses[15].position
+        self.location.pose.pose.orientation = msg.poses[15].orientation
 
-        # Compute elapsed time
-        if self.last_time is not None:
-            elapsed_time = (current_time.nanoseconds - self.last_time.nanoseconds) * 1e-9  # Convert nanoseconds to seconds
-            if elapsed_time > 0:
-                # Calculate linear velocity
-                dx = current_position.x - self.last_position.x if self.last_position else 0.0
-                dy = current_position.y - self.last_position.y if self.last_position else 0.0
+        # Calculate twist (linear x and angular z) if last pose is available
+        if self.last_position and self.last_orientation and self.last_time:
+            time_delta = (current_time - self.last_time).nanoseconds * 1e-9  # Convert to seconds
+            
+            if time_delta > 0:
+                # Calculate linear x velocity
+                dx = msg.poses[15].position.x - self.last_position.x
+                dy = msg.poses[15].position.y - self.last_position.y
+                linear_x = math.sqrt(dx ** 2 + dy ** 2) / time_delta
 
-                # Calculate linear speed
-                linear_speed = math.sqrt(dx**2 + dy**2) / elapsed_time
-                self.location.twist.twist.linear.x = linear_speed
+                # Calculate angular z velocity
+                yaw = self.get_yaw_from_orientation(msg.poses[15].orientation)
+                last_yaw = self.get_yaw_from_orientation(self.last_orientation)
+                angular_z = (yaw - last_yaw) / time_delta
 
-                # Calculate angular velocity (assuming heading is represented by quaternion)
-                current_orientation = msg.poses[14].orientation
-                if self.last_position is not None:
-                    last_orientation = self.location.pose.pose.orientation
-                    # Calculate angular velocity based on orientation change
-                    angular_velocity = self.calculate_angular_velocity(last_orientation, current_orientation, elapsed_time)
-                    self.location.twist.twist.angular.z = angular_velocity
+                # Update the twist in odometry message
+                self.location.twist.twist.linear.x = linear_x
+                self.location.twist.twist.angular.z = angular_z
 
-        # Update location
-        self.location.header.stamp = current_time.to_msg()  # Convert to ROS2 message format
-        self.location.header.frame_id, self.location.child_frame_id = "map", "odom"
-        self.location.pose.pose.position = current_position
-        self.location.pose.pose.orientation = msg.poses[14].orientation
-
-        # Update last position and time
-        self.last_position = current_position
-        self.last_time = current_time
-
+        # Publish the odometry and broadcast the transform
         self.tf_broadcaster.sendTransform(self.pose_to_transform(self.location))
         self.publisher.publish(self.location)
 
+        # Update last pose and time
+        self.last_position = msg.poses[15].position
+        self.last_orientation = msg.poses[15].orientation
+        self.last_time = current_time
 
     def pose_to_transform(self, location_msg):
         transform = TransformStamped()
         transform.header.stamp = self.get_clock().now().to_msg()
         transform.header.frame_id = "map"
         transform.child_frame_id = "odom"
+        
         translation = location_msg.pose.pose.position
         rotation = location_msg.pose.pose.orientation
-        transform.transform.translation = Vector3()
+        
         transform.transform.translation.x = translation.x
         transform.transform.translation.y = translation.y
         transform.transform.translation.z = translation.z
-        transform.transform.rotation = Quaternion()
         transform.transform.rotation.x = rotation.x
         transform.transform.rotation.y = rotation.y
-        transform.transform.rotation.z = rotation.z 
+        transform.transform.rotation.z = rotation.z
         transform.transform.rotation.w = rotation.w
+
         return transform
 
-    def calculate_angular_velocity(self, last_orientation, current_orientation, elapsed_time):
-        # Convert quaternions to Euler angles (roll, pitch, yaw)
-        last_yaw = self.quaternion_to_yaw(last_orientation)
-        current_yaw = self.quaternion_to_yaw(current_orientation)
-
-        # Calculate the change in yaw
-        delta_yaw = current_yaw - last_yaw
-
-        # Normalize the angle to the range [-pi, pi]
-        delta_yaw = (delta_yaw + math.pi) % (2 * math.pi) - math.pi
-
-        # Calculate angular velocity
-        angular_velocity = delta_yaw / elapsed_time
-        return angular_velocity
-
-    def quaternion_to_yaw(self, quaternion):
-        # Convert a quaternion to yaw (rotation around the z-axis)
-        x, y, z, w = quaternion.x, quaternion.y, quaternion.z, quaternion.w
-        return math.atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z))
+    def get_yaw_from_orientation(self, orientation):
+        """Converts a Quaternion into a yaw angle in radians."""
+        _, _, yaw = euler_from_quaternion([
+            orientation.x, 
+            orientation.y, 
+            orientation.z, 
+            orientation.w
+        ])
+        return yaw
 
 def main(args=None):
     rclpy.init(args=args)

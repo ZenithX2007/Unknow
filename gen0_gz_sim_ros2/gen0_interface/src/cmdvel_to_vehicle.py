@@ -17,7 +17,7 @@ class VehicleMovementInterface(Node):
         self.min_velocity_forward = 0.3
         self.max_steering = 0.31 # rad
         self.min_steering = -0.31
-        self.min_turning_radius = self.wheel_base/(2*math.tan(self.max_steering)) # assuming front angle = rear angle always
+        self.min_turning_radius = self.wheel_base / (2 * math.tan(self.max_steering))
         self.delta_f = 0.0
         self.delta_r = 0.0
         self.back_right_joint_speed = 0.0
@@ -25,7 +25,7 @@ class VehicleMovementInterface(Node):
 
         self.subscription = self.create_subscription(
             Twist,
-            'cmd_vel',
+            '/gen0_model/cmd_vel',
             self.cmd_callback,
             10
         )
@@ -34,9 +34,8 @@ class VehicleMovementInterface(Node):
         self.publisher_steering_front_right = self.create_publisher(Float64, '/gen0_model/front_right_steering', 10)
         self.publisher_steering_back_left = self.create_publisher(Float64, '/gen0_model/back_left_steering', 10)
         self.publisher_steering_back_right = self.create_publisher(Float64, '/gen0_model/back_right_steering', 10)
-
-        self.publisher_speed_back_left= self.create_publisher(Float64, '/gen0_model/speed_back_left', 10)
-        self.publisher_speed_back_right= self.create_publisher(Float64, '/gen0_model/speed_back_right', 10)
+        self.publisher_speed_back_left = self.create_publisher(Float64, '/gen0_model/speed_back_left', 10)
+        self.publisher_speed_back_right = self.create_publisher(Float64, '/gen0_model/speed_back_right', 10)
 
         self.front_left_steering_msg = Float64()
         self.front_right_steering_msg = Float64()
@@ -45,32 +44,30 @@ class VehicleMovementInterface(Node):
         self.speed_back_left_msg = Float64()
         self.speed_back_right_msg = Float64()
 
-        self.logger = self.get_logger()
-        
+        # Timer to publish latest values continuously at 50 Hz
+        self.timer = self.create_timer(0.02, self.publish_latest_values)
+
     def cmd_callback(self, msg):
         linear_velocity = msg.linear.x
         angular_velocity = msg.angular.z
 
-        # Steering angle calculations 
+        # Steering angle calculations
         if angular_velocity != 0:
             if linear_velocity == 0:
                 turning_radius = math.copysign(self.min_turning_radius, angular_velocity)
             else:
-                turning_radius = linear_velocity/angular_velocity
-                turning_radius = max(abs(turning_radius), self.min_turning_radius) * math.copysign(1, turning_radius) # avoids unrealistic turning radius
+                turning_radius = linear_velocity / angular_velocity
+                turning_radius = max(abs(turning_radius), self.min_turning_radius) * math.copysign(1, turning_radius)
         else:
             turning_radius = float('inf')
         
-        self.delta_f = math.atan(self.wheel_base/(2*turning_radius))
+        self.delta_f = math.atan(self.wheel_base / (2 * turning_radius))
+        self.delta_r = -self.delta_f  # rear always the opposite sign but same value
 
-        self.delta_r = -self.delta_f # rear always the opposite sign but same value
-
-        # Joints velocity calculations, solving it as a differential for simplicity 
-        phi = math.atan(self.wheel_base/turning_radius)
-
-        self.back_right_joint_speed = (linear_velocity * (1.0 + ((self.wheel_track*math.tan(phi))/(2 * self.wheel_base))))/self.wheel_radius
-        self.back_left_joint_speed = (linear_velocity * (1.0 - ((self.wheel_track*math.tan(phi))/(2 * self.wheel_base))))/self.wheel_radius
-
+        # Joint velocity calculations
+        phi = math.atan(self.wheel_base / turning_radius)
+        self.back_right_joint_speed = (linear_velocity * (1.0 + (self.wheel_track * math.tan(phi)) / (2 * self.wheel_base))) / self.wheel_radius
+        self.back_left_joint_speed = (linear_velocity * (1.0 - (self.wheel_track * math.tan(phi)) / (2 * self.wheel_base))) / self.wheel_radius
 
         # Set the data for each message
         self.front_left_steering_msg.data = self.delta_f
@@ -80,14 +77,15 @@ class VehicleMovementInterface(Node):
         self.speed_back_left_msg.data = self.back_left_joint_speed
         self.speed_back_right_msg.data = self.back_right_joint_speed
 
-        # Publish all values
+    def publish_latest_values(self):
+        # Publish all values continuously
         self.publisher_steering_front_left.publish(self.front_left_steering_msg)
         self.publisher_steering_front_right.publish(self.front_right_steering_msg)
         self.publisher_steering_back_left.publish(self.back_left_steering_msg)
         self.publisher_steering_back_right.publish(self.back_right_steering_msg)
         self.publisher_speed_back_left.publish(self.speed_back_left_msg)
         self.publisher_speed_back_right.publish(self.speed_back_right_msg)
-        
+
 def main(args=None):
     rclpy.init(args=args)
     node = VehicleMovementInterface()
@@ -97,7 +95,6 @@ def main(args=None):
         pass
     node.destroy_node()
     rclpy.shutdown()
-
 
 if __name__ == '__main__':
     main()
