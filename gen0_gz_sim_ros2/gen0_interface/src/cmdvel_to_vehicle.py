@@ -25,7 +25,7 @@ class VehicleMovementInterface(Node):
 
         self.subscription = self.create_subscription(
             Twist,
-            '/gen0_model/cmd_vel',
+            '/cmd_vel',
             self.cmd_callback,
             10
         )

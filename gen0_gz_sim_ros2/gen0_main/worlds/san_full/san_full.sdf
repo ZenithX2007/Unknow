@@ -34,7 +34,7 @@
       <latitude_deg>24.417553191144084</latitude_deg>
       <longitude_deg>54.50150845600432</longitude_deg>
       <elevation>0</elevation>
-      <heading_deg>150.5</heading_deg>  <!--  2.6267205 -->
+      <heading_deg>0.0</heading_deg>  <!--  2.6267205  150.5-->
     </spherical_coordinates>
 
     <light name="sun" type="directional">
@@ -62,7 +62,7 @@
     </scene>
 
     <model name="san">
-      <pose>0 0 0 1.57079632679 0 -2.6267205</pose>
+      <pose>0 0 0 1.57079632679 0 0.02</pose>
       <static>true</static>
       <link name="body">
         <visual name="visual">
@@ -84,7 +84,7 @@
 
     <model name="gen0_model">
       <self_collide>true</self_collide>
-      <pose>0.0 0.0 -5.0 0 0 0.0</pose>
+      <pose>0.0 0.0 -5.0 0 0 2.6267205</pose>
       <include merge="true">
         <uri>../urdf/gen0_model.sdf</uri>
       </include>
