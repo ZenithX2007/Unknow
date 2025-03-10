@@ -1,7 +1,7 @@
 <?xml version='1.0'?>
 <sdf version="1.5">
 <model name="car_018">
-  <pose>4.5 0 0.6 0 0 3.14</pose>
+  <pose>0 0 0 0 0 1.57</pose>
   <static>true</static>
     <link name="link">
       <inertial>
@@ -27,11 +27,19 @@
         <cast_shadows>false</cast_shadows>
 	<geometry>
           <mesh>
-            <uri>model://car_018/meshes/car_018.dae</uri>
+            <uri>meshes/car_018.dae</uri>
             <scale>30 30 30</scale>
           </mesh>
         </geometry>
       </visual>
     </link>
+      <plugin
+            filename="ignition-gazebo-pose-publisher-system"
+            name="gz::sim::systems::PosePublisher">
+            <publish_link_pose>false</publish_link_pose>
+            <use_pose_vector_msg>false</use_pose_vector_msg>
+            <publish_nested_model_pose>true</publish_nested_model_pose>
+            <static_publisher>false</static_publisher>
+      </plugin>
   </model>
 </sdf>

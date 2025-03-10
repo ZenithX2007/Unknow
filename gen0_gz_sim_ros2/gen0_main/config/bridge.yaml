@@ -139,6 +139,11 @@
   ros_type_name: "geometry_msgs/msg/PoseStamped"
   gz_type_name: "ignition.msgs.Pose"
   direction: GZ_TO_ROS
+- ros_topic_name: "/car/car_008/pose"
+  gz_topic_name: "/model/car_008/pose"
+  ros_type_name: "geometry_msgs/msg/PoseStamped"
+  gz_type_name: "ignition.msgs.Pose"
+  direction: GZ_TO_ROS
 # - ros_topic_name: "/tf"
 #   gz_topic_name: "/model/gen0_model/tf"
 #   ros_type_name: "tf2_msgs/msg/TFMessage"

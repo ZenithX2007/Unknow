@@ -17,6 +17,6 @@ cd "$WORKSPACE" || exit
 colcon build
 source install/setup.bash
 
-ros2 launch gen0_main spawn.launch.py world:=san_full actors_scenario:=walking_actors3 ground_truth_localization:=true
+ros2 launch gen0_main spawn.launch.py world:=san_full actors_scenario:=walking_actors ground_truth_localization:=true
 
 # rviz:=true
