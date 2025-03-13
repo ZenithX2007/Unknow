@@ -59,7 +59,7 @@ git clone https://github.com/AV-Lab/gen0_gz_sim_ros2.git .
 
 ### Building the workspace
 
-#### Option 1: directly run gzbuild bash script
+#### Option 1: directly run gzbuild bash script (make sure to modify the workspace path inside gzbuild.sh)
 ```
 cd gen0_gz_sim_ros2
 chmod +x gzbuild.sh
