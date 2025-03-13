@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-
+import math
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float64
 from geometry_msgs.msg import Twist
-import math
 
 class VehicleMovementInterface(Node):
     def __init__(self):
@@ -25,7 +24,7 @@ class VehicleMovementInterface(Node):
 
         self.subscription = self.create_subscription(
             Twist,
-            '/cmd_vel',
+            '/control/cmd_vel',
             self.cmd_callback,
             10
         )

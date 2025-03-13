@@ -41,6 +41,8 @@ sudo apt install ros-humble-tf-transformations
 ```
 
 ## Source Installation
+
+### Workspace setup
 1) Create a ROS2 workspace
 ```
 mkdir ~/gen0_gz_sim_ros2
@@ -52,16 +54,27 @@ cd src
 ```
 git clone https://github.com/AV-Lab/gen0_gz_sim_ros2.git .
 ```
-3) Build the workspace
+
+
+
+### Building the workspace
+
+#### Option 1: directly run gzbuild bash script
+```
+cd gen0_gz_sim_ros2
+chmod +x gzbuild.sh
+./gzbuild.sh
+```
+#### Option 2: manually build the workspace
 ```
 cd ~/gen0_gz_sim_ros2
 colcon build
 ```
-4) Source the workspace
+- Source the workspace
 ```
 source install/setup.bash
 ```
-5) build the gazebo plugins
+- build the gazebo plugins
 ```
 mkdir -p ~/gen0_gz_sim_ros2/src/gz_plugins/build
 cd ~/gen0_gz_sim_ros2/src/gz_plugins/build
@@ -69,7 +82,7 @@ cmake ..
 make
 cd ..
 ```
-6) add the path as a gazebo system plugin 
+- add the path as a gazebo system plugin 
 ```
 export IGN_GAZEBO_SYSTEM_PLUGIN_PATH=$(pwd)/build
 ```
@@ -85,7 +98,7 @@ Make sure to source the workspace and to export the gazebo plugin (only needed o
 
 ### 1) Launch the simulation and spawn the vehicle (gen0_main)
 ```
-ros2 launch gen0_main spawn.launch.py world:=san_roundabout actors_scenario:=walking_actors3
+ros2 launch gen0_main spawn.launch.py world:=san_full actors_scenario:=walking_actors
 ```
 Note: the launch file has the following arguments:
 - world: Name of the world file (without extension) to be used in Gazebo simulation
@@ -94,56 +107,10 @@ Note: the launch file has the following arguments:
 
 ### 2) Enable Interfacing with the vehicle (gen0_interface)
 ```
-ros2 launch gen0_interface gen0_interface.launch.xml 
-```
-
-### 3) Launch the controller (gen0_controller)
-```
-ros2 launch gen0_controller gen0_controller.launch.xml 
-```
-
-### 4) Start the vehicle by giving it a green flag "true"
-```
-ros2 topic pub /planning/green_signal std_msgs/Bool "data: true" --once
-```
-Note: you can remove the --once flag if you want the vehicle to navigate between the stations endlessly without caring about flags.
-
-### 5) (optional) Run the collision checker GUI
-```
-ros2 run gen0_controller collision_visual.py
-```
-
-### 6) (optional) Vehicle teleoperation node
-```
-ros2 run gen0_interface keyboard_teleop.py
+ros2 run gen0_interface cmdvel_to_vehicle.py
 ```
 
 ## Development Guide
-
-### Vehicle Interface
-
-* Sending velocity and steering commands to the vehicle 
-    1) directly through the topic "/gen0_model/command/control_cmd" the fields that are used by the sim lateral.longitudinal.speed and lateral.steering_tire_angle
-    2) seperate topics "/gen0_model/speed_cmd", /gen0_model/front_left_steering, /gen0_model/front_right_steering
-
-* Measurements of the vehicle are sent over the topics "/vehicle/status/velocity_status" and "/vehicle/status/steering_status"
-
-* Ground truth location of the vehicle relative to lanelet_map (check TF section) is published over "/localization/kinematic_state"
-
-### Vehicle Sensors
-* The vehicle is equipped with following sensors:
-    1) 3D lidar located at the front of the vehicle and the pointcloud is published over the topic "/gen0_model/front3d/lidar/points"
-    2) 2D lidars located at the front right and front left of the vehicle, the scans topics are published to "/gen0_model/fl/lidar/scan" and "/gen0_model/fr/lidar/scan" respectivly
-
-### Planner and map creation 
-
-TBC
-
-### World and pedestrians scenario 
-
-TBC
-
-### Transform tree
 
 TBC
 

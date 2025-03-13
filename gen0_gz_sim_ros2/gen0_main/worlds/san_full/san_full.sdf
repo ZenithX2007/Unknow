@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <sdf version="1.8">
-  <world name="demo">
+  <world name="default">
 
     <plugin
       filename="ignition-gazebo-physics-system"
@@ -89,6 +89,15 @@
         <uri>../urdf/gen0_model.sdf</uri>
       </include>
     </model>
+
+    <model name="car_008">
+      <self_collide>true</self_collide>
+      <pose>-15.67 7.74 -4.63 0 0 2.65</pose>
+      <include merge="true">
+        <uri>../models/car_018/model.sdf</uri> 
+      </include>
+    </model>
+
 
   </world>
 </sdf>
