@@ -19,7 +19,6 @@ ament_python_install_package(${PROJECT_NAME})
 # Install Python executables
 install(PROGRAMS
   src/cmdvel_to_vehicle.py
-  src/keyboard_teleop.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

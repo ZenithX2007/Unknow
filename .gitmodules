@@ -1,3 +1,3 @@
-[submodule "orbit"]
-	path = orbit
-	url = https://github.com/AV-Lab/orbit.git
+[submodule "ORBit"]
+	path = ORBit
+	url = https://github.com/AV-Lab/ORBit.git
