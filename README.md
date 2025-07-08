@@ -53,11 +53,11 @@ cd src
 ```
 2) Clone the repo
 ```
-git clone https://github.com/AV-Lab/gen0_gz_sim_ros2.git .
+git clone https://github.com/AV-Lab/gen0_gz_sim_ros2.git
 ```
 3) Move the downloaded san_full model to worlds directory
 ```
-mv san_full.obj ~/gen0_gz_sim_ros2/src/gen0_gz_sim_ros2/gen0_main/worlds/san_full
+mv san_full.obj ~/gen0_gz_sim_ros2/src/gen0_gz_sim_ros2/gen0_gz_sim_ros2/gen0_main/worlds/san_full
 ```
 
 ### Building the workspace
@@ -79,8 +79,8 @@ source install/setup.bash
 ```
 - build the gazebo plugins
 ```
-mkdir -p ~/gen0_gz_sim_ros2/src/gz_plugins/build
-cd ~/gen0_gz_sim_ros2/src/gz_plugins/build
+mkdir -p ~/gen0_gz_sim_ros2/src/gen0_gz_sim_ros2/gen0_gz_sim_ros2/gz_plugins/build
+cd ~/gen0_gz_sim_ros2/src/gen0_gz_sim_ros2/gen0_gz_sim_ros2/gz_plugins/build
 cmake ..
 make
 cd ..
