@@ -651,6 +651,7 @@
           <always_on>1</always_on>
           <update_rate>10</update_rate>
           <topic>navsat</topic>
+          <ignition_frame_id>gps_link</ignition_frame_id>
         </sensor>
       </link>
 
