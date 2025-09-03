@@ -4,7 +4,7 @@
   <name>gen0_main</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="alkharrat.riyadh@gmail.com">av-lab</maintainer>
+  <maintainer email="syed.ahussain@ku.ac.ae">av-lab</maintainer>
   <license>TODO: License declaration</license>
 
   <test_depend>ament_copyright</test_depend>
