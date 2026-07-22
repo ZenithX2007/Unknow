@@ -55,6 +55,18 @@ def generate_launch_description():
             default_value= "false", 
             choices=['true', 'false']
     )
+    gazebo_gui_arg=DeclareLaunchArgument(
+            'gazebo_gui',
+            default_value= "true",
+            choices=['true', 'false'],
+            description='Start the Gazebo GUI. Set false for WSL/headless mapping runs.'
+    )
+    start_gazebo_arg=DeclareLaunchArgument(
+            'start_gazebo',
+            default_value= "true",
+            choices=['true', 'false'],
+            description='Start Gazebo from this launch file. Set false when Gazebo is started manually.'
+    )
     ground_turth_arg=DeclareLaunchArgument(
             'ground_truth_localization', 
             default_value= "false", 
@@ -78,15 +90,45 @@ def generate_launch_description():
         sim_arg,
         actors_arg,
         rviz_arg,
+        gazebo_gui_arg,
+        start_gazebo_arg,
         ground_turth_arg,
         OpaqueFunction(function=actors_launch),
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                os.path.join(pkg_ros_gz_sim, 'launch', 'gz_sim.launch.py')
-            ),
-            launch_arguments={
-                    'gz_args': world_file
-            }.items(),
+        ExecuteProcess(
+            cmd=[
+                'ign',
+                'gazebo',
+                '-r',
+                '--force-version',
+                '6',
+                '--render-engine',
+                'ogre',
+                world_file,
+            ],
+            output='screen',
+            condition=IfCondition(PythonExpression([
+                "'", LaunchConfiguration('start_gazebo'), "' == 'true' and '",
+                LaunchConfiguration('gazebo_gui'), "' == 'true'",
+            ])),
+        ),
+        ExecuteProcess(
+            cmd=[
+                'ign',
+                'gazebo',
+                '-r',
+                '-s',
+                '--headless-rendering',
+                '--force-version',
+                '6',
+                '--render-engine-server',
+                'ogre',
+                world_file,
+            ],
+            output='screen',
+            condition=IfCondition(PythonExpression([
+                "'", LaunchConfiguration('start_gazebo'), "' == 'true' and '",
+                LaunchConfiguration('gazebo_gui'), "' == 'false'",
+            ])),
         ),
         Node(
             package='ros_gz_bridge',
@@ -120,16 +162,6 @@ def generate_launch_description():
             condition=IfCondition(LaunchConfiguration('ground_truth_localization')),
             parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time')}]
         ),
-        Node(
-            package='tf2_ros',
-            executable='static_transform_publisher',
-            name='odom_baselink_tf',
-            namespace='',
-            arguments=['0.0', '0.0', '0.0', '0.0', '0.0', '0.0', 'odom', 'base_link'],
-            parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time')}],
-        ),
     ])
-
-
 
 

@@ -1,5 +1,14 @@
+# Gazebo plugin build output
 gen0_gz_sim_ros2/gz_plugins/build/
 
-gen0_gz_sim_ros2/gen0_main/worlds/san_full/san_full.obj
+# ROS 2 / colcon generated directories
+build/
+install/
+log/
 
-ORBit/
+# Python caches
+__pycache__/
+*.py[cod]
+
+# Local runtime logs
+.ros/

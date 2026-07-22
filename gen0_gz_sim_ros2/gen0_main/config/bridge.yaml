@@ -50,7 +50,7 @@
   gz_type_name: "gz.msgs.LaserScan"
   direction: GZ_TO_ROS
 - ros_topic_name: "/joint_states"
-  gz_topic_name: "/world/demo/model/gen0_model/joint_state"
+  gz_topic_name: "/world/default/model/gen0_model/joint_state"
   ros_type_name: "sensor_msgs/msg/JointState"
   gz_type_name: "gz.msgs.Model"
   direction: GZ_TO_ROS
@@ -58,11 +58,6 @@
   gz_topic_name: "/model/gen0_model/pose"
   ros_type_name: "geometry_msgs/msg/PoseArray"
   gz_type_name: "ignition.msgs.Pose_V"
-  direction: GZ_TO_ROS
-- ros_topic_name: "/tf_static"
-  gz_topic_name: "/model/gen0_model/pose_static"
-  ros_type_name: "tf2_msgs/msg/TFMessage"
-  gz_type_name: "gz.msgs.Pose_V"
   direction: GZ_TO_ROS
 - ros_topic_name: "/gen0_model/front_left_steering"
   gz_topic_name: "/model/gen0_model/joint/front_left_steering_joint/cmd_pos"

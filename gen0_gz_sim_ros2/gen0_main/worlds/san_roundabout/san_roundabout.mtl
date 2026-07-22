@@ -944,7 +944,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_26.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_26.jpg
 map_Kd ../san_textures/Wood_Texture_01_25.jpg
 
 newmtl mat_1791
@@ -956,7 +956,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_28.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_28.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_Green_Leave_Texture_03_Alpha_27.png
 
 newmtl mat_1792
@@ -968,7 +968,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_28.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_28.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_Green_Leave_Texture_03_Alpha_27.png
 
 newmtl mat_1793
@@ -980,7 +980,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_28.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_28.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_Green_Leave_Texture_03_Alpha_27.png
 
 newmtl mat_1794
@@ -992,7 +992,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_28.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_28.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_Green_Leave_Texture_03_Alpha_27.png
 
 newmtl mat_1831
@@ -1004,7 +1004,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_26.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_26.jpg
 map_Kd ../san_textures/Wood_Texture_01_25.jpg
 
 newmtl mat_1832
@@ -1016,7 +1016,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_28.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_28.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_Green_Leave_Texture_03_Alpha_27.png
 
 newmtl mat_1833
@@ -1028,7 +1028,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_28.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_28.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_Green_Leave_Texture_03_Alpha_27.png
 
 newmtl mat_1834
@@ -1040,7 +1040,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_28.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_28.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_Green_Leave_Texture_03_Alpha_27.png
 
 newmtl mat_1835
@@ -1052,7 +1052,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_28.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_28.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_Green_Leave_Texture_03_Alpha_27.png
 
 newmtl mat_1836
@@ -1064,7 +1064,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_26.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_26.jpg
 map_Kd ../san_textures/Wood_Texture_01_25.jpg
 
 newmtl mat_1837
@@ -1076,7 +1076,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_28.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_28.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_Green_Leave_Texture_03_Alpha_27.png
 
 newmtl mat_1838
@@ -1088,7 +1088,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_28.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_28.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_Green_Leave_Texture_03_Alpha_27.png
 
 newmtl mat_1839
@@ -1100,7 +1100,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_28.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_28.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_Green_Leave_Texture_03_Alpha_27.png
 
 newmtl mat_1840
@@ -1112,7 +1112,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_28.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_28.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_Green_Leave_Texture_03_Alpha_27.png
 
 newmtl mat_1841
@@ -1124,7 +1124,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_26.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_26.jpg
 map_Kd ../san_textures/Wood_Texture_01_25.jpg
 
 newmtl mat_1842
@@ -1136,7 +1136,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_28.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_28.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_Green_Leave_Texture_03_Alpha_27.png
 
 newmtl mat_1843
@@ -1148,7 +1148,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_28.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_28.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_Green_Leave_Texture_03_Alpha_27.png
 
 newmtl mat_1844
@@ -1160,7 +1160,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_28.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_28.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_Green_Leave_Texture_03_Alpha_27.png
 
 newmtl mat_1845
@@ -1172,7 +1172,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_28.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_28.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_Green_Leave_Texture_03_Alpha_27.png
 
 newmtl mat_186
@@ -1206,7 +1206,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_5.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_5.jpg
 map_Kd ../san_textures/Wood_Texture_01_4.jpg
 
 newmtl mat_1877
@@ -1218,7 +1218,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_1878
@@ -1230,7 +1230,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_1879
@@ -1242,7 +1242,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_188
@@ -1265,7 +1265,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_189
@@ -1585,7 +1585,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_26.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_26.jpg
 map_Kd ../san_textures/Wood_Texture_01_25.jpg
 
 newmtl mat_2113
@@ -1597,7 +1597,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_28.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_28.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_Green_Leave_Texture_03_Alpha_27.png
 
 newmtl mat_2114
@@ -1609,7 +1609,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_28.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_28.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_Green_Leave_Texture_03_Alpha_27.png
 
 newmtl mat_2115
@@ -1621,7 +1621,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_28.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_28.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_Green_Leave_Texture_03_Alpha_27.png
 
 newmtl mat_2116
@@ -1633,7 +1633,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_28.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_28.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_Green_Leave_Texture_03_Alpha_27.png
 
 newmtl mat_2117
@@ -1678,7 +1678,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2125
@@ -1690,7 +1690,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2126
@@ -1702,7 +1702,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2127
@@ -1714,7 +1714,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2148
@@ -1726,7 +1726,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_14.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_14.jpg
 map_Kd ../san_textures/Wood_Texture_01_13.jpg
 
 newmtl mat_2149
@@ -1738,7 +1738,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2150
@@ -1750,7 +1750,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2151
@@ -1762,7 +1762,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2152
@@ -1774,7 +1774,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2158
@@ -1786,7 +1786,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_14.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_14.jpg
 map_Kd ../san_textures/Wood_Texture_01_13.jpg
 
 newmtl mat_2159
@@ -1798,7 +1798,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2160
@@ -1810,7 +1810,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2161
@@ -1822,7 +1822,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2162
@@ -1834,7 +1834,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2163
@@ -1846,7 +1846,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_14.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_14.jpg
 map_Kd ../san_textures/Wood_Texture_01_13.jpg
 
 newmtl mat_2164
@@ -1858,7 +1858,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2165
@@ -1870,7 +1870,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2166
@@ -1882,7 +1882,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2167
@@ -1894,7 +1894,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2168
@@ -1906,7 +1906,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_14.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_14.jpg
 map_Kd ../san_textures/Wood_Texture_01_13.jpg
 
 newmtl mat_2169
@@ -1918,7 +1918,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2170
@@ -1930,7 +1930,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2171
@@ -1942,7 +1942,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2172
@@ -1954,7 +1954,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2173
@@ -1966,7 +1966,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_14.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_14.jpg
 map_Kd ../san_textures/Wood_Texture_01_13.jpg
 
 newmtl mat_2174
@@ -1978,7 +1978,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2175
@@ -1990,7 +1990,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2176
@@ -2002,7 +2002,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2177
@@ -2014,7 +2014,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2178
@@ -2026,7 +2026,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_14.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_14.jpg
 map_Kd ../san_textures/Wood_Texture_01_13.jpg
 
 newmtl mat_2179
@@ -2038,7 +2038,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2180
@@ -2050,7 +2050,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2181
@@ -2062,7 +2062,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2182
@@ -2074,7 +2074,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2208
@@ -2086,7 +2086,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_11.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_11.jpg
 map_Kd ../san_textures/Wood_Texture_01_10.jpg
 
 newmtl mat_2209
@@ -2098,7 +2098,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_221
@@ -2121,7 +2121,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2211
@@ -2133,7 +2133,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2212
@@ -2145,7 +2145,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2213
@@ -2157,7 +2157,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_11.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_11.jpg
 map_Kd ../san_textures/Wood_Texture_01_10.jpg
 
 newmtl mat_2214
@@ -2169,7 +2169,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2215
@@ -2181,7 +2181,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2216
@@ -2193,7 +2193,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2217
@@ -2205,7 +2205,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2218
@@ -2217,7 +2217,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_11.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_11.jpg
 map_Kd ../san_textures/Wood_Texture_01_10.jpg
 
 newmtl mat_2219
@@ -2229,7 +2229,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_222
@@ -2252,7 +2252,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2221
@@ -2264,7 +2264,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2222
@@ -2276,7 +2276,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2223
@@ -2288,7 +2288,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_11.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_11.jpg
 map_Kd ../san_textures/Wood_Texture_01_10.jpg
 
 newmtl mat_2224
@@ -2300,7 +2300,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2225
@@ -2312,7 +2312,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2226
@@ -2324,7 +2324,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2227
@@ -2336,7 +2336,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_223
@@ -2403,7 +2403,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_11.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_11.jpg
 map_Kd ../san_textures/Wood_Texture_01_10.jpg
 
 newmtl mat_2245
@@ -2415,7 +2415,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2246
@@ -2427,7 +2427,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2247
@@ -2439,7 +2439,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2248
@@ -2451,7 +2451,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2249
@@ -2463,7 +2463,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_1.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_1.jpg
 map_Kd ../san_textures/Wood_Texture_01_0.jpg
 
 newmtl mat_225
@@ -2486,7 +2486,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_Green_Leave_Texture_03_Alpha.png
 
 newmtl mat_2251
@@ -2498,7 +2498,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_Green_Leave_Texture_03_Alpha.png
 
 newmtl mat_2252
@@ -2510,7 +2510,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_Green_Leave_Texture_03_Alpha.png
 
 newmtl mat_2253
@@ -2522,7 +2522,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_Green_Leave_Texture_03_Alpha.png
 
 newmtl mat_2254
@@ -2534,7 +2534,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_11.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_11.jpg
 map_Kd ../san_textures/Wood_Texture_01_10.jpg
 
 newmtl mat_2255
@@ -2546,7 +2546,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2256
@@ -2558,7 +2558,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2257
@@ -2570,7 +2570,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2258
@@ -2582,7 +2582,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2259
@@ -2594,7 +2594,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_11.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_11.jpg
 map_Kd ../san_textures/Wood_Texture_01_10.jpg
 
 newmtl mat_226
@@ -2617,7 +2617,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2261
@@ -2629,7 +2629,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2262
@@ -2641,7 +2641,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2263
@@ -2653,7 +2653,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2264
@@ -2665,7 +2665,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_11.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_11.jpg
 map_Kd ../san_textures/Wood_Texture_01_10.jpg
 
 newmtl mat_2265
@@ -2677,7 +2677,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2266
@@ -2689,7 +2689,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2267
@@ -2701,7 +2701,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2268
@@ -2713,7 +2713,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2269
@@ -2725,7 +2725,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_11.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_11.jpg
 map_Kd ../san_textures/Wood_Texture_01_10.jpg
 
 newmtl mat_227
@@ -2748,7 +2748,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2271
@@ -2760,7 +2760,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2272
@@ -2772,7 +2772,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2273
@@ -2784,7 +2784,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2274
@@ -3203,7 +3203,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_5.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_5.jpg
 map_Kd ../san_textures/Wood_Texture_01_4.jpg
 
 newmtl mat_2311
@@ -3215,7 +3215,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2312
@@ -3227,7 +3227,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2313
@@ -3239,7 +3239,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2314
@@ -3251,7 +3251,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2315
@@ -3296,7 +3296,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_5.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_5.jpg
 map_Kd ../san_textures/Wood_Texture_01_4.jpg
 
 newmtl mat_2344
@@ -3308,7 +3308,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2345
@@ -3320,7 +3320,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2346
@@ -3332,7 +3332,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2347
@@ -3344,7 +3344,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2348
@@ -3356,7 +3356,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_5.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_5.jpg
 map_Kd ../san_textures/Wood_Texture_01_4.jpg
 
 newmtl mat_2349
@@ -3368,7 +3368,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2350
@@ -3380,7 +3380,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2351
@@ -3392,7 +3392,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2352
@@ -3404,7 +3404,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2353
@@ -3416,7 +3416,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_5.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_5.jpg
 map_Kd ../san_textures/Wood_Texture_01_4.jpg
 
 newmtl mat_2354
@@ -3428,7 +3428,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2355
@@ -3440,7 +3440,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2356
@@ -3452,7 +3452,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2357
@@ -3464,7 +3464,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2368
@@ -3476,7 +3476,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_36.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_36.jpg
 map_Kd ../san_textures/Wood_Texture_01_35.jpg
 
 newmtl mat_2369
@@ -3488,7 +3488,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2370
@@ -3500,7 +3500,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2371
@@ -3512,7 +3512,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2372
@@ -3524,7 +3524,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2373
@@ -3536,7 +3536,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_36.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_36.jpg
 map_Kd ../san_textures/Wood_Texture_01_35.jpg
 
 newmtl mat_2374
@@ -3548,7 +3548,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2375
@@ -3560,7 +3560,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2376
@@ -3572,7 +3572,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2377
@@ -3584,7 +3584,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2378
@@ -3596,7 +3596,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_36.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_36.jpg
 map_Kd ../san_textures/Wood_Texture_01_35.jpg
 
 newmtl mat_2379
@@ -3608,7 +3608,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2380
@@ -3620,7 +3620,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2381
@@ -3632,7 +3632,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2382
@@ -3644,7 +3644,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2383
@@ -3656,7 +3656,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_36.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_36.jpg
 map_Kd ../san_textures/Wood_Texture_01_35.jpg
 
 newmtl mat_2384
@@ -3668,7 +3668,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2385
@@ -3680,7 +3680,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2386
@@ -3692,7 +3692,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2387
@@ -3704,7 +3704,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2388
@@ -3716,7 +3716,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_5.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_5.jpg
 map_Kd ../san_textures/Wood_Texture_01_4.jpg
 
 newmtl mat_2389
@@ -3728,7 +3728,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2390
@@ -3740,7 +3740,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2391
@@ -3752,7 +3752,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2392
@@ -3764,7 +3764,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2393
@@ -3831,7 +3831,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_36.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_36.jpg
 map_Kd ../san_textures/Wood_Texture_01_35.jpg
 
 newmtl mat_2399
@@ -3843,7 +3843,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2400
@@ -3855,7 +3855,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2401
@@ -3867,7 +3867,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2402
@@ -3879,7 +3879,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2406
@@ -3891,7 +3891,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_5.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_5.jpg
 map_Kd ../san_textures/Wood_Texture_01_4.jpg
 
 newmtl mat_2407
@@ -3903,7 +3903,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2408
@@ -3915,7 +3915,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2409
@@ -3927,7 +3927,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2410
@@ -3939,7 +3939,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2411
@@ -3951,7 +3951,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_14.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_14.jpg
 map_Kd ../san_textures/Wood_Texture_01_13.jpg
 
 newmtl mat_2412
@@ -3963,7 +3963,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2413
@@ -3975,7 +3975,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2414
@@ -3987,7 +3987,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2415
@@ -3999,7 +3999,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2416
@@ -4011,7 +4011,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_14.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_14.jpg
 map_Kd ../san_textures/Wood_Texture_01_13.jpg
 
 newmtl mat_2417
@@ -4023,7 +4023,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2418
@@ -4035,7 +4035,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2419
@@ -4047,7 +4047,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2420
@@ -4059,7 +4059,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2459
@@ -4071,7 +4071,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_36.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_36.jpg
 map_Kd ../san_textures/Wood_Texture_01_35.jpg
 
 newmtl mat_2460
@@ -4083,7 +4083,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2461
@@ -4095,7 +4095,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2462
@@ -4107,7 +4107,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2463
@@ -4119,7 +4119,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2464
@@ -4131,7 +4131,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_36.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_36.jpg
 map_Kd ../san_textures/Wood_Texture_01_35.jpg
 
 newmtl mat_2465
@@ -4143,7 +4143,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2466
@@ -4155,7 +4155,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2467
@@ -4167,7 +4167,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2468
@@ -4179,7 +4179,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2469
@@ -4191,7 +4191,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_36.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_36.jpg
 map_Kd ../san_textures/Wood_Texture_01_35.jpg
 
 newmtl mat_2470
@@ -4203,7 +4203,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2471
@@ -4215,7 +4215,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2472
@@ -4227,7 +4227,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2473
@@ -4239,7 +4239,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2474
@@ -4251,7 +4251,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_36.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_36.jpg
 map_Kd ../san_textures/Wood_Texture_01_35.jpg
 
 newmtl mat_2475
@@ -4263,7 +4263,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2476
@@ -4275,7 +4275,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2477
@@ -4287,7 +4287,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2478
@@ -4299,7 +4299,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2479
@@ -4311,7 +4311,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_36.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_36.jpg
 map_Kd ../san_textures/Wood_Texture_01_35.jpg
 
 newmtl mat_2480
@@ -4323,7 +4323,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2481
@@ -4335,7 +4335,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2482
@@ -4347,7 +4347,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2483
@@ -4359,7 +4359,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2484
@@ -4371,7 +4371,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_5.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_5.jpg
 map_Kd ../san_textures/Wood_Texture_01_4.jpg
 
 newmtl mat_2485
@@ -4383,7 +4383,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2486
@@ -4395,7 +4395,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2487
@@ -4407,7 +4407,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2488
@@ -4419,7 +4419,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2489
@@ -4431,7 +4431,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_5.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_5.jpg
 map_Kd ../san_textures/Wood_Texture_01_4.jpg
 
 newmtl mat_2490
@@ -4443,7 +4443,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2491
@@ -4455,7 +4455,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2492
@@ -4467,7 +4467,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2493
@@ -4479,7 +4479,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2523
@@ -4491,7 +4491,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_5.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_5.jpg
 map_Kd ../san_textures/Wood_Texture_01_4.jpg
 
 newmtl mat_2524
@@ -4503,7 +4503,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2525
@@ -4515,7 +4515,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2526
@@ -4527,7 +4527,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2527
@@ -4539,7 +4539,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2528
@@ -4551,7 +4551,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_5.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_5.jpg
 map_Kd ../san_textures/Wood_Texture_01_4.jpg
 
 newmtl mat_2529
@@ -4563,7 +4563,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_253
@@ -4586,7 +4586,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2531
@@ -4598,7 +4598,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2532
@@ -4610,7 +4610,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2533
@@ -4622,7 +4622,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_5.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_5.jpg
 map_Kd ../san_textures/Wood_Texture_01_4.jpg
 
 newmtl mat_2534
@@ -4634,7 +4634,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2535
@@ -4646,7 +4646,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2536
@@ -4658,7 +4658,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2537
@@ -4670,7 +4670,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2538
@@ -4715,7 +4715,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_11.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_11.jpg
 map_Kd ../san_textures/Wood_Texture_01_10.jpg
 
 newmtl mat_2542
@@ -4727,7 +4727,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2543
@@ -4739,7 +4739,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2544
@@ -4751,7 +4751,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2545
@@ -4763,7 +4763,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_12.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_12.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha.png
 
 newmtl mat_2591
@@ -4775,7 +4775,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_36.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_36.jpg
 map_Kd ../san_textures/Wood_Texture_01_35.jpg
 
 newmtl mat_2592
@@ -4787,7 +4787,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2593
@@ -4799,7 +4799,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2594
@@ -4811,7 +4811,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2595
@@ -4823,7 +4823,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2606
@@ -4835,7 +4835,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_14.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_14.jpg
 map_Kd ../san_textures/Wood_Texture_01_13.jpg
 
 newmtl mat_2607
@@ -4847,7 +4847,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2608
@@ -4859,7 +4859,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2609
@@ -4871,7 +4871,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2610
@@ -4883,7 +4883,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2611
@@ -4895,7 +4895,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_14.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_14.jpg
 map_Kd ../san_textures/Wood_Texture_01_13.jpg
 
 newmtl mat_2612
@@ -4907,7 +4907,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2613
@@ -4919,7 +4919,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2614
@@ -4931,7 +4931,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2615
@@ -4943,7 +4943,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2636
@@ -4955,7 +4955,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_5.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_5.jpg
 map_Kd ../san_textures/Wood_Texture_01_4.jpg
 
 newmtl mat_2637
@@ -4967,7 +4967,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2638
@@ -4979,7 +4979,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2639
@@ -4991,7 +4991,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2640
@@ -5003,7 +5003,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2641
@@ -5015,7 +5015,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_5.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_5.jpg
 map_Kd ../san_textures/Wood_Texture_01_4.jpg
 
 newmtl mat_2642
@@ -5027,7 +5027,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2643
@@ -5039,7 +5039,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2644
@@ -5051,7 +5051,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2645
@@ -5063,7 +5063,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2646
@@ -5075,7 +5075,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_5.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_5.jpg
 map_Kd ../san_textures/Wood_Texture_01_4.jpg
 
 newmtl mat_2647
@@ -5087,7 +5087,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2648
@@ -5099,7 +5099,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2649
@@ -5111,7 +5111,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2650
@@ -5123,7 +5123,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_03_Normal.jpg_6.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_03_Normal.jpg_6.jpg
 map_Kd ../san_textures/Leave_Texture_03_Color_DarkGreen_Leave_Texture_03_Alpha.png
 
 newmtl mat_2651
@@ -5135,7 +5135,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_22.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_22.jpg
 map_Kd ../san_textures/Wood_Texture_01_21.jpg
 
 newmtl mat_2652
@@ -5147,7 +5147,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_24.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_24.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha_23.png
 
 newmtl mat_2653
@@ -5159,7 +5159,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_24.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_24.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha_23.png
 
 newmtl mat_2654
@@ -5171,7 +5171,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_24.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_24.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha_23.png
 
 newmtl mat_2655
@@ -5183,7 +5183,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_24.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_24.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha_23.png
 
 newmtl mat_2656
@@ -5195,7 +5195,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_22.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_22.jpg
 map_Kd ../san_textures/Wood_Texture_01_21.jpg
 
 newmtl mat_2657
@@ -5207,7 +5207,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_24.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_24.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha_23.png
 
 newmtl mat_2658
@@ -5219,7 +5219,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_24.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_24.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha_23.png
 
 newmtl mat_2659
@@ -5231,7 +5231,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_24.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_24.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha_23.png
 
 newmtl mat_2660
@@ -5243,7 +5243,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_02_Normal.jpg_24.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_02_Normal.jpg_24.jpg
 map_Kd ../san_textures/Leave_Texture_02_Color_Green_Leave_Texture_02_Alpha_23.png
 
 newmtl mat_2661
@@ -5255,7 +5255,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_14.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_14.jpg
 map_Kd ../san_textures/Wood_Texture_01_13.jpg
 
 newmtl mat_2662
@@ -5267,7 +5267,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2663
@@ -5279,7 +5279,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2664
@@ -5291,7 +5291,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2665
@@ -5303,7 +5303,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2666
@@ -5315,7 +5315,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_14.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_14.jpg
 map_Kd ../san_textures/Wood_Texture_01_13.jpg
 
 newmtl mat_2667
@@ -5327,7 +5327,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2668
@@ -5339,7 +5339,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2669
@@ -5351,7 +5351,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2670
@@ -5363,7 +5363,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2671
@@ -5375,7 +5375,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_14.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_14.jpg
 map_Kd ../san_textures/Wood_Texture_01_13.jpg
 
 newmtl mat_2672
@@ -5387,7 +5387,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2673
@@ -5399,7 +5399,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2674
@@ -5411,7 +5411,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2675
@@ -5423,7 +5423,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2676
@@ -5501,7 +5501,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_14.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_14.jpg
 map_Kd ../san_textures/Wood_Texture_01_13.jpg
 
 newmtl mat_2683
@@ -5513,7 +5513,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2684
@@ -5525,7 +5525,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2685
@@ -5537,7 +5537,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2686
@@ -5549,7 +5549,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2687
@@ -5561,7 +5561,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_14.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_14.jpg
 map_Kd ../san_textures/Wood_Texture_01_13.jpg
 
 newmtl mat_2688
@@ -5573,7 +5573,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2689
@@ -5585,7 +5585,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2690
@@ -5597,7 +5597,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2691
@@ -5609,7 +5609,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2692
@@ -5621,7 +5621,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_36.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_36.jpg
 map_Kd ../san_textures/Wood_Texture_01_35.jpg
 
 newmtl mat_2693
@@ -5633,7 +5633,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2694
@@ -5645,7 +5645,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2695
@@ -5657,7 +5657,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2696
@@ -5669,7 +5669,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2697
@@ -5681,7 +5681,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_36.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_36.jpg
 map_Kd ../san_textures/Wood_Texture_01_35.jpg
 
 newmtl mat_2698
@@ -5693,7 +5693,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2699
@@ -5705,7 +5705,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2700
@@ -5717,7 +5717,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2701
@@ -5729,7 +5729,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2702
@@ -5741,7 +5741,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_36.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_36.jpg
 map_Kd ../san_textures/Wood_Texture_01_35.jpg
 
 newmtl mat_2703
@@ -5753,7 +5753,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2704
@@ -5765,7 +5765,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2705
@@ -5777,7 +5777,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2706
@@ -5789,7 +5789,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2707
@@ -5911,7 +5911,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_14.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_14.jpg
 map_Kd ../san_textures/Wood_Texture_01_13.jpg
 
 newmtl mat_2731
@@ -5923,7 +5923,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2732
@@ -5935,7 +5935,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2733
@@ -5947,7 +5947,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2734
@@ -5959,7 +5959,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_16.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_Green_r_Leave_Texture_04_Alpha_r_15.png
 
 newmtl mat_2735
@@ -6037,7 +6037,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_36.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_36.jpg
 map_Kd ../san_textures/Wood_Texture_01_35.jpg
 
 newmtl mat_2742
@@ -6049,7 +6049,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2743
@@ -6061,7 +6061,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2744
@@ -6073,7 +6073,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2745
@@ -6085,7 +6085,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2755
@@ -6097,7 +6097,7 @@ Ke 0.039216 0.031373 0.023529
 Ni 1.450000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Wood_Normal_01.jpg_36.jpg
+map_Bump -bm 0.000000 ../san_textures/Wood_Normal_01.jpg_36.jpg
 map_Kd ../san_textures/Wood_Texture_01_35.jpg
 
 newmtl mat_2756
@@ -6109,7 +6109,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2757
@@ -6121,7 +6121,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2758
@@ -6133,7 +6133,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2759
@@ -6145,7 +6145,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-map_Bump -bm 0.000000 /home/av-lab/Documents/GitHub/ezmile_gen0/gen0_simulator/src/gen0_main/worlds/san_model_obj/san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
+map_Bump -bm 0.000000 ../san_textures/Leave_Texture_04_Normal_r.jpg_38.jpg
 map_Kd ../san_textures/Leave_Texture_04_Color_LightGreen_r_Leave_Texture_04_Alpha_r_37.png
 
 newmtl mat_2807

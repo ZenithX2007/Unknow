@@ -17,6 +17,9 @@ class VehicleMovementInterface(Node):
         self.max_steering = 0.31 # rad
         self.min_steering = -0.31
         self.min_turning_radius = self.wheel_base / (2 * math.tan(self.max_steering))
+        self.declare_parameter('command_timeout', 0.5)
+        self.command_timeout = float(self.get_parameter('command_timeout').value)
+        self.last_command_time = None
         self.delta_f = 0.0
         self.delta_r = 0.0
         self.back_right_joint_speed = 0.0
@@ -47,6 +50,7 @@ class VehicleMovementInterface(Node):
         self.timer = self.create_timer(0.02, self.publish_latest_values)
 
     def cmd_callback(self, msg):
+        self.last_command_time = self.get_clock().now()
         linear_velocity = msg.linear.x
         angular_velocity = msg.angular.z
 
@@ -76,7 +80,22 @@ class VehicleMovementInterface(Node):
         self.speed_back_left_msg.data = self.back_left_joint_speed
         self.speed_back_right_msg.data = self.back_right_joint_speed
 
+    def stop_vehicle(self):
+        self.front_left_steering_msg.data = 0.0
+        self.front_right_steering_msg.data = 0.0
+        self.back_left_steering_msg.data = 0.0
+        self.back_right_steering_msg.data = 0.0
+        self.speed_back_left_msg.data = 0.0
+        self.speed_back_right_msg.data = 0.0
+
     def publish_latest_values(self):
+        if self.last_command_time is None:
+            self.stop_vehicle()
+        else:
+            age = (self.get_clock().now() - self.last_command_time).nanoseconds * 1e-9
+            if age > self.command_timeout:
+                self.stop_vehicle()
+
         # Publish all values continuously
         self.publisher_steering_front_left.publish(self.front_left_steering_msg)
         self.publisher_steering_front_right.publish(self.front_right_steering_msg)
@@ -92,8 +111,10 @@ def main(args=None):
         rclpy.spin(node)
     except KeyboardInterrupt:
         pass
-    node.destroy_node()
-    rclpy.shutdown()
+    finally:
+        node.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

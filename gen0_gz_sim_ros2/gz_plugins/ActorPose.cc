@@ -98,7 +98,17 @@ void ActorPose::PostUpdate(const UpdateInfo &_info,
     if (!publish)
         return;
     
-    auto actorpose = _ecm.Component<components::WorldPose>(this->dataPtr->actorEntity);
+    const auto *actorPose =
+        _ecm.Component<components::WorldPose>(this->dataPtr->actorEntity);
+    const auto *localPose =
+        _ecm.Component<components::Pose>(this->dataPtr->actorEntity);
+    const auto *name =
+        _ecm.Component<components::Name>(this->dataPtr->actorEntity);
+
+    if ((!actorPose && !localPose) || !name)
+    {
+        return;
+    }
 
     msgs::Pose *msg = nullptr;
     this->dataPtr->poseMsg.Clear();
@@ -107,9 +117,8 @@ void ActorPose::PostUpdate(const UpdateInfo &_info,
     auto timeStamp = convert<msgs::Time>(_info.simTime);
     auto header = msg->mutable_header();
     header->mutable_stamp()->CopyFrom(timeStamp);
-    const math::Pose3d &transform = actorpose->Data();  
-    auto frame = header->add_data();
-    msg->set_name(_ecm.Component<components::Name>(this->dataPtr->actorEntity)->Data());
+    const math::Pose3d transform = actorPose ? actorPose->Data() : localPose->Data();
+    msg->set_name(name->Data());
     msgs::Set(msg, transform);
 
 

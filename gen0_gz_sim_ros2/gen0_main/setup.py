@@ -22,8 +22,14 @@ def package_files(data_files, directory_list):
     for directory in directory_list:
 
         for (path, directories, filenames) in os.walk(directory):
+            directories[:] = [
+                dirname for dirname in directories
+                if dirname != '__pycache__'
+            ]
 
             for filename in filenames:
+                if filename.endswith('.pyc'):
+                    continue
 
                 file_path = os.path.join(path, filename)
                 install_path = os.path.join('share', package_name, path)
@@ -46,10 +52,10 @@ setup(
     data_files= package_files(data_files, ['launch/', 'worlds/', 'config/', 'urdf/', 'meshes/', 'models/']),
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='av-lab',
-    maintainer_email='syed.ahussain@ku.ac.ae',
-    description='TODO: Package description',
-    license='TODO: License declaration',
+    maintainer='zjxue2007',
+    maintainer_email='zjxue2007@example.com',
+    description='Gazebo simulation assets and launch files for the Gen0 autonomous mapping demo.',
+    license='Apache-2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
