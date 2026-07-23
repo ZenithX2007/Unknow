@@ -12,10 +12,17 @@ def actors_launch(context, *args, **kwargs):
     actors_scenario = LaunchConfiguration('actors_scenario').perform(context)
     world = LaunchConfiguration('world').perform(context)
 
+    if not actors_scenario:
+        return []
+
     pkg_share_dir = get_package_share_directory('gen0_main')
     scenario_file_path = os.path.join(pkg_share_dir, 'worlds', 'scenarios', world, f"{actors_scenario}.sdf")
 
     actions = []
+
+    if not os.path.exists(scenario_file_path):
+        actions.append(LogInfo(msg=f"\033[93m[WARNING] Scenario {actors_scenario} does not exist for world {world}\033[0m"))
+        return actions
 
     actors_launch_file = os.path.join(pkg_share_dir, 'launch', 'actors.launch.py')
     # If the file exists, include the actors.launch.py and add it to the actions list
@@ -26,9 +33,6 @@ def actors_launch(context, *args, **kwargs):
             'actors_scenario': actors_scenario
         }.items(),
     ))
-
-    if not os.path.exists(scenario_file_path):
-        actions.append(LogInfo(msg=f"\033[93m[WARNING] Scenario {actors_scenario} does not exist for world {world}\033[0m"))
         
     return actions
 
@@ -37,7 +41,7 @@ def generate_launch_description():
     # Launch Arugments
     world_arg=DeclareLaunchArgument(
             'world',
-            default_value='san_roundabout',
+            default_value='my_map',
             description='Name of the world file (without extension) to be used in Gazebo simulation'
     )
     sim_arg=DeclareLaunchArgument(
@@ -163,5 +167,3 @@ def generate_launch_description():
             parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time')}]
         ),
     ])
-
-

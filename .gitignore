@@ -1,5 +1,6 @@
 # Gazebo plugin build output
 gen0_gz_sim_ros2/gz_plugins/build/
+gen0_gz_sim_ros2/gz_plugins/build_wsl/
 
 # ROS 2 / colcon generated directories
 build/
