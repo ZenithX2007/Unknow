@@ -1,7 +1,6 @@
 name: gen0_gz_sim_ros2 main CI
 on:
-  push:
-    branches: [ gen0_humble ]
+  workflow_dispatch:
 jobs:
   docker-publish:
     name: Build & Push Docker Image
