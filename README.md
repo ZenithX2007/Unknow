@@ -62,9 +62,14 @@ Useful runtime overrides:
 ```bash
 GEN0_WORLD=san_roundabout GEN0_ACTORS_SCENARIO=walking_actors ./run_gen0_3d_slam.sh
 GEN0_GPU_ADAPTER= ./run_gen0_3d_slam.sh
+GEN0_SIMULATED_LIDAR=false ./run_gen0_3d_slam.sh
 GEN0_DRIVE_SPEED=0.15 ./run_gen0_3d_slam.sh
 GEN0_PREVIEW_MAX_POINTS=25000 ./run_gen0_3d_slam.sh
 ```
+
+`GEN0_SIMULATED_LIDAR=false` disables the OBJ-based simulated LiDAR fallback and
+uses only Gazebo's `/gen0_model/front3d/lidar/points` output. This is useful
+when verifying that RViz is not showing a precomputed world-mesh point source.
 
 For a fresh clone on another machine, run the build section once before using
 `run_gen0_3d_slam.sh`. The script intentionally requires `install/setup.bash`

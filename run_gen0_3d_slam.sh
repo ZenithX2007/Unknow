@@ -11,6 +11,8 @@ PREVIEW_VOXEL_SIZE="${GEN0_PREVIEW_VOXEL_SIZE:-0.65}"
 PREVIEW_PERIOD="${GEN0_PREVIEW_PERIOD:-1.0}"
 RVIZ_CONFIG="${GEN0_RVIZ_CONFIG:-$WORKSPACE/gen0_gz_sim_ros2/gen0_main/config/gen0_3d_mapping_preview.rviz}"
 LOG_DIR="${GEN0_LOG_DIR:-$WORKSPACE/runtime_logs}"
+SIMULATED_LIDAR="${GEN0_SIMULATED_LIDAR:-true}"
+WORLD_OBJ_PATH="${GEN0_WORLD_OBJ_PATH:-$WORKSPACE/gen0_gz_sim_ros2/gen0_main/worlds/$WORLD/$WORLD.obj}"
 
 PIDS=()
 NAMES=()
@@ -72,6 +74,9 @@ cd "$WORKSPACE"
 require_file /opt/ros/humble/setup.bash
 require_file "$WORKSPACE/install/setup.bash"
 require_file "$RVIZ_CONFIG"
+if [[ "$SIMULATED_LIDAR" == "true" ]]; then
+  require_file "$WORLD_OBJ_PATH"
+fi
 
 mkdir -p "$LOG_DIR"
 
@@ -87,6 +92,7 @@ export MESA_D3D12_DEFAULT_ADAPTER_NAME="$GPU_ADAPTER"
 
 log "Workspace: $WORKSPACE"
 log "World: $WORLD, actors_scenario: $ACTORS_SCENARIO"
+log "Simulated lidar: $SIMULATED_LIDAR, world_obj_path: $WORLD_OBJ_PATH"
 log "GPU adapter: $MESA_D3D12_DEFAULT_ADAPTER_NAME"
 log "Logs: $LOG_DIR"
 
@@ -108,12 +114,18 @@ start_process gazebo "${gazebo_launch[@]}"
 
 sleep 12
 
-start_process fast_lio_3d_slam \
-  ros2 launch gen0_main gen0_fast_lio_mapping.launch.py \
-    rviz:=false \
-    simulated_lidar:=true \
-    terrain_analysis:=false \
-    local_costmap:=false
+fast_lio_launch=(
+  ros2 launch gen0_main gen0_fast_lio_mapping.launch.py
+  rviz:=false
+  simulated_lidar:="$SIMULATED_LIDAR"
+  terrain_analysis:=false
+  local_costmap:=false
+)
+if [[ "$SIMULATED_LIDAR" == "true" ]]; then
+  fast_lio_launch+=(world_obj_path:="$WORLD_OBJ_PATH")
+fi
+
+start_process fast_lio_3d_slam "${fast_lio_launch[@]}"
 
 sleep 8
 
