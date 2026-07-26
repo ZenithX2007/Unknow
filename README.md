@@ -75,6 +75,10 @@ For a fresh clone on another machine, run the build section once before using
 `run_gen0_3d_slam.sh`. The script intentionally requires `install/setup.bash`
 so it does not hide build or dependency failures.
 
+If an old run is still alive, the script exits before launching a second stack.
+This prevents stale `pointcloud_accumulator_preview` or simulated LiDAR nodes
+from publishing an already accumulated RViz point cloud.
+
 ## Manual 3D SLAM Flow
 
 Use separate terminals and source ROS plus the workspace in each terminal.

@@ -28,6 +28,24 @@ require_file() {
   fi
 }
 
+check_existing_ros_nodes() {
+  if [[ "${GEN0_ALLOW_EXISTING_NODES:-false}" == "true" ]]; then
+    return
+  fi
+
+  local existing
+  existing="$(
+    ros2 node list 2>/dev/null \
+      | grep -E '(^/gen0_simulated_world_lidar$|^/gen0_gazebo_livox_adapter$|^/gen0_fast_lio$|^/gen0_mapping_drive$|^/pointcloud_accumulator_preview$|^/rviz$|^/vehicle_movement_interface$)' \
+      || true
+  )"
+  if [[ -n "$existing" ]]; then
+    printf 'Existing Gen0/RViz ROS nodes are still running:\n%s\n\n' "$existing" >&2
+    printf 'Stop the old run first, or set GEN0_ALLOW_EXISTING_NODES=true to bypass this check.\n' >&2
+    exit 1
+  fi
+}
+
 source_ros_setup() {
   set +u
   source "$1"
@@ -82,6 +100,7 @@ mkdir -p "$LOG_DIR"
 
 source_ros_setup /opt/ros/humble/setup.bash
 source_ros_setup "$WORKSPACE/install/setup.bash"
+check_existing_ros_nodes
 
 unset LIBGL_ALWAYS_SOFTWARE
 unset MESA_LOADER_DRIVER_OVERRIDE
