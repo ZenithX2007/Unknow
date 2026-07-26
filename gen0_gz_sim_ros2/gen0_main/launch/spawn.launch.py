@@ -106,6 +106,16 @@ def actors_launch(context, *args, **kwargs):
     )
 
     actors_launch_file = os.path.join(pkg_share_dir, 'launch', 'actors.launch.py')
+    if not os.path.exists(scenario_file_path):
+        return [
+            LogInfo(
+                msg=(
+                    f'\033[93m[WARNING] Scenario {actors_scenario} does not '
+                    f'exist for world {world}; skipping actor loading\033[0m'
+                )
+            )
+        ]
+
     actions = [
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(actors_launch_file),
@@ -115,16 +125,6 @@ def actors_launch(context, *args, **kwargs):
             }.items(),
         )
     ]
-
-    if not os.path.exists(scenario_file_path):
-        actions.append(
-            LogInfo(
-                msg=(
-                    f'\033[93m[WARNING] Scenario {actors_scenario} does not '
-                    f'exist for world {world}\033[0m'
-                )
-            )
-        )
 
     return actions
 
@@ -228,7 +228,7 @@ def delayed_gazebo_launch(context, *args, **kwargs):
 def generate_launch_description():
     world_arg = DeclareLaunchArgument(
         'world',
-        default_value='san_roundabout',
+        default_value='my_map',
         description='Name of the world file (without extension) to use in Gazebo.',
     )
     sim_arg = DeclareLaunchArgument(

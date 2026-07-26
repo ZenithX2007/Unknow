@@ -3,9 +3,9 @@
 <package format="3">
   <name>gen0_main</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="syed.ahussain@ku.ac.ae">av-lab</maintainer>
-  <license>TODO: License declaration</license>
+  <description>Gazebo simulation assets, launch files, and ROS-Gazebo bridge configuration for the Gen0 autonomous mapping demo.</description>
+  <maintainer email="zjxue2007@example.com">zjxue2007</maintainer>
+  <license>Apache-2.0</license>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

@@ -13,10 +13,10 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='av-lab',
-    maintainer_email='syed.ahussain@ku.ac.ae',
-    description='TODO: Package description',
-    license='TODO: License declaration',
+    maintainer='zjxue2007',
+    maintainer_email='zjxue2007@example.com',
+    description='Vehicle command interface for converting adapted Twist commands into Gen0 steering and wheel joint commands.',
+    license='Apache-2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
