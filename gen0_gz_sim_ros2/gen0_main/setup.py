@@ -22,8 +22,12 @@ def package_files(data_files, directory_list):
     for directory in directory_list:
 
         for (path, directories, filenames) in os.walk(directory):
+            if '__pycache__' in path.split(os.sep):
+                continue
 
             for filename in filenames:
+                if filename.endswith('.pyc'):
+                    continue
 
                 file_path = os.path.join(path, filename)
                 install_path = os.path.join('share', package_name, path)
@@ -57,6 +61,11 @@ setup(
         'ground_truth_publisher = gen0_main.pose_publisher:main',
         'actors_loader = gen0_main.actors_loader:main',
         'actors_spawner = gen0_main.actors_spawner:main',
+        'gen0_3d_mapper = gen0_main.gen0_3d_mapper:main',
+        'gazebo_livox_adapter = gen0_main.gazebo_livox_adapter:main',
+        'simulated_world_lidar = gen0_main.simulated_world_lidar:main',
+        'pointcloud_preview = gen0_main.pointcloud_preview:main',
+        'pointcloud_accumulator_preview = gen0_main.pointcloud_accumulator_preview:main',
         ],
     },
 )

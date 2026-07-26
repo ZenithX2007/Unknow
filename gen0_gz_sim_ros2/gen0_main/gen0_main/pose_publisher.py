@@ -93,9 +93,20 @@ class GroundTruthPublisher(Node):
 def main(args=None):
     rclpy.init(args=args)
     pose_publisher = GroundTruthPublisher()
-    rclpy.spin(pose_publisher)
-    pose_publisher.destroy_node()
-    rclpy.shutdown()
+    try:
+        rclpy.spin(pose_publisher)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        try:
+            pose_publisher.destroy_node()
+        except KeyboardInterrupt:
+            pass
+        try:
+            if rclpy.ok():
+                rclpy.shutdown()
+        except (Exception, KeyboardInterrupt):
+            pass
 
 if __name__ == '__main__':
     main()

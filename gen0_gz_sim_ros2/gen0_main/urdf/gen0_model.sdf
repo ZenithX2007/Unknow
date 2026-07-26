@@ -6,6 +6,7 @@
         <link name="base_link">
             <pose>0 0 0 0 0 0</pose>
             <visual name='visual'>
+                <visibility_flags>0x02</visibility_flags>
                 <pose>0 0 0 0 0 -1.57079633</pose>
                 <geometry>
                     <mesh>
@@ -54,6 +55,7 @@
                 </inertia>
             </inertial>
             <visual name='visual_back_right_steering'>
+                <visibility_flags>0x02</visibility_flags>
                 <pose>0 0 0 1.570796 0 0</pose>
                 <geometry>
                     <cylinder>
@@ -92,6 +94,7 @@
                 </inertia>
             </inertial>
             <visual name='visual_back_right_wheel'>
+                <visibility_flags>0x02</visibility_flags>
                 <geometry>
                     <mesh>
                         <uri>../meshes/gen0_wheels.dae</uri>
@@ -144,6 +147,7 @@
                 </inertia>
             </inertial>
             <visual name='visual_back_left_steering'>
+                <visibility_flags>0x02</visibility_flags>
                 <pose>0 0 0 1.570796 0 0</pose>
                 <geometry>
                     <cylinder>
@@ -182,6 +186,7 @@
                 </inertia>
             </inertial>
             <visual name='visual_back_left_wheel'>
+                <visibility_flags>0x02</visibility_flags>
                 <geometry>
                     <mesh>
                         <uri>../meshes/gen0_wheels.dae</uri>
@@ -233,6 +238,7 @@
                 </inertia>
             </inertial>
             <visual name='visual_front_right_steering'>
+                <visibility_flags>0x02</visibility_flags>
                 <pose>0 0 0 1.570796 0 0</pose>
                 <geometry>
                     <cylinder>
@@ -271,6 +277,7 @@
                 </inertia>
             </inertial>
             <visual name='visual_front_right_wheel'>
+                <visibility_flags>0x02</visibility_flags>
                 <geometry>
                     <mesh>
                         <uri>../meshes/gen0_wheels.dae</uri>
@@ -322,6 +329,7 @@
                 </inertia>
             </inertial>
             <visual name='visual_front_left_steering'>
+                <visibility_flags>0x02</visibility_flags>
                 <pose>0 0 0 1.570796 0 0</pose>
                 <geometry>
                     <cylinder>
@@ -360,6 +368,7 @@
                 </inertia>
             </inertial>
             <visual name='visual_front_left_wheel'>
+                <visibility_flags>0x02</visibility_flags>
                 <geometry>
                     <mesh>
                         <uri>../meshes/gen0_wheels.dae</uri>
@@ -406,6 +415,7 @@
                     <izz>0.000166667</izz>
                 </inertia>
             </inertial>
+
             <collision name="lidar_collision">
                 <geometry>
                     <box>
@@ -414,6 +424,7 @@
                 </geometry>
             </collision>
             <visual name="lidar_visual">
+                <visibility_flags>0x02</visibility_flags>
                 <geometry>
                     <box>
                         <size>0.1 0.1 0.1</size>
@@ -427,6 +438,7 @@
                 <ignition_frame_id>front_3d_lidar_link</ignition_frame_id>
                 <update_rate>10</update_rate>
                 <lidar>
+                    <visibility_mask>0x01</visibility_mask>
                     <scan>
                         <horizontal>
                             <samples>1024</samples>
@@ -445,7 +457,7 @@
                         <resolution>0.02</resolution>
                     </range>
                 </lidar>
-                <visualize>true</visualize>
+                <visualize>false</visualize>
             </sensor>
         </link>
         <link name="front_camera_link">
@@ -466,6 +478,7 @@
                 </geometry>
             </collision>
             <visual name="camera_visual">
+                <visibility_flags>0x02</visibility_flags>
                 <geometry>
                     <box>
                         <size>0.1 0.1 0.1</size>
@@ -492,7 +505,7 @@
                 </camera>
                 <update_rate>20</update_rate>
                  <always_on>1</always_on>
-                <visualize>true</visualize>
+                <visualize>false</visualize>
                 <!-- <plugin name="camera_controller" filename="libgazebo_ros_camera.so"> -->
                     <!-- <always_on>true</always_on>
                     <update_rate>30.0</update_rate>
@@ -522,6 +535,7 @@
                 </geometry>
             </collision>
             <visual name="fr_2d_lidar_visual">
+                <visibility_flags>0x02</visibility_flags>
                 <geometry>
                     <box>
                         <size>0.1 0.1 0.1</size>
@@ -535,6 +549,7 @@
                 <ignition_frame_id>fr_2d_lidar_link</ignition_frame_id>
                 <update_rate>20</update_rate>
                 <lidar>
+                    <visibility_mask>0x01</visibility_mask>
                     <scan>
                         <horizontal>
                             <samples>640</samples>
@@ -553,7 +568,7 @@
                         <resolution>0.01</resolution>
                     </range>
                 </lidar>
-                <visualize>true</visualize>
+                <visualize>false</visualize>
             </sensor>
         </link>
 
@@ -576,6 +591,7 @@
                 </geometry>
             </collision>
             <visual name="fl_2d_lidar_visual">
+                <visibility_flags>0x02</visibility_flags>
                 <geometry>
                     <box>
                         <size>0.1 0.1 0.1</size>
@@ -589,6 +605,7 @@
                 <ignition_frame_id>fl_2d_lidar_link</ignition_frame_id>
                 <update_rate>20</update_rate>
                 <lidar>
+                    <visibility_mask>0x01</visibility_mask>
                     <scan>
                         <horizontal>
                             <samples>640</samples>
@@ -607,7 +624,7 @@
                         <resolution>0.01</resolution>
                     </range>
                 </lidar>
-                <visualize>true</visualize>
+                <visualize>false</visualize>
             </sensor>
         </link>
 
@@ -616,8 +633,8 @@
             <pose>0 0 0 0 0 0</pose>
             <sensor name='imu_sensor' type='imu'>
                 <always_on>1</always_on>
-                <update_rate>10</update_rate>
-                <visualize>true</visualize>
+                <update_rate>100</update_rate>
+                <visualize>false</visualize>
                 <topic>imu</topic>
             </sensor>
         </link>
@@ -640,6 +657,7 @@
           </geometry>
         </collision>
         <visual name="visual">
+          <visibility_flags>0x02</visibility_flags>
           <geometry>
             <box>
               <size>0.1 0.1 0.1</size>

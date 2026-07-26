@@ -1,0 +1,46 @@
+costmap:
+  costmap:
+    ros__parameters:
+      use_sim_time: true
+      update_frequency: 20.0
+      publish_frequency: 20.0
+      global_frame: odom
+      robot_base_frame: base_link
+      transform_tolerance: 0.5
+      rolling_window: true
+      width: 12
+      height: 12
+      resolution: 0.05
+      footprint: "[[2.2, 1.1], [2.2, -1.1], [-2.2, -1.1], [-2.2, 1.1]]"
+      footprint_padding: 0.03
+      track_unknown_space: false
+      plugins: ["local_obstacle_layer", "local_inflation_layer"]
+
+      local_inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 3.0
+        inflation_radius: 1.2
+
+      local_obstacle_layer:
+        plugin: "costmap_intensity::ObstacleLayerIntensity"
+        enabled: true
+        footprint_clearing_enabled: true
+        max_obstacle_intensity: 2.0
+        min_obstacle_intensity: 0.05
+        observation_sources: pointcloud
+        pointcloud:
+          topic: /gen0_mapping/terrain_map
+          sensor_frame: base_link
+          observation_persistence: 0.2
+          expected_update_rate: 0.0
+          max_obstacle_height: 2.0
+          min_obstacle_height: -2.0
+          obstacle_max_range: 6.0
+          obstacle_min_range: 0.6
+          raytrace_max_range: 6.5
+          raytrace_min_range: 0.4
+          clearing: true
+          marking: true
+          data_type: "PointCloud2"
+
+      always_send_full_costmap: true

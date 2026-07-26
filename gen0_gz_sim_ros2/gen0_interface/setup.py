@@ -21,6 +21,8 @@ setup(
     entry_points={
         'console_scripts': [
             'cmdvel_to_vehicle = gen0_interface.cmdvel_to_vehicle:main',
+            'mapping_drive = gen0_interface.mapping_drive:main',
+            'keyboard_teleop = gen0_interface.keyboard_teleop:main',
         ],
     },
 )

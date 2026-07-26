@@ -1,0 +1,55 @@
+/**:
+  ros__parameters:
+    use_sim_time: true
+    locate_in_prior_map: false
+    feature_extract_enable: false
+    point_filter_num: 1
+    max_iteration: 3
+    filter_size_surf: 0.25
+    filter_size_map: 0.25
+    cube_side_length: 1000.0
+    runtime_pos_log_enable: false
+    map_file_path: /tmp/gen0_fast_lio_map.pcd
+
+    common:
+      odom_frame_id: odom
+      sensor_frame_id: base_link
+      base_frame_id: base_link
+      send_odom_base_tf: true
+      lid_topic: /livox/lidar
+      imu_topic: /gen0_model/imu/data
+      time_sync_en: false
+      time_offset_lidar_to_imu: 0.0
+
+    preprocess:
+      lidar_type: 1
+      scan_line: 64
+      blind: 0.5
+      timestamp_unit: 3
+      scan_rate: 10
+
+    mapping:
+      acc_cov: 0.05
+      gyr_cov: 0.05
+      b_acc_cov: 0.0001
+      b_gyr_cov: 0.0001
+      fov_degree: 360.0
+      det_range: 100.0
+      extrinsic_est_en: false
+      extrinsic_T: [1.9, 0.0, 1.9]
+      extrinsic_R: [1.0, 0.0, 0.0,
+                    0.0, 1.0, 0.0,
+                    0.0, 0.0, 1.0]
+
+    publish:
+      path_en: true
+      effect_map_en: true
+      map_en: true
+      ikd_tree_en: true
+      scan_publish_en: true
+      dense_publish_en: true
+      scan_bodyframe_pub_en: true
+
+    pcd_save:
+      pcd_save_en: false
+      interval: -1

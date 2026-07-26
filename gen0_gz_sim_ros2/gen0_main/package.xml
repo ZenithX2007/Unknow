@@ -13,6 +13,30 @@
   <test_depend>python3-pytest</test_depend>
 
   <exec_depend>ros2launch</exec_depend>
+  <exec_depend>gen0_interface</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>sensor_msgs_py</exec_depend>
+  <exec_depend>std_srvs</exec_depend>
+  <exec_depend>livox_ros_driver2</exec_depend>
+  <exec_depend>terrain_analysis</exec_depend>
+  <exec_depend>costmap_intensity</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>nav2_behaviors</exec_depend>
+  <exec_depend>nav2_bt_navigator</exec_depend>
+  <exec_depend>nav2_common</exec_depend>
+  <exec_depend>nav2_controller</exec_depend>
+  <exec_depend>nav2_costmap_2d</exec_depend>
+  <exec_depend>nav2_lifecycle_manager</exec_depend>
+  <exec_depend>nav2_map_server</exec_depend>
+  <exec_depend>nav2_planner</exec_depend>
+  <exec_depend>nav2_regulated_pure_pursuit_controller</exec_depend>
+  <exec_depend>nav2_smac_planner</exec_depend>
+  <exec_depend>nav2_smoother</exec_depend>
+  <exec_depend>nav2_velocity_smoother</exec_depend>
+  <exec_depend>nav2_waypoint_follower</exec_depend>
 
   <export>
     <build_type>ament_python</build_type>
