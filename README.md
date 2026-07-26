@@ -53,7 +53,8 @@ cd ~/gen0_gz_sim_ros2
 
 The script launches Gazebo, FAST-LIO, the mapping drive node, a lightweight RViz
 point-cloud preview, and RViz. It also clears software-rendering environment
-variables and selects the NVIDIA D3D12 adapter by default.
+variables and selects the NVIDIA D3D12 adapter by default. The default world is
+`my_map`; actor scenarios are only loaded when `GEN0_ACTORS_SCENARIO` is set.
 
 Useful runtime overrides:
 

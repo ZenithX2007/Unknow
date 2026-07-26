@@ -90,14 +90,19 @@ log "World: $WORLD, actors_scenario: $ACTORS_SCENARIO"
 log "GPU adapter: $MESA_D3D12_DEFAULT_ADAPTER_NAME"
 log "Logs: $LOG_DIR"
 
-start_process gazebo \
-  ros2 launch gen0_main spawn.launch.py \
-    world:="$WORLD" \
-    actors_scenario:="$ACTORS_SCENARIO" \
-    rviz:=false \
-    ground_truth_localization:=true \
-    render_env:=unset \
-    d3d12_adapter:="$GPU_ADAPTER"
+gazebo_launch=(
+  ros2 launch gen0_main spawn.launch.py
+  world:="$WORLD"
+  rviz:=false
+  ground_truth_localization:=true
+  render_env:=unset
+  d3d12_adapter:="$GPU_ADAPTER"
+)
+if [[ -n "$ACTORS_SCENARIO" ]]; then
+  gazebo_launch+=(actors_scenario:="$ACTORS_SCENARIO")
+fi
+
+start_process gazebo "${gazebo_launch[@]}"
 
 sleep 12
 
