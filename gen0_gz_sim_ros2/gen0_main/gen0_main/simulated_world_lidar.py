@@ -84,6 +84,8 @@ class SimulatedWorldLidar(Node):
         self.declare_parameter("lidar_xyz_in_base", [1.9, 0.0, 1.9])
         self.declare_parameter("min_range", 0.6)
         self.declare_parameter("max_range", 80.0)
+        self.declare_parameter("horizontal_min_angle", -math.pi)
+        self.declare_parameter("horizontal_max_angle", math.pi)
         self.declare_parameter("vertical_min_angle", -1.2)
         self.declare_parameter("vertical_max_angle", 0.8)
         self.declare_parameter("min_base_z", -2.5)
@@ -133,6 +135,12 @@ class SimulatedWorldLidar(Node):
         )
         self.min_range = float(self.get_parameter("min_range").value)
         self.max_range = float(self.get_parameter("max_range").value)
+        self.horizontal_min_angle = float(
+            self.get_parameter("horizontal_min_angle").value
+        )
+        self.horizontal_max_angle = float(
+            self.get_parameter("horizontal_max_angle").value
+        )
         self.vertical_min_angle = float(
             self.get_parameter("vertical_min_angle").value
         )
@@ -304,6 +312,12 @@ class SimulatedWorldLidar(Node):
         keep = range_sq >= self.min_range * self.min_range
         if self.max_range > self.min_range:
             keep &= range_sq <= self.max_range * self.max_range
+
+        if self.horizontal_max_angle > self.horizontal_min_angle:
+            horizontal_angle = np.arctan2(points_lidar[:, 1], points_lidar[:, 0])
+            keep &= (horizontal_angle >= self.horizontal_min_angle) & (
+                horizontal_angle <= self.horizontal_max_angle
+            )
 
         if self.vertical_max_angle > self.vertical_min_angle:
             horizontal = np.linalg.norm(points_lidar[:, :2], axis=1)

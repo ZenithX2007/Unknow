@@ -9,6 +9,7 @@ from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterValue
 
 
 def generate_launch_description():
@@ -33,6 +34,20 @@ def generate_launch_description():
     costmap_params_file = LaunchConfiguration("costmap_params_file")
     simulated_lidar = LaunchConfiguration("simulated_lidar")
     world_obj_path = LaunchConfiguration("world_obj_path")
+    simulated_lidar_max_points = LaunchConfiguration("simulated_lidar_max_points")
+    simulated_lidar_max_range = LaunchConfiguration("simulated_lidar_max_range")
+    simulated_lidar_horizontal_min_angle = LaunchConfiguration(
+        "simulated_lidar_horizontal_min_angle"
+    )
+    simulated_lidar_horizontal_max_angle = LaunchConfiguration(
+        "simulated_lidar_horizontal_max_angle"
+    )
+    simulated_lidar_vertical_min_angle = LaunchConfiguration(
+        "simulated_lidar_vertical_min_angle"
+    )
+    simulated_lidar_vertical_max_angle = LaunchConfiguration(
+        "simulated_lidar_vertical_max_angle"
+    )
 
     return LaunchDescription(
         [
@@ -86,6 +101,36 @@ def generate_launch_description():
                 default_value=default_world_obj,
                 description="World OBJ used by the simulated lidar fallback.",
             ),
+            DeclareLaunchArgument(
+                "simulated_lidar_max_points",
+                default_value="8000",
+                description="Maximum points per simulated world-lidar scan.",
+            ),
+            DeclareLaunchArgument(
+                "simulated_lidar_max_range",
+                default_value="25.0",
+                description="Maximum range for the simulated world-lidar fallback.",
+            ),
+            DeclareLaunchArgument(
+                "simulated_lidar_horizontal_min_angle",
+                default_value="-1.5707",
+                description="Minimum horizontal angle for simulated world-lidar points.",
+            ),
+            DeclareLaunchArgument(
+                "simulated_lidar_horizontal_max_angle",
+                default_value="1.5707",
+                description="Maximum horizontal angle for simulated world-lidar points.",
+            ),
+            DeclareLaunchArgument(
+                "simulated_lidar_vertical_min_angle",
+                default_value="-0.3926991",
+                description="Minimum vertical angle for simulated world-lidar points.",
+            ),
+            DeclareLaunchArgument(
+                "simulated_lidar_vertical_max_angle",
+                default_value="0.3926991",
+                description="Maximum vertical angle for simulated world-lidar points.",
+            ),
             Node(
                 package="gen0_main",
                 executable="simulated_world_lidar",
@@ -101,13 +146,27 @@ def generate_launch_description():
                         "pose_index": 15,
                         "frame_id": "front_3d_lidar_link",
                         "scan_rate": 10.0,
-                        "max_points": 24000,
+                        "max_points": ParameterValue(
+                            simulated_lidar_max_points, value_type=int
+                        ),
                         "world_voxel_size": 0.25,
                         "lidar_xyz_in_base": [1.9, 0.0, 1.9],
                         "min_range": 0.6,
-                        "max_range": 80.0,
-                        "vertical_min_angle": -1.2,
-                        "vertical_max_angle": 0.8,
+                        "max_range": ParameterValue(
+                            simulated_lidar_max_range, value_type=float
+                        ),
+                        "horizontal_min_angle": ParameterValue(
+                            simulated_lidar_horizontal_min_angle, value_type=float
+                        ),
+                        "horizontal_max_angle": ParameterValue(
+                            simulated_lidar_horizontal_max_angle, value_type=float
+                        ),
+                        "vertical_min_angle": ParameterValue(
+                            simulated_lidar_vertical_min_angle, value_type=float
+                        ),
+                        "vertical_max_angle": ParameterValue(
+                            simulated_lidar_vertical_max_angle, value_type=float
+                        ),
                         "priority_sampling_enabled": True,
                         "priority_range": 12.0,
                         "priority_min_base_z": -2.5,
