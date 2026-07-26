@@ -44,7 +44,8 @@ ignored by git.
 
 ## One-Command 3D SLAM Demo
 
-After the workspace is built, the tested 3D SLAM flow can be started with:
+After dependencies are installed and the workspace is built, the tested 3D SLAM
+flow can be started with:
 
 ```bash
 cd ~/gen0_gz_sim_ros2
@@ -60,9 +61,14 @@ Useful runtime overrides:
 
 ```bash
 GEN0_WORLD=san_roundabout GEN0_ACTORS_SCENARIO=walking_actors ./run_gen0_3d_slam.sh
+GEN0_GPU_ADAPTER= ./run_gen0_3d_slam.sh
 GEN0_DRIVE_SPEED=0.15 ./run_gen0_3d_slam.sh
 GEN0_PREVIEW_MAX_POINTS=25000 ./run_gen0_3d_slam.sh
 ```
+
+For a fresh clone on another machine, run the build section once before using
+`run_gen0_3d_slam.sh`. The script intentionally requires `install/setup.bash`
+so it does not hide build or dependency failures.
 
 ## Manual 3D SLAM Flow
 

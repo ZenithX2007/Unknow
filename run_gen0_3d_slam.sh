@@ -96,8 +96,10 @@ gazebo_launch=(
   rviz:=false
   ground_truth_localization:=true
   render_env:=unset
-  d3d12_adapter:="$GPU_ADAPTER"
 )
+if [[ -n "$GPU_ADAPTER" ]]; then
+  gazebo_launch+=(d3d12_adapter:="$GPU_ADAPTER")
+fi
 if [[ -n "$ACTORS_SCENARIO" ]]; then
   gazebo_launch+=(actors_scenario:="$ACTORS_SCENARIO")
 fi
