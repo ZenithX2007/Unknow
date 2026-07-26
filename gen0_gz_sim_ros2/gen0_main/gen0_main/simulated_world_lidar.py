@@ -73,6 +73,8 @@ class SimulatedWorldLidar(Node):
         self.declare_parameter("scan_rate", 10.0)
         self.declare_parameter("max_points", 24000)
         self.declare_parameter("world_voxel_size", 0.25)
+        self.declare_parameter("surface_sampling_enabled", False)
+        self.declare_parameter("surface_sample_count", 0)
         self.declare_parameter("add_obstacle_columns", True)
         self.declare_parameter("column_voxel_size", 0.35)
         self.declare_parameter("column_min_height", 0.5)
@@ -107,6 +109,12 @@ class SimulatedWorldLidar(Node):
         self.max_points = int(self.get_parameter("max_points").value)
         self.world_voxel_size = float(
             self.get_parameter("world_voxel_size").value
+        )
+        self.surface_sampling_enabled = bool(
+            self.get_parameter("surface_sampling_enabled").value
+        )
+        self.surface_sample_count = max(
+            0, int(self.get_parameter("surface_sample_count").value)
         )
         self.add_obstacle_columns = bool(
             self.get_parameter("add_obstacle_columns").value
@@ -198,17 +206,23 @@ class SimulatedWorldLidar(Node):
             return np.empty((0, 3), dtype=np.float32)
 
         vertices = []
+        faces = []
         with path.open("r", errors="ignore") as stream:
             for line in stream:
-                if not line.startswith("v "):
-                    continue
-                parts = line.split()
-                if len(parts) < 4:
-                    continue
-                try:
-                    vertices.append((float(parts[1]), float(parts[2]), float(parts[3])))
-                except ValueError:
-                    continue
+                if line.startswith("v "):
+                    parts = line.split()
+                    if len(parts) < 4:
+                        continue
+                    try:
+                        vertices.append(
+                            (float(parts[1]), float(parts[2]), float(parts[3]))
+                        )
+                    except ValueError:
+                        continue
+                elif line.startswith("f ") and self.surface_sampling_enabled:
+                    face = self.parse_face_indices(line, len(vertices))
+                    if len(face) >= 3:
+                        faces.append(face)
 
         if not vertices:
             self.get_logger().error(f"No vertices found in {path}")
@@ -217,6 +231,14 @@ class SimulatedWorldLidar(Node):
         points = np.asarray(vertices, dtype=np.float32)
         world_rotation = rotation_matrix_from_rpy(*self.world_pose_rpy.tolist())
         points = points.dot(world_rotation.T) + self.world_pose_xyz
+        if self.surface_sampling_enabled and faces and self.surface_sample_count > 0:
+            surface_points = self.sample_surface_points(points, faces)
+            if surface_points.size:
+                points = np.vstack((points, surface_points))
+                self.get_logger().info(
+                    f"Added {len(surface_points)} deterministic surface samples "
+                    f"from {len(faces)} OBJ faces"
+                )
 
         if self.add_obstacle_columns:
             column_points = self.build_obstacle_columns(points)
@@ -231,6 +253,68 @@ class SimulatedWorldLidar(Node):
         rng = np.random.default_rng(self.random_seed)
         rng.shuffle(points)
         return points.astype(np.float32, copy=False)
+
+    def parse_face_indices(self, line, vertex_count):
+        indices = []
+        for token in line.split()[1:]:
+            vertex_token = token.split("/", 1)[0]
+            if not vertex_token:
+                continue
+            try:
+                raw_index = int(vertex_token)
+            except ValueError:
+                continue
+
+            if raw_index > 0:
+                index = raw_index - 1
+            else:
+                index = vertex_count + raw_index
+
+            if 0 <= index < vertex_count:
+                indices.append(index)
+        return indices
+
+    def sample_surface_points(self, points, faces):
+        triangles = []
+        for face in faces:
+            anchor = face[0]
+            for offset in range(1, len(face) - 1):
+                triangles.append((anchor, face[offset], face[offset + 1]))
+
+        if not triangles:
+            return np.empty((0, 3), dtype=np.float32)
+
+        triangle_indices = np.asarray(triangles, dtype=np.int32)
+        triangle_points = points[triangle_indices]
+        edge_ab = triangle_points[:, 1] - triangle_points[:, 0]
+        edge_ac = triangle_points[:, 2] - triangle_points[:, 0]
+        areas = 0.5 * np.linalg.norm(np.cross(edge_ab, edge_ac), axis=1)
+        valid = np.isfinite(areas) & (areas > 1e-6)
+        if not np.any(valid):
+            return np.empty((0, 3), dtype=np.float32)
+
+        triangle_points = triangle_points[valid]
+        areas = areas[valid]
+        probabilities = areas / areas.sum()
+        rng = np.random.default_rng(self.random_seed + 101)
+        chosen = rng.choice(
+            len(triangle_points),
+            size=self.surface_sample_count,
+            replace=True,
+            p=probabilities,
+        )
+        chosen_triangles = triangle_points[chosen]
+
+        r1 = rng.random(self.surface_sample_count, dtype=np.float32)
+        r2 = rng.random(self.surface_sample_count, dtype=np.float32)
+        sqrt_r1 = np.sqrt(r1)[:, None]
+
+        samples = (
+            (1.0 - sqrt_r1) * chosen_triangles[:, 0]
+            + sqrt_r1 * (1.0 - r2[:, None]) * chosen_triangles[:, 1]
+            + sqrt_r1 * r2[:, None] * chosen_triangles[:, 2]
+        )
+        return samples.astype(np.float32, copy=False)
 
     def build_obstacle_columns(self, points):
         if (

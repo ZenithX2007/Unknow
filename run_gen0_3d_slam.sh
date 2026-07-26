@@ -19,6 +19,9 @@ SIM_LIDAR_HORIZONTAL_MIN="${GEN0_SIM_LIDAR_HORIZONTAL_MIN:--1.5707}"
 SIM_LIDAR_HORIZONTAL_MAX="${GEN0_SIM_LIDAR_HORIZONTAL_MAX:-1.5707}"
 SIM_LIDAR_VERTICAL_MIN="${GEN0_SIM_LIDAR_VERTICAL_MIN:--0.3926991}"
 SIM_LIDAR_VERTICAL_MAX="${GEN0_SIM_LIDAR_VERTICAL_MAX:-0.3926991}"
+SIM_LIDAR_WORLD_VOXEL_SIZE="${GEN0_SIM_LIDAR_WORLD_VOXEL_SIZE:-0.15}"
+SIM_LIDAR_SURFACE_SAMPLING="${GEN0_SIM_LIDAR_SURFACE_SAMPLING:-true}"
+SIM_LIDAR_SURFACE_SAMPLES="${GEN0_SIM_LIDAR_SURFACE_SAMPLES:-500000}"
 
 PIDS=()
 NAMES=()
@@ -137,6 +140,7 @@ log "World: $WORLD, actors_scenario: $ACTORS_SCENARIO"
 log "Simulated lidar: $SIMULATED_LIDAR, world_obj_path: $WORLD_OBJ_PATH"
 if [[ "$SIMULATED_LIDAR" == "true" ]]; then
   log "Simulated lidar scan: max_points=$SIM_LIDAR_MAX_POINTS, max_range=$SIM_LIDAR_MAX_RANGE, h=[$SIM_LIDAR_HORIZONTAL_MIN, $SIM_LIDAR_HORIZONTAL_MAX], v=[$SIM_LIDAR_VERTICAL_MIN, $SIM_LIDAR_VERTICAL_MAX]"
+  log "Simulated lidar mesh: world_voxel_size=$SIM_LIDAR_WORLD_VOXEL_SIZE, surface_sampling=$SIM_LIDAR_SURFACE_SAMPLING, surface_samples=$SIM_LIDAR_SURFACE_SAMPLES"
 fi
 log "GPU adapter: $MESA_D3D12_DEFAULT_ADAPTER_NAME"
 log "Logs: $LOG_DIR"
@@ -174,6 +178,9 @@ if [[ "$SIMULATED_LIDAR" == "true" ]]; then
   fast_lio_launch+=(simulated_lidar_horizontal_max_angle:="$SIM_LIDAR_HORIZONTAL_MAX")
   fast_lio_launch+=(simulated_lidar_vertical_min_angle:="$SIM_LIDAR_VERTICAL_MIN")
   fast_lio_launch+=(simulated_lidar_vertical_max_angle:="$SIM_LIDAR_VERTICAL_MAX")
+  fast_lio_launch+=(simulated_lidar_world_voxel_size:="$SIM_LIDAR_WORLD_VOXEL_SIZE")
+  fast_lio_launch+=(simulated_lidar_surface_sampling:="$SIM_LIDAR_SURFACE_SAMPLING")
+  fast_lio_launch+=(simulated_lidar_surface_samples:="$SIM_LIDAR_SURFACE_SAMPLES")
 fi
 
 start_process fast_lio_3d_slam "${fast_lio_launch[@]}"

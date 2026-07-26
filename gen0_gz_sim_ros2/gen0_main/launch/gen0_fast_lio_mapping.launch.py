@@ -36,6 +36,15 @@ def generate_launch_description():
     world_obj_path = LaunchConfiguration("world_obj_path")
     simulated_lidar_max_points = LaunchConfiguration("simulated_lidar_max_points")
     simulated_lidar_max_range = LaunchConfiguration("simulated_lidar_max_range")
+    simulated_lidar_world_voxel_size = LaunchConfiguration(
+        "simulated_lidar_world_voxel_size"
+    )
+    simulated_lidar_surface_sampling = LaunchConfiguration(
+        "simulated_lidar_surface_sampling"
+    )
+    simulated_lidar_surface_samples = LaunchConfiguration(
+        "simulated_lidar_surface_samples"
+    )
     simulated_lidar_horizontal_min_angle = LaunchConfiguration(
         "simulated_lidar_horizontal_min_angle"
     )
@@ -112,6 +121,22 @@ def generate_launch_description():
                 description="Maximum range for the simulated world-lidar fallback.",
             ),
             DeclareLaunchArgument(
+                "simulated_lidar_world_voxel_size",
+                default_value="0.15",
+                description="Voxel size for the loaded world mesh point source.",
+            ),
+            DeclareLaunchArgument(
+                "simulated_lidar_surface_sampling",
+                default_value="true",
+                choices=["true", "false"],
+                description="Sample OBJ faces in addition to raw vertices for denser road/boundary points.",
+            ),
+            DeclareLaunchArgument(
+                "simulated_lidar_surface_samples",
+                default_value="500000",
+                description="Number of deterministic OBJ surface samples added before voxel filtering.",
+            ),
+            DeclareLaunchArgument(
                 "simulated_lidar_horizontal_min_angle",
                 default_value="-1.5707",
                 description="Minimum horizontal angle for simulated world-lidar points.",
@@ -149,7 +174,15 @@ def generate_launch_description():
                         "max_points": ParameterValue(
                             simulated_lidar_max_points, value_type=int
                         ),
-                        "world_voxel_size": 0.25,
+                        "world_voxel_size": ParameterValue(
+                            simulated_lidar_world_voxel_size, value_type=float
+                        ),
+                        "surface_sampling_enabled": ParameterValue(
+                            simulated_lidar_surface_sampling, value_type=bool
+                        ),
+                        "surface_sample_count": ParameterValue(
+                            simulated_lidar_surface_samples, value_type=int
+                        ),
                         "lidar_xyz_in_base": [1.9, 0.0, 1.9],
                         "min_range": 0.6,
                         "max_range": ParameterValue(
