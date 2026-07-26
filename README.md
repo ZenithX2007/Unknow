@@ -77,7 +77,8 @@ so it does not hide build or dependency failures.
 
 If an old run is still alive, the script exits before launching a second stack.
 This prevents stale `pointcloud_accumulator_preview` or simulated LiDAR nodes
-from publishing an already accumulated RViz point cloud.
+from publishing an already accumulated RViz point cloud. Run
+`./stop_gen0_3d_slam.sh` to clean up a previous run.
 
 ## Manual 3D SLAM Flow
 

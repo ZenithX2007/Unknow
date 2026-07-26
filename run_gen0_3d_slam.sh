@@ -41,7 +41,7 @@ check_existing_ros_nodes() {
   )"
   if [[ -n "$existing" ]]; then
     printf 'Existing Gen0/RViz ROS nodes are still running:\n%s\n\n' "$existing" >&2
-    printf 'Stop the old run first, or set GEN0_ALLOW_EXISTING_NODES=true to bypass this check.\n' >&2
+    printf 'Run ./stop_gen0_3d_slam.sh first, or set GEN0_ALLOW_EXISTING_NODES=true to bypass this check.\n' >&2
     exit 1
   fi
 }
@@ -57,10 +57,21 @@ start_process() {
   shift
 
   log "Starting $name"
-  "$@" >"$LOG_DIR/$name.log" 2>&1 &
+  setsid "$@" >"$LOG_DIR/$name.log" 2>&1 &
   PIDS+=("$!")
   NAMES+=("$name")
   log "$name pid=${PIDS[-1]} log=$LOG_DIR/$name.log"
+}
+
+process_group_alive() {
+  local pid="$1"
+  kill -0 -- "-$pid" 2>/dev/null || kill -0 "$pid" 2>/dev/null
+}
+
+signal_process_group() {
+  local signal="$1"
+  local pid="$2"
+  kill "-$signal" -- "-$pid" 2>/dev/null || kill "-$signal" "$pid" 2>/dev/null || true
 }
 
 cleanup() {
@@ -70,14 +81,20 @@ cleanup() {
   if ((${#PIDS[@]} > 0)); then
     log "Stopping launched processes"
     for pid in "${PIDS[@]}"; do
-      if kill -0 "$pid" 2>/dev/null; then
-        kill "$pid" 2>/dev/null || true
+      if process_group_alive "$pid"; then
+        signal_process_group INT "$pid"
+      fi
+    done
+    sleep 4
+    for pid in "${PIDS[@]}"; do
+      if process_group_alive "$pid"; then
+        signal_process_group TERM "$pid"
       fi
     done
     sleep 2
     for pid in "${PIDS[@]}"; do
-      if kill -0 "$pid" 2>/dev/null; then
-        kill -TERM "$pid" 2>/dev/null || true
+      if process_group_alive "$pid"; then
+        signal_process_group KILL "$pid"
       fi
     done
     wait "${PIDS[@]}" 2>/dev/null || true
