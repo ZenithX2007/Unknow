@@ -157,6 +157,7 @@ cd ~/gen0_gz_sim_ros2
 source /opt/ros/humble/setup.bash
 
 colcon build --symlink-install --packages-select \
+  behavior_ext_plugins \
   gen0_main \
   sweeper_integration \
   gen0_interface
@@ -859,7 +860,7 @@ cd ~/gen0_gz_sim_ros2
 source /opt/ros/humble/setup.bash
 
 colcon build --symlink-install --packages-up-to explore_lite
-colcon build --symlink-install --packages-select sweeper_integration
+colcon build --symlink-install --packages-select behavior_ext_plugins sweeper_integration
 
 source install/setup.bash
 ```

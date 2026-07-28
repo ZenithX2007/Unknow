@@ -183,6 +183,7 @@ source /opt/ros/humble/setup.bash
 colcon build --symlink-install --packages-select \
   explore_lite_msgs \
   explore_lite \
+  behavior_ext_plugins \
   gen0_main \
   gen0_interface \
   sweeper_integration

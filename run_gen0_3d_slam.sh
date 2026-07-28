@@ -5,21 +5,26 @@ WORKSPACE="${GEN0_WORKSPACE:-$HOME/gen0_gz_sim_ros2}"
 WORLD="${GEN0_WORLD:-my_map}"
 ACTORS_SCENARIO="${GEN0_ACTORS_SCENARIO:-}"
 GPU_ADAPTER="${GEN0_GPU_ADAPTER:-NVIDIA}"
+PARTITION="${GEN0_PARTITION:-gen0_scurm_demo}"
+GAZEBO_GUI="${GEN0_GAZEBO_GUI:-true}"
 DRIVE_SPEED="${GEN0_DRIVE_SPEED:-0.25}"
-PREVIEW_MAX_POINTS="${GEN0_PREVIEW_MAX_POINTS:-40000}"
-PREVIEW_VOXEL_SIZE="${GEN0_PREVIEW_VOXEL_SIZE:-0.65}"
-PREVIEW_PERIOD="${GEN0_PREVIEW_PERIOD:-1.0}"
-RVIZ_CONFIG="${GEN0_RVIZ_CONFIG:-$WORKSPACE/gen0_gz_sim_ros2/gen0_main/config/gen0_3d_mapping_preview.rviz}"
+RVIZ="${GEN0_RVIZ:-true}"
+RVIZ_CONFIG="${GEN0_RVIZ_CONFIG:-$WORKSPACE/gen0_gz_sim_ros2/gen0_main/config/gen0_3d_mapping.rviz}"
 LOG_DIR="${GEN0_LOG_DIR:-$WORKSPACE/runtime_logs}"
+ROS_LOG_DIR="${ROS_LOG_DIR:-$LOG_DIR/ros}"
+TERRAIN_ANALYSIS="${GEN0_TERRAIN_ANALYSIS:-true}"
+TERRAIN_ANALYSIS_EXT="${GEN0_TERRAIN_ANALYSIS_EXT:-true}"
+PROJECTED_MAP="${GEN0_PROJECTED_MAP:-true}"
+LOCAL_COSTMAP="${GEN0_LOCAL_COSTMAP:-true}"
 SIMULATED_LIDAR="${GEN0_SIMULATED_LIDAR:-true}"
 WORLD_OBJ_PATH="${GEN0_WORLD_OBJ_PATH:-$WORKSPACE/gen0_gz_sim_ros2/gen0_main/worlds/$WORLD/$WORLD.obj}"
-SIM_LIDAR_MAX_POINTS="${GEN0_SIM_LIDAR_MAX_POINTS:-8000}"
+SIM_LIDAR_MAX_POINTS="${GEN0_SIM_LIDAR_MAX_POINTS:-16000}"
 SIM_LIDAR_MAX_RANGE="${GEN0_SIM_LIDAR_MAX_RANGE:-25.0}"
 SIM_LIDAR_HORIZONTAL_MIN="${GEN0_SIM_LIDAR_HORIZONTAL_MIN:--1.5707}"
 SIM_LIDAR_HORIZONTAL_MAX="${GEN0_SIM_LIDAR_HORIZONTAL_MAX:-1.5707}"
 SIM_LIDAR_VERTICAL_MIN="${GEN0_SIM_LIDAR_VERTICAL_MIN:--0.3926991}"
 SIM_LIDAR_VERTICAL_MAX="${GEN0_SIM_LIDAR_VERTICAL_MAX:-0.3926991}"
-SIM_LIDAR_WORLD_VOXEL_SIZE="${GEN0_SIM_LIDAR_WORLD_VOXEL_SIZE:-0.15}"
+SIM_LIDAR_WORLD_VOXEL_SIZE="${GEN0_SIM_LIDAR_WORLD_VOXEL_SIZE:-0.10}"
 SIM_LIDAR_SURFACE_SAMPLING="${GEN0_SIM_LIDAR_SURFACE_SAMPLING:-true}"
 SIM_LIDAR_SURFACE_SAMPLES="${GEN0_SIM_LIDAR_SURFACE_SAMPLES:-500000}"
 
@@ -45,7 +50,7 @@ check_existing_ros_nodes() {
   local existing
   existing="$(
     ros2 node list 2>/dev/null \
-      | grep -E '(^/gen0_simulated_world_lidar$|^/gen0_gazebo_livox_adapter$|^/gen0_fast_lio$|^/gen0_mapping_drive$|^/pointcloud_accumulator_preview$|^/rviz$|^/vehicle_movement_interface$)' \
+      | grep -E '(^/gen0_simulated_world_lidar$|^/gen0_gazebo_livox_adapter$|^/gen0_fast_lio$|^/gen0_mapping_drive$|^/gen0_scurm_terrain_analysis$|^/gen0_scurm_terrain_analysis_ext$|^/gen0_projected_terrain_map$|^/costmap/costmap$|^/lifecycle_manager_costmap$|^/raw_front3d_preview$|^/cloud_registered_preview$|^/terrain_map_preview$|^/terrain_map_ext_preview$|^/fast_lio_map_preview$|^/pointcloud_accumulator_preview$|^/rviz$|^/rviz2$|^/vehicle_movement_interface$)' \
       || true
   )"
   if [[ -n "$existing" ]]; then
@@ -123,6 +128,7 @@ if [[ "$SIMULATED_LIDAR" == "true" ]]; then
 fi
 
 mkdir -p "$LOG_DIR"
+mkdir -p "$ROS_LOG_DIR"
 
 source_ros_setup /opt/ros/humble/setup.bash
 source_ros_setup "$WORKSPACE/install/setup.bash"
@@ -134,20 +140,27 @@ unset GALLIUM_DRIVER
 unset MESA_GL_VERSION_OVERRIDE
 unset QT_XCB_GL_INTEGRATION
 export MESA_D3D12_DEFAULT_ADAPTER_NAME="$GPU_ADAPTER"
+export IGN_PARTITION="$PARTITION"
+export GZ_PARTITION="$PARTITION"
+export ROS_LOG_DIR
 
 log "Workspace: $WORKSPACE"
-log "World: $WORLD, actors_scenario: $ACTORS_SCENARIO"
+log "World: $WORLD, actors_scenario: $ACTORS_SCENARIO, gazebo_gui=$GAZEBO_GUI, partition=$PARTITION"
 log "Simulated lidar: $SIMULATED_LIDAR, world_obj_path: $WORLD_OBJ_PATH"
+log "SCURM view: terrain_analysis=$TERRAIN_ANALYSIS, terrain_analysis_ext=$TERRAIN_ANALYSIS_EXT, projected_map=$PROJECTED_MAP, local_costmap=$LOCAL_COSTMAP, rviz=$RVIZ"
 if [[ "$SIMULATED_LIDAR" == "true" ]]; then
   log "Simulated lidar scan: max_points=$SIM_LIDAR_MAX_POINTS, max_range=$SIM_LIDAR_MAX_RANGE, h=[$SIM_LIDAR_HORIZONTAL_MIN, $SIM_LIDAR_HORIZONTAL_MAX], v=[$SIM_LIDAR_VERTICAL_MIN, $SIM_LIDAR_VERTICAL_MAX]"
   log "Simulated lidar mesh: world_voxel_size=$SIM_LIDAR_WORLD_VOXEL_SIZE, surface_sampling=$SIM_LIDAR_SURFACE_SAMPLING, surface_samples=$SIM_LIDAR_SURFACE_SAMPLES"
 fi
 log "GPU adapter: $MESA_D3D12_DEFAULT_ADAPTER_NAME"
 log "Logs: $LOG_DIR"
+log "ROS logs: $ROS_LOG_DIR"
 
 gazebo_launch=(
   ros2 launch gen0_main spawn.launch.py
   world:="$WORLD"
+  gazebo_gui:="$GAZEBO_GUI"
+  partition:="$PARTITION"
   rviz:=false
   ground_truth_localization:=true
   render_env:=unset
@@ -165,10 +178,13 @@ sleep 12
 
 fast_lio_launch=(
   ros2 launch gen0_main gen0_fast_lio_mapping.launch.py
-  rviz:=false
+  rviz:="$RVIZ"
+  rviz_config:="$RVIZ_CONFIG"
   simulated_lidar:="$SIMULATED_LIDAR"
-  terrain_analysis:=false
-  local_costmap:=false
+  terrain_analysis:="$TERRAIN_ANALYSIS"
+  terrain_analysis_ext:="$TERRAIN_ANALYSIS_EXT"
+  projected_map:="$PROJECTED_MAP"
+  local_costmap:="$LOCAL_COSTMAP"
 )
 if [[ "$SIMULATED_LIDAR" == "true" ]]; then
   fast_lio_launch+=(world_obj_path:="$WORLD_OBJ_PATH")
@@ -192,23 +208,9 @@ start_process mapping_drive \
     enabled:=true \
     drive_speed:="$DRIVE_SPEED"
 
-sleep 3
-
-start_process pointcloud_preview \
-  ros2 run gen0_main pointcloud_accumulator_preview --ros-args \
-    -p input_topic:=/gen0_mapping/cloud_registered \
-    -p output_topic:=/gen0_mapping/rviz/fast_lio_map \
-    -p max_points:="$PREVIEW_MAX_POINTS" \
-    -p voxel_size:="$PREVIEW_VOXEL_SIZE" \
-    -p publish_period:="$PREVIEW_PERIOD"
-
-sleep 2
-
-start_process rviz \
-  rviz2 -d "$RVIZ_CONFIG"
-
 log "Stack is running. Press Ctrl+C in this terminal to stop everything launched by this script."
 log "Preview topic: /gen0_mapping/rviz/fast_lio_map"
+log "Projected map topics: /projected_map and /projected_costmap"
 
 while true; do
   for i in "${!PIDS[@]}"; do

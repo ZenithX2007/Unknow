@@ -68,6 +68,7 @@ setup(
         'simulated_world_lidar = gen0_main.simulated_world_lidar:main',
         'pointcloud_preview = gen0_main.pointcloud_preview:main',
         'pointcloud_accumulator_preview = gen0_main.pointcloud_accumulator_preview:main',
+        'projected_terrain_map = gen0_main.projected_terrain_map:main',
         ],
     },
 )

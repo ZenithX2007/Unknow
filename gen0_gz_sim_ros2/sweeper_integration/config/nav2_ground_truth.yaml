@@ -220,7 +220,15 @@ behavior_server:
     spin:
       plugin: nav2_behaviors/Spin
     backup:
-      plugin: nav2_behaviors/BackUp
+      plugin: nav2_behaviors/BackUpTwzFree
+      service_name: /local_costmap/get_costmap
+      robot_radius: 0.7
+      max_radius: 1.6
+      free_threshold: 5
+      cost_threshold: 5.0
+      holonomic_motion: false
+      max_angular_speed: 0.25
+      visualization: false
     drive_on_heading:
       plugin: nav2_behaviors/DriveOnHeading
     wait:

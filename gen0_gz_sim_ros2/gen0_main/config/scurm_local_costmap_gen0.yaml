@@ -26,19 +26,19 @@ costmap:
         enabled: true
         footprint_clearing_enabled: true
         max_obstacle_intensity: 2.0
-        min_obstacle_intensity: 0.05
+        min_obstacle_intensity: 0.15
         observation_sources: pointcloud
         pointcloud:
-          topic: /gen0_mapping/terrain_map
+          topic: /gen0_mapping/terrain_map_ext
           sensor_frame: base_link
           observation_persistence: 0.2
           expected_update_rate: 0.0
           max_obstacle_height: 2.0
           min_obstacle_height: -2.0
-          obstacle_max_range: 6.0
-          obstacle_min_range: 0.6
-          raytrace_max_range: 6.5
-          raytrace_min_range: 0.4
+          obstacle_max_range: 7.0
+          obstacle_min_range: 0.15
+          raytrace_max_range: 8.0
+          raytrace_min_range: 0.1
           clearing: true
           marking: true
           data_type: "PointCloud2"

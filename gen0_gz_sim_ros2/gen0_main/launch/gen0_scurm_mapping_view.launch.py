@@ -122,6 +122,7 @@ def generate_launch_description():
                         parameters=[
                             {"use_sim_time": use_sim_time},
                             {"autostart": True},
+                            {"bond_timeout": 0.0},
                             {"node_names": ["/costmap/costmap"]},
                         ],
                     ),

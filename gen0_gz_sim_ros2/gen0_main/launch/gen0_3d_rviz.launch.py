@@ -136,6 +136,17 @@ def generate_launch_description():
                 0.2,
                 condition,
             ),
+            preview_node(
+                "terrain_map_ext_preview",
+                "/gen0_mapping/terrain_map_ext",
+                "/gen0_mapping/rviz/terrain_map_ext",
+                320000,
+                0.06,
+                2,
+                "terrain",
+                0.5,
+                condition,
+            ),
             accumulator_node(
                 "fast_lio_map_preview",
                 "/gen0_mapping/cloud_registered",

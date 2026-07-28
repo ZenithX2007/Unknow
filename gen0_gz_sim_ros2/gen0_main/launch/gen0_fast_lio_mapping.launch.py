@@ -30,6 +30,8 @@ def generate_launch_description():
     rviz = LaunchConfiguration("rviz")
     rviz_config = LaunchConfiguration("rviz_config")
     terrain_analysis = LaunchConfiguration("terrain_analysis")
+    terrain_analysis_ext = LaunchConfiguration("terrain_analysis_ext")
+    projected_map = LaunchConfiguration("projected_map")
     local_costmap = LaunchConfiguration("local_costmap")
     costmap_params_file = LaunchConfiguration("costmap_params_file")
     simulated_lidar = LaunchConfiguration("simulated_lidar")
@@ -91,6 +93,16 @@ def generate_launch_description():
                 description="Run SCURM terrain_analysis on FAST_LIO2 registered scans.",
             ),
             DeclareLaunchArgument(
+                "terrain_analysis_ext",
+                default_value="true",
+                description="Run SCURM terrain_analysis_ext for the projected 2D map pipeline.",
+            ),
+            DeclareLaunchArgument(
+                "projected_map",
+                default_value="true",
+                description="Publish /projected_map and /projected_costmap from SCURM terrain points.",
+            ),
+            DeclareLaunchArgument(
                 "local_costmap",
                 default_value="true",
                 description="Run SCURM costmap_intensity local costmap from terrain_map.",
@@ -112,7 +124,7 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument(
                 "simulated_lidar_max_points",
-                default_value="8000",
+                default_value="16000",
                 description="Maximum points per simulated world-lidar scan.",
             ),
             DeclareLaunchArgument(
@@ -122,7 +134,7 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument(
                 "simulated_lidar_world_voxel_size",
-                default_value="0.15",
+                default_value="0.10",
                 description="Voxel size for the loaded world mesh point source.",
             ),
             DeclareLaunchArgument(
@@ -279,16 +291,15 @@ def generate_launch_description():
                         "noDataObstacle": False,
                         "noDataBlockSkipNum": 0,
                         "minBlockPointNum": 1,
-                        # Gen0 footprint from gen0_model.sdf, with margin for wheels/body.
-                        "vehicleHeight": 2.8,
+                        "vehicleHeight": 1.5,
                         "sensorOffsetX": 0.0,
                         "sensorOffsetY": 0.0,
-                        "vehicleLength": 5.8,
-                        "vehicleWidth": 3.0,
-                        "voxelPointUpdateThre": 20,
-                        "voxelTimeUpdateThre": 0.5,
+                        "vehicleLength": 0.7,
+                        "vehicleWidth": 0.7,
+                        "voxelPointUpdateThre": 100,
+                        "voxelTimeUpdateThre": 2.0,
                         "minRelZ": -2.5,
-                        "maxRelZ": 2.8,
+                        "maxRelZ": 2.5,
                         "disRatioZ": 0.2,
                     }
                 ],
@@ -298,8 +309,89 @@ def generate_launch_description():
                     ("/terrain_map", "/gen0_mapping/terrain_map"),
                 ],
             ),
+            Node(
+                package="terrain_analysis_ext",
+                executable="terrainAnalysisExt",
+                name="gen0_scurm_terrain_analysis_ext",
+                output="screen",
+                condition=IfCondition(terrain_analysis_ext),
+                parameters=[
+                    {
+                        "use_sim_time": use_sim_time,
+                        "map_frame": "odom",
+                        "scanVoxelSize": 0.08,
+                        "decayTime": 0.5,
+                        "noDecayDis": 0.0,
+                        "clearingDis": 30.0,
+                        "useSorting": True,
+                        "quantileZ": 0.25,
+                        "limitGroundLift": False,
+                        "maxGroundLift": 0.25,
+                        "vehicleHeight": 1.5,
+                        "sensorOffsetX": 0.0,
+                        "sensorOffsetY": 0.0,
+                        "vehicleLength": 0.7,
+                        "vehicleWidth": 0.7,
+                        "voxelPointUpdateThre": 100,
+                        "voxelTimeUpdateThre": 2.0,
+                        "lowerBoundZ": -2.5,
+                        "upperBoundZ": 1.0,
+                        "disRatioZ": 0.1,
+                        "checkTerrainConn": False,
+                        "terrainUnderVehicle": -0.75,
+                        "terrainConnThre": 0.5,
+                        "ceilingFilteringThre": 2.0,
+                        "localTerrainMapRadius": 0.0,
+                    }
+                ],
+                remappings=[
+                    ("/state_estimation", odom_output_topic),
+                    ("/registered_scan", "/gen0_mapping/cloud_registered"),
+                    ("/terrain_map", "/gen0_mapping/terrain_map"),
+                    ("/terrain_map_ext", "/gen0_mapping/terrain_map_ext"),
+                    ("/cloud_clearing", "/gen0_mapping/cloud_clearing"),
+                ],
+            ),
+            Node(
+                package="gen0_main",
+                executable="projected_terrain_map",
+                name="gen0_projected_terrain_map",
+                output="screen",
+                condition=IfCondition(projected_map),
+                parameters=[
+                    {
+                        "use_sim_time": use_sim_time,
+                        "input_topic": "/gen0_mapping/terrain_map_ext",
+                        "odom_topic": odom_output_topic,
+                        "map_topic": "/projected_map",
+                        "costmap_topic": "/projected_costmap",
+                        "frame_id": "odom",
+                        "resolution": 0.10,
+                        "publish_period": 1.0,
+                        "free_intensity_threshold": 0.10,
+                        "occupied_intensity_threshold": 0.15,
+                        "occupied_cost_intensity": 0.45,
+                        "hit_log_odds": 0.85,
+                        "miss_log_odds": 0.20,
+                        "occupied_log_odds_threshold": 0.0,
+                        "free_log_odds_threshold": -0.2,
+                        "mark_low_intensity_free": True,
+                        "ground_clears_occupied": False,
+                        "occupied_padding_radius": 0.0,
+                        "filter_speckles": False,
+                        "raytrace_free_space": True,
+                        "raytrace_clears_occupied": True,
+                        "occupied_clear_log_odds_threshold": 1.7,
+                        "raytrace_max_range": 22.0,
+                        "max_raytrace_cells_per_update": 5000,
+                        "robot_clear_radius": 0.8,
+                        "inflation_radius": 0.7,
+                        "inflation_cost_scaling": 3.0,
+                    }
+                ],
+            ),
             TimerAction(
-                period=4.0,
+                period=8.0,
                 actions=[
                     Node(
                         package="nav2_costmap_2d",
@@ -319,6 +411,7 @@ def generate_launch_description():
                         parameters=[
                             {"use_sim_time": use_sim_time},
                             {"autostart": True},
+                            {"bond_timeout": 0.0},
                             {"node_names": ["/costmap/costmap"]},
                         ],
                     ),
