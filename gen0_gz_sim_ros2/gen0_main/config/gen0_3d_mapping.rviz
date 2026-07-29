@@ -45,7 +45,7 @@ Visualization Manager:
         Value: /projected_map_updates
       Use Timestamp: false
       Value: true
-    - Alpha: 0.55
+    - Alpha: 0.85
       Class: rviz_default_plugins/Map
       Color Scheme: costmap
       Draw Behind: false
@@ -65,7 +65,7 @@ Visualization Manager:
         Value: /projected_costmap_updates
       Use Timestamp: false
       Value: true
-    - Alpha: 0.7
+    - Alpha: 0.9
       Class: rviz_default_plugins/Map
       Color Scheme: costmap
       Draw Behind: false

@@ -69,6 +69,7 @@ setup(
         'pointcloud_preview = gen0_main.pointcloud_preview:main',
         'pointcloud_accumulator_preview = gen0_main.pointcloud_accumulator_preview:main',
         'projected_terrain_map = gen0_main.projected_terrain_map:main',
+        'trash_cleanup_node = gen0_main.trash_cleanup_node:main',
         ],
     },
 )

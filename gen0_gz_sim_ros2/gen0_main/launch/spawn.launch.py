@@ -36,9 +36,12 @@ def launch_bool(context, name, default='false'):
 
 def gazebo_environment(pkg_share_dir, partition, render_env, d3d12_adapter=''):
     env = dict(os.environ)
-    resource_path = os.path.join(pkg_share_dir, 'meshes')
-    prepend_env_path(env, 'IGN_GAZEBO_RESOURCE_PATH', resource_path)
-    prepend_env_path(env, 'GZ_SIM_RESOURCE_PATH', resource_path)
+    for resource_path in (
+        os.path.join(pkg_share_dir, 'meshes'),
+        os.path.join(pkg_share_dir, 'models'),
+    ):
+        prepend_env_path(env, 'IGN_GAZEBO_RESOURCE_PATH', resource_path)
+        prepend_env_path(env, 'GZ_SIM_RESOURCE_PATH', resource_path)
     env['IGN_PARTITION'] = partition
     env['GZ_PARTITION'] = partition
 

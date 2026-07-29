@@ -4,6 +4,9 @@ set -Eeuo pipefail
 WORKSPACE="${GEN0_WORKSPACE:-$HOME/gen0_gz_sim_ros2}"
 WORLD="${GEN0_WORLD:-my_map}"
 ACTORS_SCENARIO="${GEN0_ACTORS_SCENARIO:-}"
+TRASH_SCENARIO="${GEN0_TRASH_SCENARIO:-small_trash_dense}"
+TRASH_CLEANUP="${GEN0_TRASH_CLEANUP:-true}"
+TRASH_CLEANUP_RADIUS="${GEN0_TRASH_CLEANUP_RADIUS:-0.90}"
 GPU_ADAPTER="${GEN0_GPU_ADAPTER:-NVIDIA}"
 PARTITION="${GEN0_PARTITION:-gen0_scurm_demo}"
 GAZEBO_GUI="${GEN0_GAZEBO_GUI:-true}"
@@ -50,7 +53,7 @@ check_existing_ros_nodes() {
   local existing
   existing="$(
     ros2 node list 2>/dev/null \
-      | grep -E '(^/gen0_simulated_world_lidar$|^/gen0_gazebo_livox_adapter$|^/gen0_fast_lio$|^/gen0_mapping_drive$|^/gen0_scurm_terrain_analysis$|^/gen0_scurm_terrain_analysis_ext$|^/gen0_projected_terrain_map$|^/costmap/costmap$|^/lifecycle_manager_costmap$|^/raw_front3d_preview$|^/cloud_registered_preview$|^/terrain_map_preview$|^/terrain_map_ext_preview$|^/fast_lio_map_preview$|^/pointcloud_accumulator_preview$|^/rviz$|^/rviz2$|^/vehicle_movement_interface$)' \
+      | grep -E '(^/gen0_simulated_world_lidar$|^/gen0_gazebo_livox_adapter$|^/gen0_fast_lio$|^/gen0_mapping_drive$|^/gen0_trash_cleanup$|^/gen0_scurm_terrain_analysis$|^/gen0_scurm_terrain_analysis_ext$|^/gen0_projected_terrain_map$|^/costmap/costmap$|^/lifecycle_manager_costmap$|^/raw_front3d_preview$|^/cloud_registered_preview$|^/terrain_map_preview$|^/terrain_map_ext_preview$|^/fast_lio_map_preview$|^/pointcloud_accumulator_preview$|^/rviz$|^/rviz2$|^/vehicle_movement_interface$)' \
       || true
   )"
   if [[ -n "$existing" ]]; then
@@ -130,6 +133,8 @@ fi
 mkdir -p "$LOG_DIR"
 mkdir -p "$ROS_LOG_DIR"
 
+export ROS_LOG_DIR
+
 source_ros_setup /opt/ros/humble/setup.bash
 source_ros_setup "$WORKSPACE/install/setup.bash"
 check_existing_ros_nodes
@@ -142,10 +147,9 @@ unset QT_XCB_GL_INTEGRATION
 export MESA_D3D12_DEFAULT_ADAPTER_NAME="$GPU_ADAPTER"
 export IGN_PARTITION="$PARTITION"
 export GZ_PARTITION="$PARTITION"
-export ROS_LOG_DIR
 
 log "Workspace: $WORKSPACE"
-log "World: $WORLD, actors_scenario: $ACTORS_SCENARIO, gazebo_gui=$GAZEBO_GUI, partition=$PARTITION"
+log "World: $WORLD, actors_scenario: $ACTORS_SCENARIO, trash_scenario=$TRASH_SCENARIO, trash_cleanup=$TRASH_CLEANUP, cleanup_radius=$TRASH_CLEANUP_RADIUS, gazebo_gui=$GAZEBO_GUI, partition=$PARTITION"
 log "Simulated lidar: $SIMULATED_LIDAR, world_obj_path: $WORLD_OBJ_PATH"
 log "SCURM view: terrain_analysis=$TERRAIN_ANALYSIS, terrain_analysis_ext=$TERRAIN_ANALYSIS_EXT, projected_map=$PROJECTED_MAP, local_costmap=$LOCAL_COSTMAP, rviz=$RVIZ"
 if [[ "$SIMULATED_LIDAR" == "true" ]]; then
@@ -175,6 +179,18 @@ fi
 start_process gazebo "${gazebo_launch[@]}"
 
 sleep 12
+
+if [[ -n "$TRASH_SCENARIO" ]]; then
+  log "Spawning trash scenario: $TRASH_SCENARIO"
+  ros2 launch gen0_main trash_spawn.launch.py \
+    world:="$WORLD" \
+    trash_scenario:="$TRASH_SCENARIO" \
+    partition:="$PARTITION" \
+    >"$LOG_DIR/trash_spawner.log" 2>&1 || {
+      log "trash_spawner failed. Check $LOG_DIR/trash_spawner.log"
+      exit 1
+    }
+fi
 
 fast_lio_launch=(
   ros2 launch gen0_main gen0_fast_lio_mapping.launch.py
@@ -207,6 +223,15 @@ start_process mapping_drive \
   ros2 launch gen0_main gen0_mapping_drive.launch.py \
     enabled:=true \
     drive_speed:="$DRIVE_SPEED"
+
+if [[ -n "$TRASH_SCENARIO" && "$TRASH_CLEANUP" == "true" ]]; then
+  start_process trash_cleanup \
+    ros2 launch gen0_main trash_cleanup.launch.py \
+      world:="$WORLD" \
+      trash_scenario:="$TRASH_SCENARIO" \
+      partition:="$PARTITION" \
+      cleanup_radius:="$TRASH_CLEANUP_RADIUS"
+fi
 
 log "Stack is running. Press Ctrl+C in this terminal to stop everything launched by this script."
 log "Preview topic: /gen0_mapping/rviz/fast_lio_map"

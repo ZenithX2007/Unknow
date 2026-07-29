@@ -1,0 +1,17 @@
+[
+  {
+    "name": "trash_bottle_01_a",
+    "model": "trash_bottle_01",
+    "pose": [-18.2, -22.4, 2.85, 0.0, 0.0, 0.4]
+  },
+  {
+    "name": "trash_box_01_a",
+    "model": "trash_box_01",
+    "pose": [-17.4, -23.0, 2.85, 0.0, 0.0, -0.3]
+  },
+  {
+    "name": "trash_can_01_a",
+    "model": "trash_can_01",
+    "pose": [-18.8, -23.1, 2.85, 0.0, 0.0, 1.2]
+  }
+]

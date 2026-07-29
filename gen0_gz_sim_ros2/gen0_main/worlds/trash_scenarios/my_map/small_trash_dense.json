@@ -1,0 +1,122 @@
+[
+  {
+    "name": "trash_bottle_01_01",
+    "model": "trash_bottle_01",
+    "pose": [-17.501, -24.877, 2.85, 0.0, 0.0, -3.14]
+  },
+  {
+    "name": "trash_can_01_01",
+    "model": "trash_can_01",
+    "pose": [-15.906, -25.134, 2.85, 0.0, 0.0, -2.41]
+  },
+  {
+    "name": "trash_box_01_01",
+    "model": "trash_box_01",
+    "pose": [-14.44, -25.606, 2.85, 0.0, 0.0, -1.68]
+  },
+  {
+    "name": "trash_bottle_01_02",
+    "model": "trash_bottle_01",
+    "pose": [-13.514, -26.978, 2.85, 0.0, 0.0, -0.95]
+  },
+  {
+    "name": "trash_can_01_02",
+    "model": "trash_can_01",
+    "pose": [-12.357, -27.965, 2.85, 0.0, 0.0, -0.22]
+  },
+  {
+    "name": "trash_box_01_02",
+    "model": "trash_box_01",
+    "pose": [-10.762, -28.222, 2.85, 0.0, 0.0, 0.51]
+  },
+  {
+    "name": "trash_bottle_01_03",
+    "model": "trash_bottle_01",
+    "pose": [-9.296, -28.694, 2.85, 0.0, 0.0, 1.24]
+  },
+  {
+    "name": "trash_can_01_03",
+    "model": "trash_can_01",
+    "pose": [-8.37, -30.066, 2.85, 0.0, 0.0, 1.97]
+  },
+  {
+    "name": "trash_box_01_03",
+    "model": "trash_box_01",
+    "pose": [-7.212, -31.053, 2.85, 0.0, 0.0, 2.7]
+  },
+  {
+    "name": "trash_bottle_01_04",
+    "model": "trash_bottle_01",
+    "pose": [-5.617, -31.31, 2.85, 0.0, 0.0, -2.85]
+  },
+  {
+    "name": "trash_can_01_04",
+    "model": "trash_can_01",
+    "pose": [-4.151, -31.782, 2.85, 0.0, 0.0, -2.12]
+  },
+  {
+    "name": "trash_box_01_04",
+    "model": "trash_box_01",
+    "pose": [-3.225, -33.154, 2.85, 0.0, 0.0, -1.39]
+  },
+  {
+    "name": "trash_bottle_01_05",
+    "model": "trash_bottle_01",
+    "pose": [-2.068, -34.141, 2.85, 0.0, 0.0, -0.66]
+  },
+  {
+    "name": "trash_can_01_05",
+    "model": "trash_can_01",
+    "pose": [-0.473, -34.398, 2.85, 0.0, 0.0, 0.07]
+  },
+  {
+    "name": "trash_box_01_05",
+    "model": "trash_box_01",
+    "pose": [0.993, -34.87, 2.85, 0.0, 0.0, 0.8]
+  },
+  {
+    "name": "trash_bottle_01_06",
+    "model": "trash_bottle_01",
+    "pose": [1.919, -36.242, 2.85, 0.0, 0.0, 1.53]
+  },
+  {
+    "name": "trash_can_01_06",
+    "model": "trash_can_01",
+    "pose": [3.077, -37.228, 2.85, 0.0, 0.0, 2.26]
+  },
+  {
+    "name": "trash_box_01_06",
+    "model": "trash_box_01",
+    "pose": [4.671, -37.486, 2.85, 0.0, 0.0, 2.99]
+  },
+  {
+    "name": "trash_bottle_01_07",
+    "model": "trash_bottle_01",
+    "pose": [6.138, -37.958, 2.85, 0.0, 0.0, -2.56]
+  },
+  {
+    "name": "trash_can_01_07",
+    "model": "trash_can_01",
+    "pose": [7.063, -39.33, 2.85, 0.0, 0.0, -1.83]
+  },
+  {
+    "name": "trash_box_01_07",
+    "model": "trash_box_01",
+    "pose": [8.221, -40.316, 2.85, 0.0, 0.0, -1.1]
+  },
+  {
+    "name": "trash_bottle_01_08",
+    "model": "trash_bottle_01",
+    "pose": [9.816, -40.574, 2.85, 0.0, 0.0, -0.37]
+  },
+  {
+    "name": "trash_can_01_08",
+    "model": "trash_can_01",
+    "pose": [11.282, -41.046, 2.85, 0.0, 0.0, 0.36]
+  },
+  {
+    "name": "trash_box_01_08",
+    "model": "trash_box_01",
+    "pose": [12.208, -42.418, 2.85, 0.0, 0.0, 1.09]
+  }
+]
