@@ -6,7 +6,13 @@ WORLD="${GEN0_WORLD:-my_map}"
 ACTORS_SCENARIO="${GEN0_ACTORS_SCENARIO:-}"
 TRASH_SCENARIO="${GEN0_TRASH_SCENARIO:-small_trash_dense}"
 TRASH_CLEANUP="${GEN0_TRASH_CLEANUP:-true}"
-TRASH_CLEANUP_RADIUS="${GEN0_TRASH_CLEANUP_RADIUS:-0.90}"
+TRASH_VEHICLE_LENGTH="${GEN0_TRASH_VEHICLE_LENGTH:-3.50}"
+TRASH_VEHICLE_WIDTH="${GEN0_TRASH_VEHICLE_WIDTH:-1.80}"
+TRASH_VEHICLE_CENTER_OFFSET_X="${GEN0_TRASH_VEHICLE_CENTER_OFFSET_X:-0.25}"
+TRASH_VEHICLE_CENTER_OFFSET_Y="${GEN0_TRASH_VEHICLE_CENTER_OFFSET_Y:--0.25}"
+TRASH_COVERAGE_MARGIN="${GEN0_TRASH_COVERAGE_MARGIN:-0.0}"
+TRASH_DEBUG_ITEM="${GEN0_TRASH_DEBUG_ITEM:-}"
+TRASH_DEBUG_PERIOD="${GEN0_TRASH_DEBUG_PERIOD:-1.0}"
 GPU_ADAPTER="${GEN0_GPU_ADAPTER:-NVIDIA}"
 PARTITION="${GEN0_PARTITION:-gen0_scurm_demo}"
 GAZEBO_GUI="${GEN0_GAZEBO_GUI:-true}"
@@ -149,7 +155,7 @@ export IGN_PARTITION="$PARTITION"
 export GZ_PARTITION="$PARTITION"
 
 log "Workspace: $WORKSPACE"
-log "World: $WORLD, actors_scenario: $ACTORS_SCENARIO, trash_scenario=$TRASH_SCENARIO, trash_cleanup=$TRASH_CLEANUP, cleanup_radius=$TRASH_CLEANUP_RADIUS, gazebo_gui=$GAZEBO_GUI, partition=$PARTITION"
+log "World: $WORLD, actors_scenario: $ACTORS_SCENARIO, trash_scenario=$TRASH_SCENARIO, trash_cleanup=$TRASH_CLEANUP, trash_vehicle=${TRASH_VEHICLE_LENGTH}x${TRASH_VEHICLE_WIDTH}, trash_center_offset=(${TRASH_VEHICLE_CENTER_OFFSET_X},${TRASH_VEHICLE_CENTER_OFFSET_Y}), coverage_margin=$TRASH_COVERAGE_MARGIN, gazebo_gui=$GAZEBO_GUI, partition=$PARTITION"
 log "Simulated lidar: $SIMULATED_LIDAR, world_obj_path: $WORLD_OBJ_PATH"
 log "SCURM view: terrain_analysis=$TERRAIN_ANALYSIS, terrain_analysis_ext=$TERRAIN_ANALYSIS_EXT, projected_map=$PROJECTED_MAP, local_costmap=$LOCAL_COSTMAP, rviz=$RVIZ"
 if [[ "$SIMULATED_LIDAR" == "true" ]]; then
@@ -225,12 +231,22 @@ start_process mapping_drive \
     drive_speed:="$DRIVE_SPEED"
 
 if [[ -n "$TRASH_SCENARIO" && "$TRASH_CLEANUP" == "true" ]]; then
-  start_process trash_cleanup \
-    ros2 launch gen0_main trash_cleanup.launch.py \
-      world:="$WORLD" \
-      trash_scenario:="$TRASH_SCENARIO" \
-      partition:="$PARTITION" \
-      cleanup_radius:="$TRASH_CLEANUP_RADIUS"
+  trash_cleanup_launch=(
+    ros2 launch gen0_main trash_cleanup.launch.py
+    world:="$WORLD"
+    trash_scenario:="$TRASH_SCENARIO"
+    partition:="$PARTITION"
+    vehicle_length:="$TRASH_VEHICLE_LENGTH"
+    vehicle_width:="$TRASH_VEHICLE_WIDTH"
+    vehicle_center_offset_x:="$TRASH_VEHICLE_CENTER_OFFSET_X"
+    vehicle_center_offset_y:="$TRASH_VEHICLE_CENTER_OFFSET_Y"
+    coverage_margin:="$TRASH_COVERAGE_MARGIN"
+    debug_period:="$TRASH_DEBUG_PERIOD"
+  )
+  if [[ -n "$TRASH_DEBUG_ITEM" ]]; then
+    trash_cleanup_launch+=(debug_item:="$TRASH_DEBUG_ITEM")
+  fi
+  start_process trash_cleanup "${trash_cleanup_launch[@]}"
 fi
 
 log "Stack is running. Press Ctrl+C in this terminal to stop everything launched by this script."

@@ -28,9 +28,39 @@ def generate_launch_description():
                 description="Vehicle odometry topic used for trash cleanup.",
             ),
             DeclareLaunchArgument(
-                "cleanup_radius",
-                default_value="0.90",
-                description="Remove a trash model when vehicle xy distance is within this radius.",
+                "vehicle_length",
+                default_value="3.50",
+                description="Vehicle top-down rectangular footprint length in meters.",
+            ),
+            DeclareLaunchArgument(
+                "vehicle_width",
+                default_value="1.80",
+                description="Vehicle top-down rectangular footprint width in meters.",
+            ),
+            DeclareLaunchArgument(
+                "vehicle_center_offset_x",
+                default_value="0.25",
+                description="Forward x offset from odom pose to vehicle footprint center.",
+            ),
+            DeclareLaunchArgument(
+                "vehicle_center_offset_y",
+                default_value="-0.25",
+                description="Left y offset from odom pose to vehicle footprint center.",
+            ),
+            DeclareLaunchArgument(
+                "coverage_margin",
+                default_value="0.0",
+                description="Inset applied to the vehicle footprint before coverage testing.",
+            ),
+            DeclareLaunchArgument(
+                "debug_item",
+                default_value="",
+                description="Trash item name to log coverage diagnostics for.",
+            ),
+            DeclareLaunchArgument(
+                "debug_period",
+                default_value="1.0",
+                description="Seconds between debug logs for debug_item.",
             ),
             DeclareLaunchArgument(
                 "partition",
@@ -50,7 +80,17 @@ def generate_launch_description():
                         "trash_scenario": LaunchConfiguration("trash_scenario"),
                         "gazebo_world_name": LaunchConfiguration("gazebo_world_name"),
                         "odom_topic": LaunchConfiguration("odom_topic"),
-                        "cleanup_radius": LaunchConfiguration("cleanup_radius"),
+                        "vehicle_length": LaunchConfiguration("vehicle_length"),
+                        "vehicle_width": LaunchConfiguration("vehicle_width"),
+                        "vehicle_center_offset_x": LaunchConfiguration(
+                            "vehicle_center_offset_x"
+                        ),
+                        "vehicle_center_offset_y": LaunchConfiguration(
+                            "vehicle_center_offset_y"
+                        ),
+                        "coverage_margin": LaunchConfiguration("coverage_margin"),
+                        "debug_item": LaunchConfiguration("debug_item"),
+                        "debug_period": LaunchConfiguration("debug_period"),
                     }
                 ],
             ),
