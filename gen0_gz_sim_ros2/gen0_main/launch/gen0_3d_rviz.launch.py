@@ -82,6 +82,7 @@ def generate_launch_description():
     rviz = LaunchConfiguration("rviz")
     rviz_config = LaunchConfiguration("rviz_config")
     use_sim_time = LaunchConfiguration("use_sim_time")
+    raw_front3d_input_topic = LaunchConfiguration("raw_front3d_input_topic")
     condition = IfCondition(rviz)
 
     return LaunchDescription(
@@ -101,9 +102,14 @@ def generate_launch_description():
                 default_value="true",
                 description="Use Gazebo simulation clock.",
             ),
+            DeclareLaunchArgument(
+                "raw_front3d_input_topic",
+                default_value="/gen0_model/front3d/lidar/points",
+                description="Raw front 3D point-cloud topic to preview in RViz.",
+            ),
             preview_node(
                 "raw_front3d_preview",
-                "/gen0_model/front3d/lidar/points",
+                raw_front3d_input_topic,
                 "/gen0_mapping/rviz/raw_front3d",
                 30000,
                 0.12,

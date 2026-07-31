@@ -12,6 +12,17 @@ from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 
 
+def default_prior_map():
+    map_path = os.path.join(
+        os.path.expanduser("~"),
+        "SCURM_SentryNavigation",
+        "sentry_bringup",
+        "maps",
+        "GlobalMap.pcd",
+    )
+    return map_path if os.path.exists(map_path) else ""
+
+
 def generate_launch_description():
     package_share = get_package_share_directory("gen0_main")
     default_params = os.path.join(package_share, "config", "fast_lio_gen0.yaml")
@@ -27,6 +38,11 @@ def generate_launch_description():
     params_file = LaunchConfiguration("params_file")
     use_sim_time = LaunchConfiguration("use_sim_time")
     odom_output_topic = LaunchConfiguration("odom_output_topic")
+    front3d_source_topic = LaunchConfiguration("front3d_source_topic")
+    simulated_lidar_output_topic = LaunchConfiguration("simulated_lidar_output_topic")
+    fast_lio_map_file_path = LaunchConfiguration("fast_lio_map_file_path")
+    fast_lio_pcd_save = LaunchConfiguration("fast_lio_pcd_save")
+    fast_lio_pcd_save_interval = LaunchConfiguration("fast_lio_pcd_save_interval")
     rviz = LaunchConfiguration("rviz")
     rviz_config = LaunchConfiguration("rviz_config")
     terrain_analysis = LaunchConfiguration("terrain_analysis")
@@ -34,6 +50,33 @@ def generate_launch_description():
     projected_map = LaunchConfiguration("projected_map")
     local_costmap = LaunchConfiguration("local_costmap")
     costmap_params_file = LaunchConfiguration("costmap_params_file")
+    relocalization = LaunchConfiguration("relocalization")
+    prior_map_path = LaunchConfiguration("prior_map_path")
+    relocalization_initial_x = LaunchConfiguration("relocalization_initial_x")
+    relocalization_initial_y = LaunchConfiguration("relocalization_initial_y")
+    relocalization_initial_z = LaunchConfiguration("relocalization_initial_z")
+    relocalization_initial_a = LaunchConfiguration("relocalization_initial_a")
+    relocalization_fitness_score_threshold = LaunchConfiguration(
+        "relocalization_fitness_score_threshold"
+    )
+    relocalization_converged_count_threshold = LaunchConfiguration(
+        "relocalization_converged_count_threshold"
+    )
+    relocalization_max_correspondence_distance = LaunchConfiguration(
+        "relocalization_max_correspondence_distance"
+    )
+    relocalization_input_cloud_to_base_x = LaunchConfiguration(
+        "relocalization_input_cloud_to_base_x"
+    )
+    relocalization_input_cloud_to_base_y = LaunchConfiguration(
+        "relocalization_input_cloud_to_base_y"
+    )
+    relocalization_input_cloud_to_base_z = LaunchConfiguration(
+        "relocalization_input_cloud_to_base_z"
+    )
+    relocalization_legacy_livox_roll_180 = LaunchConfiguration(
+        "relocalization_legacy_livox_roll_180"
+    )
     simulated_lidar = LaunchConfiguration("simulated_lidar")
     world_obj_path = LaunchConfiguration("world_obj_path")
     simulated_lidar_max_points = LaunchConfiguration("simulated_lidar_max_points")
@@ -78,6 +121,32 @@ def generate_launch_description():
                 description="FAST_LIO odometry output topic. Use /odom only when ground-truth odom is disabled.",
             ),
             DeclareLaunchArgument(
+                "front3d_source_topic",
+                default_value="/gen0_mapping/simulated_front3d/lidar/points",
+                description="PointCloud2 topic used by the Livox adapter, RViz raw preview, and mapping-drive safety.",
+            ),
+            DeclareLaunchArgument(
+                "simulated_lidar_output_topic",
+                default_value="/gen0_mapping/simulated_front3d/lidar/points",
+                description="Output topic for the OBJ-based simulated LiDAR fallback.",
+            ),
+            DeclareLaunchArgument(
+                "fast_lio_map_file_path",
+                default_value="/tmp/gen0_fast_lio_map.pcd",
+                description="PCD output path used by FAST-LIO when map saving is enabled.",
+            ),
+            DeclareLaunchArgument(
+                "fast_lio_pcd_save",
+                default_value="false",
+                choices=["true", "false"],
+                description="Enable FAST-LIO PCD saving and the /gen0_mapping/save_fast_lio_map service.",
+            ),
+            DeclareLaunchArgument(
+                "fast_lio_pcd_save_interval",
+                default_value="-1",
+                description="FAST-LIO PCD save interval; -1 stores all scans in one file.",
+            ),
+            DeclareLaunchArgument(
                 "rviz",
                 default_value="false",
                 description="Open RViz with 3D mapping displays.",
@@ -111,6 +180,73 @@ def generate_launch_description():
                 "costmap_params_file",
                 default_value=default_costmap_params,
                 description="SCURM local costmap parameters adapted for gen0.",
+            ),
+            DeclareLaunchArgument(
+                "relocalization",
+                default_value="false",
+                choices=["true", "false"],
+                description="Start SCURM ICP relocalization and run FAST-LIO against a prior PCD map.",
+            ),
+            DeclareLaunchArgument(
+                "prior_map_path",
+                default_value=default_prior_map(),
+                description="PCD prior map used by FAST-LIO and ICP relocalization.",
+            ),
+            DeclareLaunchArgument(
+                "relocalization_initial_x",
+                default_value="0.0",
+                description="Initial ICP guess x in the prior-map frame.",
+            ),
+            DeclareLaunchArgument(
+                "relocalization_initial_y",
+                default_value="0.0",
+                description="Initial ICP guess y in the prior-map frame.",
+            ),
+            DeclareLaunchArgument(
+                "relocalization_initial_z",
+                default_value="0.0",
+                description="Initial ICP guess z in the prior-map frame.",
+            ),
+            DeclareLaunchArgument(
+                "relocalization_initial_a",
+                default_value="0.0",
+                description="Initial ICP yaw guess in radians.",
+            ),
+            DeclareLaunchArgument(
+                "relocalization_fitness_score_threshold",
+                default_value="1.0",
+                description="ICP fitness-score threshold. Lower is stricter.",
+            ),
+            DeclareLaunchArgument(
+                "relocalization_converged_count_threshold",
+                default_value="3",
+                description="Number of consecutive low-error ICP scans required before publishing /icp_result.",
+            ),
+            DeclareLaunchArgument(
+                "relocalization_max_correspondence_distance",
+                default_value="2.0",
+                description="Maximum ICP correspondence distance in meters.",
+            ),
+            DeclareLaunchArgument(
+                "relocalization_input_cloud_to_base_x",
+                default_value="1.9",
+                description="LiDAR input-cloud x offset in base_link before ICP.",
+            ),
+            DeclareLaunchArgument(
+                "relocalization_input_cloud_to_base_y",
+                default_value="0.0",
+                description="LiDAR input-cloud y offset in base_link before ICP.",
+            ),
+            DeclareLaunchArgument(
+                "relocalization_input_cloud_to_base_z",
+                default_value="1.9",
+                description="LiDAR input-cloud z offset in base_link before ICP.",
+            ),
+            DeclareLaunchArgument(
+                "relocalization_legacy_livox_roll_180",
+                default_value="false",
+                choices=["true", "false"],
+                description="Apply SCURM's original 180-degree roll correction before ICP.",
             ),
             DeclareLaunchArgument(
                 "simulated_lidar",
@@ -178,7 +314,7 @@ def generate_launch_description():
                     {
                         "use_sim_time": use_sim_time,
                         "world_obj_path": world_obj_path,
-                        "output_topic": "/gen0_model/front3d/lidar/points",
+                        "output_topic": simulated_lidar_output_topic,
                         "pose_topic": "/gen0_model/links/poses",
                         "pose_index": 15,
                         "frame_id": "front_3d_lidar_link",
@@ -229,7 +365,7 @@ def generate_launch_description():
                 output="screen",
                 parameters=[
                     {
-                        "input_topic": "/gen0_model/front3d/lidar/points",
+                        "input_topic": front3d_source_topic,
                         "output_topic": "/livox/lidar",
                         "scan_rate": 10.0,
                         "line_count": 64,
@@ -246,11 +382,93 @@ def generate_launch_description():
                 ],
             ),
             Node(
+                package="icp_relocalization",
+                executable="transform_publisher",
+                name="gen0_icp_transform_publisher",
+                output="screen",
+                condition=IfCondition(relocalization),
+                parameters=[
+                    {
+                        "map_frame_id": "map",
+                        "odom_frame_id": "odom",
+                    }
+                ],
+            ),
+            Node(
+                package="icp_relocalization",
+                executable="icp_node",
+                name="gen0_icp_relocalization",
+                output="screen",
+                condition=IfCondition(relocalization),
+                parameters=[
+                    {
+                        "use_sim_time": use_sim_time,
+                        "initial_x": ParameterValue(
+                            relocalization_initial_x, value_type=float
+                        ),
+                        "initial_y": ParameterValue(
+                            relocalization_initial_y, value_type=float
+                        ),
+                        "initial_z": ParameterValue(
+                            relocalization_initial_z, value_type=float
+                        ),
+                        "initial_a": ParameterValue(
+                            relocalization_initial_a, value_type=float
+                        ),
+                        "map_voxel_leaf_size": 0.5,
+                        "cloud_voxel_leaf_size": 0.3,
+                        "map_frame_id": "map",
+                        "solver_max_iter": 75,
+                        "max_correspondence_distance": ParameterValue(
+                            relocalization_max_correspondence_distance, value_type=float
+                        ),
+                        "RANSAC_outlier_rejection_threshold": 1.0,
+                        "map_path": prior_map_path,
+                        "fitness_score_thre": ParameterValue(
+                            relocalization_fitness_score_threshold, value_type=float
+                        ),
+                        "converged_count_thre": ParameterValue(
+                            relocalization_converged_count_threshold, value_type=int
+                        ),
+                        "pcl_type": "livox",
+                        "input_cloud_to_base_x": ParameterValue(
+                            relocalization_input_cloud_to_base_x, value_type=float
+                        ),
+                        "input_cloud_to_base_y": ParameterValue(
+                            relocalization_input_cloud_to_base_y, value_type=float
+                        ),
+                        "input_cloud_to_base_z": ParameterValue(
+                            relocalization_input_cloud_to_base_z, value_type=float
+                        ),
+                        "legacy_livox_roll_180": ParameterValue(
+                            relocalization_legacy_livox_roll_180, value_type=bool
+                        ),
+                        "update_initial_guess_on_high_error": False,
+                    }
+                ],
+            ),
+            Node(
                 package="fast_lio",
                 executable="fastlio_mapping",
                 name="gen0_fast_lio",
                 output="screen",
-                parameters=[params_file, {"use_sim_time": use_sim_time}],
+                parameters=[
+                    params_file,
+                    {
+                        "use_sim_time": use_sim_time,
+                        "locate_in_prior_map": ParameterValue(
+                            relocalization, value_type=bool
+                        ),
+                        "prior_map_path": prior_map_path,
+                        "map_file_path": fast_lio_map_file_path,
+                        "pcd_save.pcd_save_en": ParameterValue(
+                            fast_lio_pcd_save, value_type=bool
+                        ),
+                        "pcd_save.interval": ParameterValue(
+                            fast_lio_pcd_save_interval, value_type=int
+                        ),
+                    },
+                ],
                 remappings=[
                     ("/Odometry", odom_output_topic),
                     ("/path", "/gen0_mapping/fast_lio/path"),
@@ -424,6 +642,7 @@ def generate_launch_description():
                     "rviz": rviz,
                     "rviz_config": rviz_config,
                     "use_sim_time": use_sim_time,
+                    "raw_front3d_input_topic": front3d_source_topic,
                 }.items(),
             ),
         ]

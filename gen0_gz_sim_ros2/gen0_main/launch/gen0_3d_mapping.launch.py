@@ -18,6 +18,8 @@ def generate_launch_description():
     params_file = LaunchConfiguration("params_file")
     use_sim_time = LaunchConfiguration("use_sim_time")
     simulated_lidar = LaunchConfiguration("simulated_lidar")
+    front3d_source_topic = LaunchConfiguration("front3d_source_topic")
+    simulated_lidar_output_topic = LaunchConfiguration("simulated_lidar_output_topic")
     world_obj_path = LaunchConfiguration("world_obj_path")
 
     return LaunchDescription(
@@ -38,6 +40,16 @@ def generate_launch_description():
                 description="Publish a world-mesh lidar point cloud for mapping.",
             ),
             DeclareLaunchArgument(
+                "front3d_source_topic",
+                default_value="/gen0_mapping/simulated_front3d/lidar/points",
+                description="PointCloud2 topic consumed by gen0_3d_mapper.",
+            ),
+            DeclareLaunchArgument(
+                "simulated_lidar_output_topic",
+                default_value="/gen0_mapping/simulated_front3d/lidar/points",
+                description="Output topic for the OBJ-based simulated LiDAR fallback.",
+            ),
+            DeclareLaunchArgument(
                 "world_obj_path",
                 default_value=default_world_obj,
                 description="World OBJ used by the simulated lidar source.",
@@ -52,7 +64,7 @@ def generate_launch_description():
                     {
                         "use_sim_time": use_sim_time,
                         "world_obj_path": world_obj_path,
-                        "output_topic": "/gen0_model/front3d/lidar/points",
+                        "output_topic": simulated_lidar_output_topic,
                         "pose_topic": "/gen0_model/links/poses",
                         "pose_index": 15,
                         "frame_id": "front_3d_lidar_link",
@@ -79,7 +91,13 @@ def generate_launch_description():
                 executable="gen0_3d_mapper",
                 name="gen0_3d_mapper",
                 output="screen",
-                parameters=[params_file, {"use_sim_time": use_sim_time}],
+                parameters=[
+                    params_file,
+                    {
+                        "use_sim_time": use_sim_time,
+                        "cloud_topic": front3d_source_topic,
+                    },
+                ],
             ),
         ]
     )

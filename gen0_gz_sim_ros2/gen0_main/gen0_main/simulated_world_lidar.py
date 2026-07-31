@@ -66,7 +66,9 @@ class SimulatedWorldLidar(Node):
         super().__init__("simulated_world_lidar")
 
         self.declare_parameter("world_obj_path", "")
-        self.declare_parameter("output_topic", "/gen0_model/front3d/lidar/points")
+        self.declare_parameter(
+            "output_topic", "/gen0_mapping/simulated_front3d/lidar/points"
+        )
         self.declare_parameter("pose_topic", "/gen0_model/links/poses")
         self.declare_parameter("pose_index", 15)
         self.declare_parameter("frame_id", "front_3d_lidar_link")

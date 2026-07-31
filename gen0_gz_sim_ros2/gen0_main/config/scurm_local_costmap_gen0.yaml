@@ -14,23 +14,22 @@ costmap:
       footprint: "[[2.2, 1.1], [2.2, -1.1], [-2.2, -1.1], [-2.2, 1.1]]"
       footprint_padding: 0.03
       track_unknown_space: false
-      plugins: ["local_obstacle_layer", "local_inflation_layer"]
+      plugins: ["local_obstacle_layer", "inflation_layer"]
 
-      local_inflation_layer:
+      inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 3.0
-        inflation_radius: 1.2
+        cost_scaling_factor: 5.0
+        inflation_radius: 0.75
 
       local_obstacle_layer:
         plugin: "costmap_intensity::ObstacleLayerIntensity"
         enabled: true
         footprint_clearing_enabled: true
         max_obstacle_intensity: 2.0
-        min_obstacle_intensity: 0.15
+        min_obstacle_intensity: 0.3
         observation_sources: pointcloud
         pointcloud:
-          topic: /gen0_mapping/terrain_map_ext
-          sensor_frame: base_link
+          topic: /gen0_mapping/terrain_map
           observation_persistence: 0.2
           expected_update_rate: 0.0
           max_obstacle_height: 2.0
@@ -39,7 +38,7 @@ costmap:
           obstacle_min_range: 0.15
           raytrace_max_range: 8.0
           raytrace_min_range: 0.1
-          clearing: true
+          clearing: false
           marking: true
           data_type: "PointCloud2"
 

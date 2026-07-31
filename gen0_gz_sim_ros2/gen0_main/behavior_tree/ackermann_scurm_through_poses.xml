@@ -1,0 +1,35 @@
+<!--
+  SCURM-style NavigateThroughPoses tree adapted for the Gen0 Ackermann vehicle.
+-->
+<root main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <RecoveryNode number_of_retries="4" name="NavigateRecovery">
+      <PipelineSequence name="NavigateWithReplanning">
+        <RateController hz="0.5">
+          <RecoveryNode number_of_retries="1" name="ComputePathThroughPoses">
+            <Sequence name="ComputeAndSmoothPath">
+              <ReactiveSequence>
+                <RemovePassedGoals input_goals="{goals}" output_goals="{goals}" radius="0.7"/>
+                <ComputePathThroughPoses goals="{goals}" path="{path}" planner_id="GridBased"/>
+              </ReactiveSequence>
+              <SmoothPath unsmoothed_path="{path}" smoothed_path="{smoothed_path}"/>
+            </Sequence>
+            <ClearEntireCostmap name="ClearGlobalCostmap-Context" service_name="global_costmap/clear_entirely_global_costmap"/>
+          </RecoveryNode>
+        </RateController>
+        <RecoveryNode number_of_retries="1" name="FollowPath">
+          <FollowPath path="{smoothed_path}" controller_id="FollowPath"/>
+          <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
+        </RecoveryNode>
+      </PipelineSequence>
+      <ReactiveFallback name="RecoveryFallback">
+        <GoalUpdated/>
+        <RoundRobin name="AckermannRecoveryActions">
+          <BackUp name="FreeSpaceRecoveryShort" backup_dist="0.35" backup_speed="0.10" time_allowance="7"/>
+          <BackUp name="FreeSpaceRecoveryLong" backup_dist="0.55" backup_speed="0.10" time_allowance="9"/>
+          <Wait name="WaitRecovery" wait_duration="1"/>
+        </RoundRobin>
+      </ReactiveFallback>
+    </RecoveryNode>
+  </BehaviorTree>
+</root>
