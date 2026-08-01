@@ -14,6 +14,8 @@ VEHICLE_MAX_ANGULAR_Z="${GEN0_VEHICLE_MAX_ANGULAR_Z:-0.12}"
 VEHICLE_FRONT_STOP_ENABLED="${GEN0_VEHICLE_FRONT_STOP_ENABLED:-false}"
 VEHICLE_FRONT_STOP_DISTANCE="${GEN0_VEHICLE_FRONT_STOP_DISTANCE:-0.65}"
 VEHICLE_FRONT_SLOW_DISTANCE="${GEN0_VEHICLE_FRONT_SLOW_DISTANCE:-1.5}"
+NAV2_CONTROLLER_FREQUENCY="${GEN0_NAV2_CONTROLLER_FREQUENCY:-80.0}"
+NAV2_SMOOTHING_FREQUENCY="${GEN0_NAV2_SMOOTHING_FREQUENCY:-$NAV2_CONTROLLER_FREQUENCY}"
 ALLOW_GROUND_TRUTH_LOCALIZATION="${GEN0_NAV2_ALLOW_GROUND_TRUTH_LOCALIZATION:-false}"
 ODOM_WAIT_TIMEOUT="${GEN0_NAV2_ODOM_WAIT_TIMEOUT:-20}"
 TF_WAIT_TIMEOUT="${GEN0_NAV2_TF_WAIT_TIMEOUT:-10}"
@@ -295,10 +297,12 @@ if [[ "$MAP_SOURCE" == "projected_map" ]]; then
   fi
 fi
 
-log "Starting Gen0 Nav2: profile=$PROFILE, map_source=$MAP_SOURCE, map=$MAP_YAML, params=$PARAMS_FILE, odom_topic=$FAST_LIO_ODOM_TOPIC, localization_mode=$LOCALIZATION_MODE, start_vehicle_interface=$START_VEHICLE_INTERFACE, costmap_source=$COSTMAP_SOURCE, vehicle_angular_z_sign=$VEHICLE_ANGULAR_Z_SIGN, vehicle_max_forward_speed=$VEHICLE_MAX_FORWARD_SPEED"
+log "Starting Gen0 Nav2: profile=$PROFILE, map_source=$MAP_SOURCE, map=$MAP_YAML, params=$PARAMS_FILE, odom_topic=$FAST_LIO_ODOM_TOPIC, localization_mode=$LOCALIZATION_MODE, start_vehicle_interface=$START_VEHICLE_INTERFACE, costmap_source=$COSTMAP_SOURCE, controller_frequency=$NAV2_CONTROLLER_FREQUENCY, smoothing_frequency=$NAV2_SMOOTHING_FREQUENCY, vehicle_angular_z_sign=$VEHICLE_ANGULAR_Z_SIGN, vehicle_max_forward_speed=$VEHICLE_MAX_FORWARD_SPEED"
 exec ros2 launch gen0_main gen0_navigation.launch.py \
   params_file:="$PARAMS_FILE" \
   use_respawn:="$USE_RESPAWN" \
+  nav2_controller_frequency:="$NAV2_CONTROLLER_FREQUENCY" \
+  nav2_smoothing_frequency:="$NAV2_SMOOTHING_FREQUENCY" \
   start_vehicle_interface:="$START_VEHICLE_INTERFACE" \
   vehicle_angular_z_sign:="$VEHICLE_ANGULAR_Z_SIGN" \
   vehicle_max_forward_speed:="$VEHICLE_MAX_FORWARD_SPEED" \

@@ -134,6 +134,8 @@ def generate_launch_description():
     map_yaml = LaunchConfiguration('map')
     use_respawn = LaunchConfiguration('use_respawn')
     log_level = LaunchConfiguration('log_level')
+    nav2_controller_frequency = LaunchConfiguration('nav2_controller_frequency')
+    nav2_smoothing_frequency = LaunchConfiguration('nav2_smoothing_frequency')
     start_vehicle_interface = LaunchConfiguration('start_vehicle_interface')
     vehicle_angular_z_sign = LaunchConfiguration('vehicle_angular_z_sign')
     vehicle_max_forward_speed = LaunchConfiguration('vehicle_max_forward_speed')
@@ -184,6 +186,8 @@ def generate_launch_description():
                 'autostart': autostart,
                 'yaml_filename': map_yaml,
                 'odom_topic': odom_topic,
+                'controller_frequency': nav2_controller_frequency,
+                'smoothing_frequency': nav2_smoothing_frequency,
                 'default_nav_to_pose_bt_xml': default_nav_to_pose_bt_xml,
                 'default_nav_through_poses_bt_xml': default_nav_through_poses_bt_xml,
             },
@@ -230,6 +234,16 @@ def generate_launch_description():
         'log_level',
         default_value='info',
         description='ROS log level.',
+    )
+    declare_nav2_controller_frequency = DeclareLaunchArgument(
+        'nav2_controller_frequency',
+        default_value='80.0',
+        description='Controller loop frequency. Keep 80.0 for SCURM parity; lower in simulation if MPPI misses its rate.',
+    )
+    declare_nav2_smoothing_frequency = DeclareLaunchArgument(
+        'nav2_smoothing_frequency',
+        default_value='80.0',
+        description='Velocity smoother frequency. Usually match nav2_controller_frequency.',
     )
     declare_start_vehicle_interface = DeclareLaunchArgument(
         'start_vehicle_interface',
@@ -511,6 +525,8 @@ def generate_launch_description():
         declare_autostart,
         declare_use_respawn,
         declare_log_level,
+        declare_nav2_controller_frequency,
+        declare_nav2_smoothing_frequency,
         declare_start_vehicle_interface,
         declare_vehicle_angular_z_sign,
         declare_vehicle_max_forward_speed,
