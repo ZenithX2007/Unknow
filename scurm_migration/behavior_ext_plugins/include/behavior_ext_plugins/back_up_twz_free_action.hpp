@@ -45,7 +45,7 @@ private:
   std::string service_name_;
   double twist_x_, twist_y_, twist_z_;
   double max_radius_, robot_radius_;
-  double max_angular_speed_;
+  double max_angular_speed_, min_turning_radius_;
   int free_threshold_;
   double cost_threshold_;
   bool visualization_, holonomic_motion_;

@@ -135,6 +135,7 @@ def generate_launch_description():
     use_respawn = LaunchConfiguration('use_respawn')
     log_level = LaunchConfiguration('log_level')
     nav2_controller_frequency = LaunchConfiguration('nav2_controller_frequency')
+    nav2_model_dt = LaunchConfiguration('nav2_model_dt')
     nav2_smoothing_frequency = LaunchConfiguration('nav2_smoothing_frequency')
     start_vehicle_interface = LaunchConfiguration('start_vehicle_interface')
     vehicle_angular_z_sign = LaunchConfiguration('vehicle_angular_z_sign')
@@ -187,6 +188,7 @@ def generate_launch_description():
                 'yaml_filename': map_yaml,
                 'odom_topic': odom_topic,
                 'controller_frequency': nav2_controller_frequency,
+                'model_dt': nav2_model_dt,
                 'smoothing_frequency': nav2_smoothing_frequency,
                 'default_nav_to_pose_bt_xml': default_nav_to_pose_bt_xml,
                 'default_nav_through_poses_bt_xml': default_nav_through_poses_bt_xml,
@@ -239,6 +241,11 @@ def generate_launch_description():
         'nav2_controller_frequency',
         default_value='80.0',
         description='Controller loop frequency. Keep 80.0 for SCURM parity; lower in simulation if MPPI misses its rate.',
+    )
+    declare_nav2_model_dt = DeclareLaunchArgument(
+        'nav2_model_dt',
+        default_value='0.014',
+        description='MPPI model timestep. It must be at least the controller period.',
     )
     declare_nav2_smoothing_frequency = DeclareLaunchArgument(
         'nav2_smoothing_frequency',
@@ -526,6 +533,7 @@ def generate_launch_description():
         declare_use_respawn,
         declare_log_level,
         declare_nav2_controller_frequency,
+        declare_nav2_model_dt,
         declare_nav2_smoothing_frequency,
         declare_start_vehicle_interface,
         declare_vehicle_angular_z_sign,

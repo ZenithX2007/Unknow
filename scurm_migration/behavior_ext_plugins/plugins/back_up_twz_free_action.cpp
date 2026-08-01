@@ -99,6 +99,16 @@ namespace nav2_behaviors
       node,
       prefix + "max_angular_speed", rclcpp::ParameterValue(0.25));
     node->get_parameter(prefix + "max_angular_speed", max_angular_speed_);
+
+    nav2_util::declare_parameter_if_not_declared(
+      node,
+      prefix + "min_turning_radius", rclcpp::ParameterValue(4.5));
+    node->get_parameter(prefix + "min_turning_radius", min_turning_radius_);
+    if (min_turning_radius_ < 0.0)
+    {
+      RCLCPP_WARN(node->get_logger(), "min_turning_radius is negative. Disabling curvature limiting.");
+      min_turning_radius_ = 0.0;
+    }
     
     costmap_client_ = node->create_client<nav2_msgs::srv::GetCostmap>(service_name_);
     marker_pub_ = node->create_publisher<visualization_msgs::msg::MarkerArray>("back_up_twz_free_markers", 1);
@@ -286,6 +296,21 @@ namespace nav2_behaviors
       const double movement_heading = free_space_is_ahead ?
         angle_diff : normalize_angle(angle_diff - std::copysign(M_PI, angle_diff));
       twist_z_ = clamp(movement_heading, -max_angular_speed_, max_angular_speed_);
+      if (min_turning_radius_ > 0.0)
+      {
+        const double feasible_angular_speed =
+          std::min(max_angular_speed_, std::abs(twist_x_) / min_turning_radius_);
+        const double requested_twist_z = twist_z_;
+        twist_z_ = clamp(twist_z_, -feasible_angular_speed, feasible_angular_speed);
+        if (std::abs(requested_twist_z) > feasible_angular_speed + 1e-6)
+        {
+          RCLCPP_WARN(
+            node->get_logger(),
+            "limiting recovery angular speed from %.3f to %.3f rad/s for "
+            "min_turning_radius %.2f m at speed %.2f m/s",
+            requested_twist_z, twist_z_, min_turning_radius_, twist_x_);
+        }
+      }
     }
     command_x_ = command->target.x;
     command_time_allowance_ = command->time_allowance;
