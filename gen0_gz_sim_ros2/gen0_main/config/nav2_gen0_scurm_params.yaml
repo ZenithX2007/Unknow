@@ -69,11 +69,11 @@ bt_navigator_navigate_to_pose_rclcpp_node:
 controller_server:
   ros__parameters:
     use_sim_time: true
-    controller_frequency: 20.0
+    controller_frequency: 80.0
     odom_topic: /odom
-    min_x_velocity_threshold: 0.02
-    min_y_velocity_threshold: 0.5
-    min_theta_velocity_threshold: 0.01
+    min_x_velocity_threshold: 0.05
+    min_y_velocity_threshold: 0.05
+    min_theta_velocity_threshold: 0.1
     failure_tolerance: 1.0
     progress_checker_plugin: progress_checker
     goal_checker_plugins: ["general_goal_checker"]
@@ -81,30 +81,33 @@ controller_server:
 
     progress_checker:
       plugin: nav2_controller::SimpleProgressChecker
-      required_movement_radius: 0.25
-      movement_time_allowance: 8.0
+      required_movement_radius: 0.5
+      movement_time_allowance: 3.0
 
     general_goal_checker:
       stateful: false
       plugin: nav2_controller::SimpleGoalChecker
-      xy_goal_tolerance: 0.35
-      yaw_goal_tolerance: 6.28
+      xy_goal_tolerance: 0.3
+      yaw_goal_tolerance: 3.14
 
     FollowPath:
       plugin: nav2_mppi_controller::MPPIController
-      time_steps: 90
-      model_dt: 0.05
+      adjustThre: 14.0
+      minAngleDiff: 365.0
+      adjustHeadingSpeed: 0.2
+      time_steps: 180
+      model_dt: 0.014
       batch_size: 1500
       iteration_count: 1
       temperature: 0.3
-      gamma: 0.05
-      vx_std: 0.20
+      gamma: 0.07
+      vx_std: 0.78
       vy_std: 0.0
-      wz_std: 0.06
+      wz_std: 0.1
       vx_max: 0.45
       vx_min: -0.25
       vy_max: 0.0
-      wz_max: 0.12
+      wz_max: 0.1
       retry_attempt_limit: 3
       motion_model: Ackermann
       AckermannConstraints:
@@ -118,58 +121,60 @@ controller_server:
         trajectory_step: 5
         time_step: 3
       critics:
-        - ConstraintCritic
         - ObstaclesCritic
         - GoalCritic
         - PathAlignCritic
         - PathFollowCritic
-        - PreferForwardCritic
-        - VelocityDeadbandCritic
-      ConstraintCritic:
-        enabled: true
-        cost_power: 1
-        cost_weight: 5.0
-      ObstaclesCritic:
-        enabled: true
-        cost_power: 1
-        repulsion_weight: 0.15
-        critical_weight: 20.0
-        consider_footprint: false
-        collision_cost: 80.0
-        collision_margin_distance: 0.05
-        near_goal_distance: 0.5
-        inflation_radius: 1.10
-        cost_scaling_factor: 5.0
+        - TwirlingCritic
       GoalCritic:
         enabled: true
         cost_power: 1
         cost_weight: 5.0
-        threshold_to_consider: 1.2
+        threshold_to_consider: 0.7
+      PreferForwardCritic:
+        enabled: false
+        cost_power: 1
+        cost_weight: 5.0
+        threshold_to_consider: 0.7
+      ObstaclesCritic:
+        enabled: true
+        cost_power: 1
+        repulsion_weight: 0.2
+        critical_weight: 20.0
+        consider_footprint: false
+        collision_cost: 40.0
+        collision_margin_distance: 0.05
+        near_goal_distance: 0.1
+        inflation_radius: 0.4
+        cost_scaling_factor: 10.0
+        inflation_layer_name: ["local_inflation_layer", "global_inflation_layer"]
       PathAlignCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 18.0
-        max_path_occupancy_ratio: 0.01
+        cost_weight: 20.0
+        max_path_occupancy_ratio: 0.001
         trajectory_point_step: 3
-        threshold_to_consider: 0.8
-        offset_from_furthest: 8
+        threshold_to_consider: 0.7
+        offset_from_furthest: 2
         use_path_orientations: false
       PathFollowCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 8.0
-        offset_from_furthest: 8
-        threshold_to_consider: 1.2
-      PreferForwardCritic:
-        enabled: true
+        cost_weight: 5.0
+        offset_from_furthest: 10
+        threshold_to_consider: 0.7
+      PathAngleCritic:
+        enabled: false
         cost_power: 1
         cost_weight: 2.0
-        threshold_to_consider: 0.8
-      VelocityDeadbandCritic:
+        offset_from_furthest: 4
+        threshold_to_consider: 0.5
+        max_angle_to_furthest: 1.0
+        mode: 0
+      TwirlingCritic:
         enabled: true
-        cost_power: 1
-        cost_weight: 30.0
-        deadband_velocities: [0.03, 0.0, 0.02]
+        twirling_cost_power: 1
+        twirling_cost_weight: 10.0
 
 local_costmap:
   local_costmap:
@@ -181,13 +186,17 @@ local_costmap:
       robot_base_frame: base_link
       transform_tolerance: 0.5
       rolling_window: true
-      width: 12
-      height: 12
+      width: 7
+      height: 7
       resolution: 0.05
-      footprint: "[[2.05, 0.95], [2.05, -0.95], [-1.45, -0.95], [-1.45, 0.95]]"
-      footprint_padding: 0.05
+      robot_radius: 0.35
       track_unknown_space: false
-      plugins: ["local_obstacle_layer", "inflation_layer"]
+      plugins: ["local_obstacle_layer", "local_inflation_layer"]
+
+      local_inflation_layer:
+        plugin: nav2_costmap_2d::InflationLayer
+        cost_scaling_factor: 5.0
+        inflation_radius: 0.4
 
       local_obstacle_layer:
         plugin: costmap_intensity::ObstacleLayerIntensity
@@ -206,14 +215,9 @@ local_costmap:
           obstacle_min_range: 0.15
           raytrace_max_range: 8.0
           raytrace_min_range: 0.1
-          clearing: false
+          clearing: true
           marking: true
           data_type: PointCloud2
-
-      inflation_layer:
-        plugin: nav2_costmap_2d::InflationLayer
-        cost_scaling_factor: 5.0
-        inflation_radius: 1.10
 
       always_send_full_costmap: true
 
@@ -228,8 +232,7 @@ global_costmap:
       transform_tolerance: 0.5
       resolution: 0.1
       track_unknown_space: true
-      footprint: "[[2.05, 0.95], [2.05, -0.95], [-1.45, -0.95], [-1.45, 0.95]]"
-      footprint_padding: 0.05
+      robot_radius: 0.35
       plugins: ["static_layer", "global_inflation_layer"]
 
       static_layer:
@@ -239,7 +242,7 @@ global_costmap:
       global_inflation_layer:
         plugin: nav2_costmap_2d::InflationLayer
         cost_scaling_factor: 10.0
-        inflation_radius: 1.10
+        inflation_radius: 0.5
 
       always_send_full_costmap: true
 
@@ -338,14 +341,14 @@ waypoint_follower:
 velocity_smoother:
   ros__parameters:
     use_sim_time: true
-    smoothing_frequency: 40.0
+    smoothing_frequency: 80.0
     scale_velocities: false
     feedback: OPEN_LOOP
-    max_velocity: [0.45, 0.0, 0.12]
-    min_velocity: [-0.25, 0.0, -0.12]
-    max_accel: [0.45, 0.0, 0.4]
-    max_decel: [-0.70, 0.0, -0.4]
+    max_velocity: [0.45, 0.0, 0.1]
+    min_velocity: [-0.25, 0.0, -0.1]
+    max_accel: [0.45, 0.0, 1.0]
+    max_decel: [-0.70, 0.0, -1.0]
     odom_topic: /odom
     odom_duration: 0.1
-    deadband_velocity: [0.02, 0.0, 0.01]
+    deadband_velocity: [0.05, 0.0, 0.05]
     velocity_timeout: 1.0

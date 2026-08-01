@@ -18,6 +18,9 @@ class VehicleMovementInterface(Node):
         self.declare_parameter('max_forward_speed', 0.65)
         self.declare_parameter('max_reverse_speed', 0.25)
         self.declare_parameter('max_angular_z', 0.12)
+        self.declare_parameter('angular_deadband', 0.02)
+        self.declare_parameter('steering_rate_limit', 0.45)
+        self.declare_parameter('steering_sign_flip_deadband', 0.04)
         self.declare_parameter('warn_on_curvature_clamp', True)
         self.declare_parameter('curvature_clamp_log_period', 2.0)
         self.declare_parameter('front_stop_enabled', False)
@@ -35,6 +38,15 @@ class VehicleMovementInterface(Node):
         self.max_forward_speed = float(self.get_parameter('max_forward_speed').value)
         self.max_reverse_speed = float(self.get_parameter('max_reverse_speed').value)
         self.max_angular_z = float(self.get_parameter('max_angular_z').value)
+        self.angular_deadband = max(0.0, float(self.get_parameter('angular_deadband').value))
+        self.steering_rate_limit = max(
+            0.0,
+            float(self.get_parameter('steering_rate_limit').value),
+        )
+        self.steering_sign_flip_deadband = max(
+            0.0,
+            float(self.get_parameter('steering_sign_flip_deadband').value),
+        )
         self.warn_on_curvature_clamp = bool(
             self.get_parameter('warn_on_curvature_clamp').value
         )
@@ -75,6 +87,8 @@ class VehicleMovementInterface(Node):
             f'Listening for Twist commands on {cmd_vel_topic}, '
             f'angular_z_sign={self.angular_z_sign:.1f}, '
             f'max_forward={self.max_forward_speed:.2f}m/s, '
+            f'angular_deadband={self.angular_deadband:.3f}rad/s, '
+            f'steering_rate_limit={self.steering_rate_limit:.2f}rad/s, '
             f'front_stop={self.front_stop_enabled}, '
             f'stop_distance={self.front_stop_distance:.2f}m, '
             f'slow_distance={self.front_slow_distance:.2f}m'
@@ -101,6 +115,7 @@ class VehicleMovementInterface(Node):
         self.fr_scan_time = None
         self.last_safety_status = None
         self.last_curvature_clamp_log_time = None
+        self.last_steering_update_time = None
 
         if self.front_stop_enabled:
             self.create_subscription(
@@ -126,6 +141,8 @@ class VehicleMovementInterface(Node):
             -self.max_angular_z,
             self.max_angular_z,
         )
+        if abs(angular_velocity) < self.angular_deadband:
+            angular_velocity = 0.0
         linear_velocity, angular_velocity = self.apply_front_safety(
             linear_velocity,
             angular_velocity,
@@ -152,8 +169,10 @@ class VehicleMovementInterface(Node):
                 turning_radius = max(abs(turning_radius), self.min_turning_radius) * math.copysign(1, turning_radius)
         else:
             turning_radius = float('inf')
-        
-        self.delta_f = math.atan(self.wheel_base / (2 * turning_radius))
+
+        target_delta_f = math.atan(self.wheel_base / (2 * turning_radius))
+        target_delta_f = self.apply_steering_hysteresis(target_delta_f)
+        self.delta_f = self.limit_steering_rate(target_delta_f)
         self.delta_r = -self.delta_f  # rear always the opposite sign but same value
 
         # Joint velocity calculations
@@ -170,6 +189,34 @@ class VehicleMovementInterface(Node):
         self.speed_back_right_msg.data = self.back_right_joint_speed
         self.last_cmd_time = self.get_clock().now()
         self.timed_out = False
+
+    def apply_steering_hysteresis(self, target_delta_f):
+        if (
+            self.delta_f * target_delta_f < 0.0
+            and abs(target_delta_f) < self.steering_sign_flip_deadband
+        ):
+            return 0.0
+        return target_delta_f
+
+    def limit_steering_rate(self, target_delta_f):
+        now = self.get_clock().now()
+        if self.last_steering_update_time is None:
+            dt = 0.02
+        else:
+            dt = (now - self.last_steering_update_time).nanoseconds * 1e-9
+            dt = min(max(dt, 0.0), 0.1)
+        self.last_steering_update_time = now
+
+        if self.steering_rate_limit <= 0.0:
+            return target_delta_f
+
+        max_step = self.steering_rate_limit * dt
+        delta = self.clamp(
+            target_delta_f - self.delta_f,
+            -max_step,
+            max_step,
+        )
+        return self.delta_f + delta
 
     def fl_scan_callback(self, msg):
         self.fl_scan = msg
@@ -310,12 +357,15 @@ class VehicleMovementInterface(Node):
         return elapsed > Duration(seconds=self.cmd_vel_timeout)
 
     def stop_vehicle(self, log=True):
+        self.delta_f = 0.0
+        self.delta_r = 0.0
         self.front_left_steering_msg.data = 0.0
         self.front_right_steering_msg.data = 0.0
         self.back_left_steering_msg.data = 0.0
         self.back_right_steering_msg.data = 0.0
         self.speed_back_left_msg.data = 0.0
         self.speed_back_right_msg.data = 0.0
+        self.last_steering_update_time = None
         if log and not self.timed_out:
             self.get_logger().warn(
                 f'No Twist received for {self.cmd_vel_timeout:.2f}s; stopping vehicle'

@@ -61,6 +61,7 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
 
     if costmap_source == 'scurm_terrain':
         global_track_unknown = 'false' if map_source == 'projected_map' else 'true'
+        pointcloud_clearing = 'false' if map_source == 'projected_map' else 'true'
         overlay = f"""local_costmap:
   local_costmap:
     ros__parameters:
@@ -69,11 +70,11 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
       publish_frequency: 20.0
       global_frame: map
       track_unknown_space: false
-      plugins: ["local_obstacle_layer", "inflation_layer"]
-      inflation_layer:
+      plugins: ["local_obstacle_layer", "local_inflation_layer"]
+      local_inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 5.0
-        inflation_radius: 1.10
+        inflation_radius: 0.4
       local_obstacle_layer:
         plugin: "costmap_intensity::ObstacleLayerIntensity"
         enabled: true
@@ -91,7 +92,7 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
           obstacle_min_range: 0.15
           raytrace_max_range: 8.0
           raytrace_min_range: 0.1
-          clearing: false
+          clearing: {pointcloud_clearing}
           marking: true
           data_type: "PointCloud2"
 
@@ -106,7 +107,7 @@ global_costmap:
       global_inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 10.0
-        inflation_radius: 1.10
+        inflation_radius: 0.5
 """
     else:
         overlay = """local_costmap:
