@@ -131,6 +131,27 @@ wait_for_topic_once() {
   timeout "$wait_timeout" ros2 topic echo --once "$topic" --field header >/dev/null 2>&1
 }
 
+print_3d_slam_start_hint() {
+  if [[ "$PROFILE" == "scurm_gen0" && "$LOCALIZATION_MODE" == "odom_only" ]]; then
+    printf 'Start the my_map 3D SLAM/Gazebo stack first and wait for projected_map + FAST-LIO odometry:\n\n' >&2
+    printf '  GEN0_WORKSPACE=%q \\\n' "$WORKSPACE" >&2
+    printf '  GEN0_WORLD=%q \\\n' "$WORLD" >&2
+    printf '  GEN0_RELOCALIZATION=false \\\n' >&2
+    printf '  GEN0_MAPPING_DRIVE=false \\\n' >&2
+    printf '  GEN0_TRASH_SCENARIO=small_trash_dense \\\n' >&2
+    printf '  GEN0_TRASH_CLEANUP=false \\\n' >&2
+    printf '  ./run_gen0_3d_slam.sh\n\n' >&2
+    printf 'Then start Nav2 from a second terminal.\n' >&2
+  else
+    printf 'Start relocalized 3D SLAM first and wait for odometry:\n\n' >&2
+    printf '  GEN0_WORKSPACE=%q \\\n' "$WORKSPACE" >&2
+    printf '  GEN0_RELOCALIZATION=true \\\n' >&2
+    printf '  GEN0_PRIOR_MAP_PATH=/tmp/my_map_prior.pcd \\\n' >&2
+    printf '  GEN0_MAPPING_DRIVE=false \\\n' >&2
+    printf '  ./run_gen0_3d_slam.sh\n\n' >&2
+  fi
+}
+
 check_nav_pose_sane() {
   local target_frame="$1"
   local source_frame="$2"
@@ -241,12 +262,8 @@ fi
 
 log "Waiting for FAST-LIO odometry on $FAST_LIO_ODOM_TOPIC (timeout=${ODOM_WAIT_TIMEOUT}s)"
 if ! timeout "$ODOM_WAIT_TIMEOUT" ros2 topic echo --once "$FAST_LIO_ODOM_TOPIC" --field header >/dev/null 2>&1; then
-  printf 'Timed out waiting for %s. Start relocalized 3D SLAM first and wait for odometry:\n\n' "$FAST_LIO_ODOM_TOPIC" >&2
-  printf '  GEN0_WORKSPACE=%q \\\n' "$WORKSPACE" >&2
-  printf '  GEN0_RELOCALIZATION=true \\\n' >&2
-  printf '  GEN0_PRIOR_MAP_PATH=/tmp/my_map_prior.pcd \\\n' >&2
-  printf '  GEN0_MAPPING_DRIVE=false \\\n' >&2
-  printf '  ./run_gen0_3d_slam.sh\n\n' >&2
+  printf 'Timed out waiting for %s.\n\n' "$FAST_LIO_ODOM_TOPIC" >&2
+  print_3d_slam_start_hint
   exit 1
 fi
 
