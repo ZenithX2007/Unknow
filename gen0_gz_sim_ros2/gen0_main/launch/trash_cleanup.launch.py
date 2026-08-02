@@ -53,6 +53,11 @@ def generate_launch_description():
                 description="Inset applied to the vehicle footprint before coverage testing.",
             ),
             DeclareLaunchArgument(
+                "use_mesh_visual_center",
+                default_value="true",
+                description="Use the exported mesh visual center instead of the raw model pose.",
+            ),
+            DeclareLaunchArgument(
                 "debug_item",
                 default_value="",
                 description="Trash item name to log coverage diagnostics for.",
@@ -89,6 +94,9 @@ def generate_launch_description():
                             "vehicle_center_offset_y"
                         ),
                         "coverage_margin": LaunchConfiguration("coverage_margin"),
+                        "use_mesh_visual_center": LaunchConfiguration(
+                            "use_mesh_visual_center"
+                        ),
                         "debug_item": LaunchConfiguration("debug_item"),
                         "debug_period": LaunchConfiguration("debug_period"),
                     }
