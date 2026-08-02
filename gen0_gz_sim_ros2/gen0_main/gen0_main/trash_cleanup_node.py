@@ -7,12 +7,15 @@ import os
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
+import xml.etree.ElementTree as ET
 
 from ament_index_python.packages import get_package_share_directory
 from nav_msgs.msg import Odometry
 import rclpy
 from rcl_interfaces.msg import SetParametersResult
 from rclpy.node import Node
+
+from .trash_model_geometry import load_trash_model_geometry
 
 
 TRASH_FOOTPRINTS = {
@@ -32,6 +35,15 @@ def float_parameter(node, name, default):
     return float(value)
 
 
+def bool_parameter(node, name, default):
+    value = node.get_parameter(name).value
+    if value is None:
+        return bool(default)
+    if isinstance(value, bool):
+        return value
+    return str(value).strip().lower() not in {"0", "false", "off", "no"}
+
+
 @dataclass(frozen=True)
 class TrashItem:
     name: str
@@ -41,6 +53,10 @@ class TrashItem:
     yaw: float
     length: float
     width: float
+    model_x: float
+    model_y: float
+    visual_offset_x: float
+    visual_offset_y: float
 
 
 class TrashCleanupNode(Node):
@@ -56,6 +72,7 @@ class TrashCleanupNode(Node):
         self.declare_parameter("vehicle_center_offset_x")
         self.declare_parameter("vehicle_center_offset_y")
         self.declare_parameter("coverage_margin")
+        self.declare_parameter("use_mesh_visual_center", True)
         self.declare_parameter("debug_item", "")
         self.declare_parameter("debug_period", 1.0)
         self.declare_parameter("retry_period", 1.0)
@@ -67,12 +84,15 @@ class TrashCleanupNode(Node):
         self.vehicle_length = float_parameter(self, "vehicle_length", 3.50)
         self.vehicle_width = float_parameter(self, "vehicle_width", 1.80)
         self.vehicle_center_offset_x = float_parameter(
-            self, "vehicle_center_offset_x", 0.25
+            self, "vehicle_center_offset_x", 0.0
         )
         self.vehicle_center_offset_y = float_parameter(
-            self, "vehicle_center_offset_y", -0.25
+            self, "vehicle_center_offset_y", 0.0
         )
         self.coverage_margin = float_parameter(self, "coverage_margin", 0.0)
+        self.use_mesh_visual_center = bool_parameter(
+            self, "use_mesh_visual_center", True
+        )
         self.debug_item = str(self.get_parameter("debug_item").value)
         self.debug_period = float(self.get_parameter("debug_period").value)
         self.retry_period = float(self.get_parameter("retry_period").value)
@@ -80,6 +100,8 @@ class TrashCleanupNode(Node):
         odom_topic = self.get_parameter("odom_topic").value
 
         self.update_vehicle_footprint()
+        self.package_share = Path(get_package_share_directory("gen0_main"))
+        self.model_geometry_offsets = {}
         self.remaining = self.load_trash_items()
         self.last_attempt = {}
         self.last_debug_time = 0.0
@@ -94,6 +116,7 @@ class TrashCleanupNode(Node):
             f"odom_center_offset=({self.vehicle_center_offset_x:.2f}, "
             f"{self.vehicle_center_offset_y:.2f}) m; "
             f"coverage_margin={self.coverage_margin:.2f} m; "
+            f"mesh_visual_center={self.use_mesh_visual_center}; "
             f"offset axes: +x forward, +y left"
         )
 
@@ -117,6 +140,10 @@ class TrashCleanupNode(Node):
                 self.vehicle_center_offset_y = float(parameter.value)
             elif parameter.name == "coverage_margin":
                 self.coverage_margin = float(parameter.value)
+            elif parameter.name == "use_mesh_visual_center":
+                self.get_logger().warning(
+                    "use_mesh_visual_center is startup-only; restart the node to change it"
+                )
             elif parameter.name == "debug_item":
                 self.debug_item = str(parameter.value)
             elif parameter.name == "debug_period":
@@ -142,9 +169,8 @@ class TrashCleanupNode(Node):
         return SetParametersResult(successful=True)
 
     def load_trash_items(self):
-        package_share = Path(get_package_share_directory("gen0_main"))
         scenario_path = (
-            package_share
+            self.package_share
             / "worlds"
             / "trash_scenarios"
             / self.world
@@ -174,17 +200,53 @@ class TrashCleanupNode(Node):
                     f"Skipping trash item without valid footprint: {item}"
                 )
                 continue
+            model_x = float(pose[0])
+            model_y = float(pose[1])
             yaw = float(pose[5]) if len(pose) >= 6 else 0.0
+            visual_offset_x, visual_offset_y = self.get_visual_offset(model)
+            visual_x, visual_y = offset_pose_xy(
+                model_x,
+                model_y,
+                yaw,
+                visual_offset_x,
+                visual_offset_y,
+            )
             items[name] = TrashItem(
                 name=name,
                 model=model,
-                x=float(pose[0]),
-                y=float(pose[1]),
+                x=visual_x,
+                y=visual_y,
                 yaw=yaw,
                 length=float(footprint[0]),
                 width=float(footprint[1]),
+                model_x=model_x,
+                model_y=model_y,
+                visual_offset_x=visual_offset_x,
+                visual_offset_y=visual_offset_y,
             )
         return items
+
+    def get_visual_offset(self, model):
+        if not self.use_mesh_visual_center:
+            return 0.0, 0.0
+        if model in self.model_geometry_offsets:
+            return self.model_geometry_offsets[model]
+
+        try:
+            geometry = load_trash_model_geometry(self.package_share, model)
+            offset = (geometry.center_offset_x, geometry.center_offset_y)
+            self.get_logger().info(
+                f"Trash model calibration {model}: "
+                f"visual_center_offset=({offset[0]:.3f}, {offset[1]:.3f}) m"
+            )
+        except (OSError, ValueError, ET.ParseError) as exc:
+            self.get_logger().warning(
+                f"Could not read visual center for {model}: {exc}; using (0, 0)"
+            )
+            offset = (0.0, 0.0)
+
+        self.model_geometry_offsets[model] = offset
+        return offset
 
     def odom_callback(self, msg):
         self.last_odom_msg = msg
@@ -344,6 +406,9 @@ class TrashCleanupNode(Node):
             f"odom=({odom_x:.2f}, {odom_y:.2f}); "
             f"cleanup_center=({vehicle_x:.2f}, {vehicle_y:.2f}); "
             f"yaw={vehicle_yaw:.3f}; "
+            f"trash_model_pose=({item.model_x:.2f}, {item.model_y:.2f}); "
+            f"visual_offset=({item.visual_offset_x:.2f}, "
+            f"{item.visual_offset_y:.2f}); "
             f"trash_center=({item.x:.2f}, {item.y:.2f}); "
             f"trash_local_center=({center_local_x:.2f}, {center_local_y:.2f}); "
             f"trash_local_x=[{min(local_x_values):.2f}, {max(local_x_values):.2f}], "
