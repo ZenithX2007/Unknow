@@ -39,18 +39,23 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument(
                 "vehicle_center_offset_x",
-                default_value="0.25",
+                default_value="0.0",
                 description="Forward x offset from odom pose to vehicle footprint center.",
             ),
             DeclareLaunchArgument(
                 "vehicle_center_offset_y",
-                default_value="-0.25",
+                default_value="0.0",
                 description="Left y offset from odom pose to vehicle footprint center.",
             ),
             DeclareLaunchArgument(
                 "coverage_margin",
                 default_value="0.0",
                 description="Inset applied to the vehicle footprint before coverage testing.",
+            ),
+            DeclareLaunchArgument(
+                "use_mesh_visual_center",
+                default_value="true",
+                description="Use the exported mesh visual center instead of the raw model pose.",
             ),
             DeclareLaunchArgument(
                 "debug_item",
@@ -89,6 +94,9 @@ def generate_launch_description():
                             "vehicle_center_offset_y"
                         ),
                         "coverage_margin": LaunchConfiguration("coverage_margin"),
+                        "use_mesh_visual_center": LaunchConfiguration(
+                            "use_mesh_visual_center"
+                        ),
                         "debug_item": LaunchConfiguration("debug_item"),
                         "debug_period": LaunchConfiguration("debug_period"),
                     }
