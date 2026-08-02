@@ -10,6 +10,7 @@ from pathlib import Path
 import xml.etree.ElementTree as ET
 
 from ament_index_python.packages import get_package_share_directory
+from geometry_msgs.msg import PoseArray
 from nav_msgs.msg import Odometry
 import rclpy
 from rcl_interfaces.msg import SetParametersResult
@@ -67,6 +68,8 @@ class TrashCleanupNode(Node):
         self.declare_parameter("trash_scenario", "small_trash")
         self.declare_parameter("gazebo_world_name", "default")
         self.declare_parameter("odom_topic", "/odom")
+        self.declare_parameter("vehicle_pose_topic", "/gen0_model/links/poses")
+        self.declare_parameter("vehicle_pose_index", 15)
         self.declare_parameter("vehicle_length")
         self.declare_parameter("vehicle_width")
         self.declare_parameter("vehicle_center_offset_x")
@@ -98,6 +101,9 @@ class TrashCleanupNode(Node):
         self.retry_period = float(self.get_parameter("retry_period").value)
         self.service_timeout_ms = int(self.get_parameter("service_timeout_ms").value)
         odom_topic = self.get_parameter("odom_topic").value
+        self.vehicle_pose_topic = str(self.get_parameter("vehicle_pose_topic").value)
+        self.vehicle_pose_index = int(self.get_parameter("vehicle_pose_index").value)
+        self.use_vehicle_pose_topic = bool(self.vehicle_pose_topic.strip())
 
         self.update_vehicle_footprint()
         self.package_share = Path(get_package_share_directory("gen0_main"))
@@ -106,8 +112,23 @@ class TrashCleanupNode(Node):
         self.last_attempt = {}
         self.last_debug_time = 0.0
         self.last_odom_msg = None
+        self.last_vehicle_pose_msg = None
         self.add_on_set_parameters_callback(self.on_parameter_update)
         self.create_subscription(Odometry, odom_topic, self.odom_callback, 20)
+        if self.use_vehicle_pose_topic:
+            self.create_subscription(
+                PoseArray,
+                self.vehicle_pose_topic,
+                self.vehicle_pose_callback,
+                20,
+            )
+
+        if self.use_vehicle_pose_topic:
+            pose_source = (
+                f"gazebo_pose={self.vehicle_pose_topic}[{self.vehicle_pose_index}]"
+            )
+        else:
+            pose_source = f"odom={odom_topic}"
 
         self.get_logger().info(
             f"Loaded {len(self.remaining)} trash items from "
@@ -117,6 +138,7 @@ class TrashCleanupNode(Node):
             f"{self.vehicle_center_offset_y:.2f}) m; "
             f"coverage_margin={self.coverage_margin:.2f} m; "
             f"mesh_visual_center={self.use_mesh_visual_center}; "
+            f"vehicle_pose_source={pose_source}; "
             f"offset axes: +x forward, +y left"
         )
 
@@ -144,6 +166,14 @@ class TrashCleanupNode(Node):
                 self.get_logger().warning(
                     "use_mesh_visual_center is startup-only; restart the node to change it"
                 )
+            elif parameter.name == "vehicle_pose_topic":
+                self.get_logger().warning(
+                    "vehicle_pose_topic is startup-only; restart the node to change it"
+                )
+            elif parameter.name == "vehicle_pose_index":
+                self.get_logger().warning(
+                    "vehicle_pose_index is startup-only; restart the node to change it"
+                )
             elif parameter.name == "debug_item":
                 self.debug_item = str(parameter.value)
             elif parameter.name == "debug_period":
@@ -160,7 +190,13 @@ class TrashCleanupNode(Node):
             f"coverage_margin={self.coverage_margin:.2f} m, "
             f"debug_item={self.debug_item or '<none>'}"
         )
-        if self.last_odom_msg is not None:
+        if self.last_vehicle_pose_msg is not None:
+            self.evaluate_vehicle_pose_msg(
+                self.last_vehicle_pose_msg,
+                force_attempt=True,
+                force_debug=True,
+            )
+        elif not self.use_vehicle_pose_topic and self.last_odom_msg is not None:
             self.evaluate_odom(
                 self.last_odom_msg,
                 force_attempt=True,
@@ -250,18 +286,59 @@ class TrashCleanupNode(Node):
 
     def odom_callback(self, msg):
         self.last_odom_msg = msg
+        if self.use_vehicle_pose_topic:
+            return
         self.evaluate_odom(msg)
 
     def evaluate_odom(self, msg, force_attempt=False, force_debug=False):
+        self.evaluate_pose(
+            msg.pose.pose.position.x,
+            msg.pose.pose.position.y,
+            msg.pose.pose.orientation,
+            "odom",
+            force_attempt,
+            force_debug,
+        )
+
+    def vehicle_pose_callback(self, msg):
+        self.last_vehicle_pose_msg = msg
+        self.evaluate_vehicle_pose_msg(msg)
+
+    def evaluate_vehicle_pose_msg(self, msg, force_attempt=False, force_debug=False):
+        if len(msg.poses) <= self.vehicle_pose_index:
+            self.get_logger().warning(
+                f"PoseArray has {len(msg.poses)} poses, cannot read index "
+                f"{self.vehicle_pose_index}",
+                throttle_duration_sec=2.0,
+            )
+            return
+
+        pose = msg.poses[self.vehicle_pose_index]
+        self.evaluate_pose(
+            pose.position.x,
+            pose.position.y,
+            pose.orientation,
+            "gazebo_pose",
+            force_attempt,
+            force_debug,
+        )
+
+    def evaluate_pose(
+        self,
+        pose_x,
+        pose_y,
+        orientation,
+        pose_source,
+        force_attempt=False,
+        force_debug=False,
+    ):
         if not self.remaining:
             return
 
-        odom_x = msg.pose.pose.position.x
-        odom_y = msg.pose.pose.position.y
-        vehicle_yaw = yaw_from_quaternion(msg.pose.pose.orientation)
+        vehicle_yaw = yaw_from_quaternion(orientation)
         vehicle_x, vehicle_y = offset_pose_xy(
-            odom_x,
-            odom_y,
+            pose_x,
+            pose_y,
             vehicle_yaw,
             self.vehicle_center_offset_x,
             self.vehicle_center_offset_y,
@@ -276,8 +353,9 @@ class TrashCleanupNode(Node):
                 name,
                 item,
                 covered,
-                odom_x,
-                odom_y,
+                pose_x,
+                pose_y,
+                pose_source,
                 vehicle_x,
                 vehicle_y,
                 vehicle_yaw,
@@ -330,8 +408,9 @@ class TrashCleanupNode(Node):
         name,
         item,
         covered,
-        odom_x,
-        odom_y,
+        pose_x,
+        pose_y,
+        pose_source,
         vehicle_x,
         vehicle_y,
         vehicle_yaw,
@@ -403,7 +482,7 @@ class TrashCleanupNode(Node):
 
         self.get_logger().info(
             f"debug {name}: covered={covered}; "
-            f"odom=({odom_x:.2f}, {odom_y:.2f}); "
+            f"{pose_source}=({pose_x:.2f}, {pose_y:.2f}); "
             f"cleanup_center=({vehicle_x:.2f}, {vehicle_y:.2f}); "
             f"yaw={vehicle_yaw:.3f}; "
             f"trash_model_pose=({item.model_x:.2f}, {item.model_y:.2f}); "
