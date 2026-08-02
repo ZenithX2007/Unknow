@@ -13,6 +13,8 @@ TRASH_VEHICLE_CENTER_OFFSET_X="${GEN0_TRASH_VEHICLE_CENTER_OFFSET_X:-0.0}"
 TRASH_VEHICLE_CENTER_OFFSET_Y="${GEN0_TRASH_VEHICLE_CENTER_OFFSET_Y:-0.0}"
 TRASH_COVERAGE_MARGIN="${GEN0_TRASH_COVERAGE_MARGIN:-0.0}"
 TRASH_USE_MESH_VISUAL_CENTER="${GEN0_TRASH_USE_MESH_VISUAL_CENTER:-true}"
+TRASH_VEHICLE_POSE_TOPIC="${GEN0_TRASH_VEHICLE_POSE_TOPIC-/gen0_model/links/poses}"
+TRASH_VEHICLE_POSE_INDEX="${GEN0_TRASH_VEHICLE_POSE_INDEX:-15}"
 TRASH_DEBUG_ITEM="${GEN0_TRASH_DEBUG_ITEM:-}"
 TRASH_DEBUG_PERIOD="${GEN0_TRASH_DEBUG_PERIOD:-1.0}"
 GPU_ADAPTER="${GEN0_GPU_ADAPTER:-NVIDIA}"
@@ -246,7 +248,7 @@ export IGN_PARTITION="$PARTITION"
 export GZ_PARTITION="$PARTITION"
 
 log "Workspace: $WORKSPACE"
-log "World: $WORLD, actors_scenario: $ACTORS_SCENARIO, trash_scenario=$TRASH_SCENARIO, trash_cleanup=$TRASH_CLEANUP, trash_vehicle=${TRASH_VEHICLE_LENGTH}x${TRASH_VEHICLE_WIDTH}, trash_center_offset=(${TRASH_VEHICLE_CENTER_OFFSET_X},${TRASH_VEHICLE_CENTER_OFFSET_Y}), coverage_margin=$TRASH_COVERAGE_MARGIN, mesh_visual_center=$TRASH_USE_MESH_VISUAL_CENTER, gazebo_gui=$GAZEBO_GUI, partition=$PARTITION"
+log "World: $WORLD, actors_scenario: $ACTORS_SCENARIO, trash_scenario=$TRASH_SCENARIO, trash_cleanup=$TRASH_CLEANUP, trash_vehicle=${TRASH_VEHICLE_LENGTH}x${TRASH_VEHICLE_WIDTH}, trash_center_offset=(${TRASH_VEHICLE_CENTER_OFFSET_X},${TRASH_VEHICLE_CENTER_OFFSET_Y}), coverage_margin=$TRASH_COVERAGE_MARGIN, mesh_visual_center=$TRASH_USE_MESH_VISUAL_CENTER, trash_vehicle_pose=${TRASH_VEHICLE_POSE_TOPIC:-<odom>}[$TRASH_VEHICLE_POSE_INDEX], gazebo_gui=$GAZEBO_GUI, partition=$PARTITION"
 log "Simulated lidar: $SIMULATED_LIDAR, world_obj_path: $WORLD_OBJ_PATH"
 log "Front 3D source topic: $FRONT3D_SOURCE_TOPIC, simulated_topic=$SIMULATED_FRONT3D_TOPIC, gazebo_topic=$GAZEBO_FRONT3D_TOPIC"
 log "TF localization: ground_truth_localization=$GROUND_TRUTH_LOCALIZATION, static_odom_base=$STATIC_ODOM_BASE"
@@ -372,6 +374,8 @@ if wait_for_relocalized_odometry "$FAST_LIO_PID"; then
       trash_scenario:="$TRASH_SCENARIO" \
       partition:="$PARTITION" \
       odom_topic:="$FAST_LIO_ODOM_TOPIC" \
+      vehicle_pose_topic:="$TRASH_VEHICLE_POSE_TOPIC" \
+      vehicle_pose_index:="$TRASH_VEHICLE_POSE_INDEX" \
       vehicle_length:="$TRASH_VEHICLE_LENGTH" \
       vehicle_width:="$TRASH_VEHICLE_WIDTH" \
       vehicle_center_offset_x:="$TRASH_VEHICLE_CENTER_OFFSET_X" \

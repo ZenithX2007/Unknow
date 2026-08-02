@@ -25,7 +25,20 @@ def generate_launch_description():
             DeclareLaunchArgument(
                 "odom_topic",
                 default_value="/odom",
-                description="Vehicle odometry topic used for trash cleanup.",
+                description="Fallback vehicle odometry topic used for trash cleanup.",
+            ),
+            DeclareLaunchArgument(
+                "vehicle_pose_topic",
+                default_value="/gen0_model/links/poses",
+                description=(
+                    "Gazebo vehicle PoseArray topic used for trash cleanup. "
+                    "Set empty to use odom_topic instead."
+                ),
+            ),
+            DeclareLaunchArgument(
+                "vehicle_pose_index",
+                default_value="15",
+                description="PoseArray index for the Gen0 vehicle body pose.",
             ),
             DeclareLaunchArgument(
                 "vehicle_length",
@@ -40,12 +53,12 @@ def generate_launch_description():
             DeclareLaunchArgument(
                 "vehicle_center_offset_x",
                 default_value="0.0",
-                description="Forward x offset from odom pose to vehicle footprint center.",
+                description="Forward x offset from vehicle pose to footprint center.",
             ),
             DeclareLaunchArgument(
                 "vehicle_center_offset_y",
                 default_value="0.0",
-                description="Left y offset from odom pose to vehicle footprint center.",
+                description="Left y offset from vehicle pose to footprint center.",
             ),
             DeclareLaunchArgument(
                 "coverage_margin",
@@ -85,6 +98,12 @@ def generate_launch_description():
                         "trash_scenario": LaunchConfiguration("trash_scenario"),
                         "gazebo_world_name": LaunchConfiguration("gazebo_world_name"),
                         "odom_topic": LaunchConfiguration("odom_topic"),
+                        "vehicle_pose_topic": LaunchConfiguration(
+                            "vehicle_pose_topic"
+                        ),
+                        "vehicle_pose_index": LaunchConfiguration(
+                            "vehicle_pose_index"
+                        ),
                         "vehicle_length": LaunchConfiguration("vehicle_length"),
                         "vehicle_width": LaunchConfiguration("vehicle_width"),
                         "vehicle_center_offset_x": LaunchConfiguration(
