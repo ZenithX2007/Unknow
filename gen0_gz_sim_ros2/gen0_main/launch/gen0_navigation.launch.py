@@ -265,17 +265,17 @@ def generate_launch_description():
     )
     declare_vehicle_max_forward_speed = DeclareLaunchArgument(
         'vehicle_max_forward_speed',
-        default_value='0.65',
+        default_value='2.25',
         description='Maximum forward velocity accepted by the Gen0 vehicle adapter.',
     )
     declare_vehicle_max_reverse_speed = DeclareLaunchArgument(
         'vehicle_max_reverse_speed',
-        default_value='0.25',
+        default_value='1.25',
         description='Maximum reverse velocity accepted by the Gen0 vehicle adapter.',
     )
     declare_vehicle_max_angular_z = DeclareLaunchArgument(
         'vehicle_max_angular_z',
-        default_value='0.12',
+        default_value='0.50',
         description='Maximum Twist.angular.z magnitude accepted by the Gen0 vehicle adapter.',
     )
     declare_vehicle_front_stop_enabled = DeclareLaunchArgument(

@@ -178,14 +178,14 @@ wrong way, override that value when launching Nav2 or mapping drive.
 The vehicle adapter defaults to the SCURM-style responsibility split: Nav2's
 costmap/controller handles obstacle avoidance, while `cmdvel_to_vehicle` only
 does steering conversion, sign correction, and moderate command limits. Forward
-velocity is capped at `0.65 m/s` by default. The front-laser hard stop remains
+velocity is capped at `2.25 m/s` by default. The front-laser hard stop remains
 available for explicit safety tests, but it is disabled by default because it
 can mask controller output while tuning local costmaps. Angular velocity is
-limited to `0.12 rad/s`, matching Gen0's roughly `4.5 m` minimum turning radius
-at the default speed. Useful overrides:
+limited to `0.50 rad/s`, matching Gen0's roughly `4.5 m` minimum turning radius
+at the default Nav2 speed. Useful overrides:
 
 ```bash
-GEN0_VEHICLE_MAX_FORWARD_SPEED=0.45
+GEN0_VEHICLE_MAX_FORWARD_SPEED=1.00
 GEN0_VEHICLE_FRONT_STOP_ENABLED=true
 GEN0_VEHICLE_FRONT_STOP_DISTANCE=0.65
 GEN0_VEHICLE_FRONT_SLOW_DISTANCE=1.5

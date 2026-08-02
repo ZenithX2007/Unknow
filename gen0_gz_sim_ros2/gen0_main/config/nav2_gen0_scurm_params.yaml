@@ -101,13 +101,13 @@ controller_server:
       iteration_count: 1
       temperature: 0.3
       gamma: 0.07
-      vx_std: 0.78
+      vx_std: 3.90
       vy_std: 0.0
-      wz_std: 0.2
-      vx_max: 0.45
-      vx_min: -0.25
+      wz_std: 1.0
+      vx_max: 2.25
+      vx_min: -1.25
       vy_max: 0.0
-      wz_max: 0.1
+      wz_max: 0.5
       retry_attempt_limit: 3
       motion_model: Ackermann
       AckermannConstraints:
@@ -312,7 +312,7 @@ behavior_server:
       free_threshold: 5
       cost_threshold: 5.0
       holonomic_motion: false
-      max_angular_speed: 0.12
+      max_angular_speed: 0.60
       min_turning_radius: 4.5
       visualization: false
     drive_on_heading:
@@ -323,9 +323,9 @@ behavior_server:
     robot_base_frame: base_link
     transform_tolerance: 0.5
     simulate_ahead_time: 2.0
-    max_rotational_vel: 0.12
-    min_rotational_vel: 0.05
-    rotational_acc_lim: 0.4
+    max_rotational_vel: 0.60
+    min_rotational_vel: 0.25
+    rotational_acc_lim: 2.0
 
 waypoint_follower:
   ros__parameters:
@@ -344,10 +344,10 @@ velocity_smoother:
     smoothing_frequency: 80.0
     scale_velocities: false
     feedback: OPEN_LOOP
-    max_velocity: [0.45, 0.0, 0.1]
-    min_velocity: [-0.25, 0.0, -0.1]
-    max_accel: [0.45, 0.0, 1.0]
-    max_decel: [-0.70, 0.0, -1.0]
+    max_velocity: [2.25, 0.0, 0.5]
+    min_velocity: [-1.25, 0.0, -0.5]
+    max_accel: [2.25, 0.0, 5.0]
+    max_decel: [-3.50, 0.0, -5.0]
     odom_topic: /odom
     odom_duration: 0.1
     deadband_velocity: [0.05, 0.0, 0.05]
