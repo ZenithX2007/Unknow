@@ -48,6 +48,18 @@ def generate_launch_description():
     terrain_analysis = LaunchConfiguration("terrain_analysis")
     terrain_analysis_ext = LaunchConfiguration("terrain_analysis_ext")
     projected_map = LaunchConfiguration("projected_map")
+    projected_map_reference_odom_topic = LaunchConfiguration(
+        "projected_map_reference_odom_topic"
+    )
+    projected_map_max_reference_odom_error = LaunchConfiguration(
+        "projected_map_max_reference_odom_error"
+    )
+    projected_map_max_reference_yaw_error = LaunchConfiguration(
+        "projected_map_max_reference_yaw_error"
+    )
+    projected_map_reference_odom_timeout = LaunchConfiguration(
+        "projected_map_reference_odom_timeout"
+    )
     local_costmap = LaunchConfiguration("local_costmap")
     costmap_params_file = LaunchConfiguration("costmap_params_file")
     relocalization = LaunchConfiguration("relocalization")
@@ -170,6 +182,26 @@ def generate_launch_description():
                 "projected_map",
                 default_value="true",
                 description="Publish /projected_map and /projected_costmap from SCURM terrain points.",
+            ),
+            DeclareLaunchArgument(
+                "projected_map_reference_odom_topic",
+                default_value="",
+                description="Reference odometry for projected-map integration health checks; empty disables the check.",
+            ),
+            DeclareLaunchArgument(
+                "projected_map_max_reference_odom_error",
+                default_value="0.0",
+                description="Freeze projected-map integration when odom differs from the reference by more than this many meters; 0 disables.",
+            ),
+            DeclareLaunchArgument(
+                "projected_map_max_reference_yaw_error",
+                default_value="0.0",
+                description="Freeze projected-map integration when odom yaw differs from the reference by more than this many radians; 0 disables.",
+            ),
+            DeclareLaunchArgument(
+                "projected_map_reference_odom_timeout",
+                default_value="2.0",
+                description="Maximum age in seconds for projected-map reference odometry.",
             ),
             DeclareLaunchArgument(
                 "local_costmap",
@@ -596,7 +628,23 @@ def generate_launch_description():
                         "mark_low_intensity_free": True,
                         "ground_clears_occupied": False,
                         "occupied_padding_radius": 0.0,
-                        "filter_speckles": False,
+                        "filter_speckles": True,
+                        "min_occupied_component_cells": 2,
+                        "min_occupied_component_span_cells": 2,
+                        "occupied_gap_bridge_cells": 1,
+                        "reference_odom_topic": projected_map_reference_odom_topic,
+                        "max_reference_odom_error": ParameterValue(
+                            projected_map_max_reference_odom_error,
+                            value_type=float,
+                        ),
+                        "max_reference_yaw_error": ParameterValue(
+                            projected_map_max_reference_yaw_error,
+                            value_type=float,
+                        ),
+                        "reference_odom_timeout": ParameterValue(
+                            projected_map_reference_odom_timeout,
+                            value_type=float,
+                        ),
                         "raytrace_free_space": True,
                         "raytrace_clears_occupied": True,
                         "occupied_clear_log_odds_threshold": 1.7,

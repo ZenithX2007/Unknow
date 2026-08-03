@@ -2,6 +2,7 @@
 
 from array import array
 from math import atan2, cos, exp, floor, hypot, sin
+import time
 
 import numpy as np
 import rclpy
@@ -43,6 +44,14 @@ class ProjectedTerrainMap(Node):
         self.declare_parameter("max_raytrace_cells_per_update", 5000)
         self.declare_parameter("occupied_padding_radius", 0.0)
         self.declare_parameter("filter_speckles", False)
+        self.declare_parameter("min_occupied_component_cells", 1)
+        self.declare_parameter("min_occupied_component_span_cells", 1)
+        self.declare_parameter("occupied_gap_bridge_cells", 0)
+        self.declare_parameter("reference_odom_topic", "")
+        self.declare_parameter("max_reference_odom_error", 0.0)
+        self.declare_parameter("max_reference_yaw_error", 0.0)
+        self.declare_parameter("reference_odom_timeout", 2.0)
+        self.declare_parameter("reference_odom_warn_period", 2.0)
         self.declare_parameter("robot_clear_radius", 0.8)
         self.declare_parameter("robot_clear_length", 0.0)
         self.declare_parameter("robot_clear_width", 0.0)
@@ -109,6 +118,38 @@ class ProjectedTerrainMap(Node):
             self.get_parameter("occupied_padding_radius").value
         )
         self.filter_speckles = bool(self.get_parameter("filter_speckles").value)
+        self.min_occupied_component_cells = max(
+            1, int(self.get_parameter("min_occupied_component_cells").value)
+        )
+        self.min_occupied_component_span_cells = max(
+            1, int(self.get_parameter("min_occupied_component_span_cells").value)
+        )
+        self.occupied_gap_bridge_cells = max(
+            0, int(self.get_parameter("occupied_gap_bridge_cells").value)
+        )
+        self.reference_odom_topic = str(
+            self.get_parameter("reference_odom_topic").value
+        )
+        self.max_reference_odom_error = float(
+            self.get_parameter("max_reference_odom_error").value
+        )
+        self.max_reference_yaw_error = float(
+            self.get_parameter("max_reference_yaw_error").value
+        )
+        self.reference_odom_timeout = float(
+            self.get_parameter("reference_odom_timeout").value
+        )
+        self.reference_odom_warn_period = float(
+            self.get_parameter("reference_odom_warn_period").value
+        )
+        self.reference_odom_enabled = (
+            bool(self.reference_odom_topic)
+            and self.reference_odom_topic != self.odom_topic
+            and (
+                self.max_reference_odom_error > 0.0
+                or self.max_reference_yaw_error > 0.0
+            )
+        )
         self.robot_clear_radius = float(self.get_parameter("robot_clear_radius").value)
         self.robot_clear_length = float(self.get_parameter("robot_clear_length").value)
         self.robot_clear_width = float(self.get_parameter("robot_clear_width").value)
@@ -131,6 +172,14 @@ class ProjectedTerrainMap(Node):
         self.costs = {}
         self.robot_xy = None
         self.robot_yaw = 0.0
+        self.reference_xy = None
+        self.reference_yaw = 0.0
+        self.reference_odom_received_monotonic = 0.0
+        self.odom_guard_robot_start_xy = None
+        self.odom_guard_reference_start_xy = None
+        self.odom_guard_yaw_offset = 0.0
+        self.last_odom_guard_reason = None
+        self.last_odom_guard_warn_monotonic = 0.0
         self.latest_stamp = None
         self.dirty = False
         self.last_map_msg = None
@@ -150,6 +199,13 @@ class ProjectedTerrainMap(Node):
 
         self.create_subscription(PointCloud2, self.input_topic, self.cloud_callback, sensor_qos)
         self.create_subscription(Odometry, self.odom_topic, self.odom_callback, 10)
+        if self.reference_odom_enabled:
+            self.create_subscription(
+                Odometry,
+                self.reference_odom_topic,
+                self.reference_odom_callback,
+                10,
+            )
         self.map_pub = self.create_publisher(OccupancyGrid, self.map_topic, map_qos)
         self.costmap_pub = self.create_publisher(OccupancyGrid, self.costmap_topic, map_qos)
         self.create_timer(max(publish_period, 0.2), self.publish_maps)
@@ -159,24 +215,42 @@ class ProjectedTerrainMap(Node):
             f"cost overlay={self.costmap_topic}, resolution={self.resolution:.2f}, "
             f"free<={self.free_threshold:.2f}, occupied>={self.occupied_threshold:.2f}, "
             f"hit/miss={self.hit_log_odds:.2f}/{self.miss_log_odds:.2f}, "
-            f"protected occupied>={self.occupied_clear_log_odds_threshold:.2f}"
+            f"protected occupied>={self.occupied_clear_log_odds_threshold:.2f}, "
+            f"speckle_filter={self.filter_speckles}:"
+            f"{self.min_occupied_component_cells} cells/"
+            f"{self.min_occupied_component_span_cells} span, "
+            f"gap_bridge={self.occupied_gap_bridge_cells} cells"
         )
+        if self.reference_odom_enabled:
+            self.get_logger().info(
+                "Projected-map odom guard enabled: comparing "
+                f"relative motion from {self.odom_topic} to "
+                f"{self.reference_odom_topic}; "
+                f"max_xy_error={self.max_reference_odom_error:.2f} m, "
+                f"max_yaw_error={self.max_reference_yaw_error:.2f} rad."
+            )
 
     def odom_callback(self, msg):
         self.robot_xy = (
             float(msg.pose.pose.position.x),
             float(msg.pose.pose.position.y),
         )
-        orientation = msg.pose.pose.orientation
-        siny_cosp = 2.0 * (
-            orientation.w * orientation.z + orientation.x * orientation.y
+        self.robot_yaw = self.yaw_from_odom(msg)
+
+    def reference_odom_callback(self, msg):
+        self.reference_xy = (
+            float(msg.pose.pose.position.x),
+            float(msg.pose.pose.position.y),
         )
-        cosy_cosp = 1.0 - 2.0 * (
-            orientation.y * orientation.y + orientation.z * orientation.z
-        )
-        self.robot_yaw = atan2(siny_cosp, cosy_cosp)
+        self.reference_yaw = self.yaw_from_odom(msg)
+        self.reference_odom_received_monotonic = time.monotonic()
 
     def cloud_callback(self, msg):
+        odom_valid, odom_reason = self.odom_guard_is_valid()
+        if not odom_valid:
+            self.warn_odom_guard(odom_reason)
+            return
+
         points = self.read_points(msg)
         if points.size == 0:
             return
@@ -430,8 +504,8 @@ class ProjectedTerrainMap(Node):
                 occupancy[y, x] = np.int8(0)
                 cost[y, x] = np.int8(0)
 
-        if self.filter_speckles:
-            self.filter_occupied_speckles(occupancy, cost)
+        self.bridge_occupied_gaps(occupancy, cost)
+        self.filter_occupied_components(occupancy, cost)
         self.apply_inflation(cost)
 
         map_msg = self.make_occupancy_grid(occupancy, min_x, min_y)
@@ -463,34 +537,90 @@ class ProjectedTerrainMap(Node):
                     offsets.append((dx, dy, 100))
         return offsets
 
-    def filter_occupied_speckles(self, occupancy, cost):
+    def filter_occupied_components(self, occupancy, cost):
         occupied = occupancy >= 100
         if not occupied.any():
             return
 
-        height, width = occupancy.shape
-        neighbor_count = np.zeros((height, width), dtype=np.uint8)
-        for dx in (-1, 0, 1):
-            for dy in (-1, 0, 1):
-                if dx == 0 and dy == 0:
-                    continue
-                if dx >= 0:
-                    src_x = slice(0, width - dx)
-                    dst_x = slice(dx, width)
-                else:
-                    src_x = slice(-dx, width)
-                    dst_x = slice(0, width + dx)
-                if dy >= 0:
-                    src_y = slice(0, height - dy)
-                    dst_y = slice(dy, height)
-                else:
-                    src_y = slice(-dy, height)
-                    dst_y = slice(0, height + dy)
-                neighbor_count[dst_y, dst_x] += occupied[src_y, src_x]
+        min_cells = self.min_occupied_component_cells
+        if self.filter_speckles:
+            min_cells = max(min_cells, 2)
+        if min_cells <= 1:
+            return
 
-        speckles = occupied & (neighbor_count == 0)
-        occupancy[speckles] = np.int8(-1)
-        cost[speckles] = np.int8(-1)
+        height, width = occupancy.shape
+        visited = np.zeros((height, width), dtype=bool)
+        remove = np.zeros((height, width), dtype=bool)
+        neighbors = (
+            (-1, -1), (0, -1), (1, -1),
+            (-1, 0), (1, 0),
+            (-1, 1), (0, 1), (1, 1),
+        )
+
+        for start_y, start_x in np.argwhere(occupied):
+            if visited[start_y, start_x]:
+                continue
+
+            stack = [(int(start_x), int(start_y))]
+            component = []
+            visited[start_y, start_x] = True
+
+            while stack:
+                cell_x, cell_y = stack.pop()
+                component.append((cell_x, cell_y))
+                for offset_x, offset_y in neighbors:
+                    next_x = cell_x + offset_x
+                    next_y = cell_y + offset_y
+                    if (
+                        next_x < 0
+                        or next_x >= width
+                        or next_y < 0
+                        or next_y >= height
+                        or visited[next_y, next_x]
+                        or not occupied[next_y, next_x]
+                    ):
+                        continue
+                    visited[next_y, next_x] = True
+                    stack.append((next_x, next_y))
+
+            if self.should_keep_occupied_component(component, min_cells):
+                continue
+            for cell_x, cell_y in component:
+                remove[cell_y, cell_x] = True
+
+        occupancy[remove] = np.int8(-1)
+        cost[remove] = np.int8(-1)
+
+    def should_keep_occupied_component(self, component, min_cells):
+        if len(component) >= min_cells:
+            return True
+
+        xs = [cell_x for cell_x, _ in component]
+        ys = [cell_y for _, cell_y in component]
+        span_x = max(xs) - min(xs) + 1
+        span_y = max(ys) - min(ys) + 1
+        return max(span_x, span_y) >= self.min_occupied_component_span_cells
+
+    def bridge_occupied_gaps(self, occupancy, cost):
+        if self.occupied_gap_bridge_cells <= 0:
+            return
+
+        for _ in range(self.occupied_gap_bridge_cells):
+            occupied = occupancy >= 100
+            if not occupied.any():
+                return
+
+            bridge = np.zeros_like(occupied, dtype=bool)
+            bridge[:, 1:-1] |= occupied[:, :-2] & occupied[:, 2:]
+            bridge[1:-1, :] |= occupied[:-2, :] & occupied[2:, :]
+            bridge[1:-1, 1:-1] |= occupied[:-2, :-2] & occupied[2:, 2:]
+            bridge[1:-1, 1:-1] |= occupied[2:, :-2] & occupied[:-2, 2:]
+            bridge &= ~occupied
+            if not bridge.any():
+                return
+
+            occupancy[bridge] = np.int8(100)
+            cost[bridge] = np.int8(100)
 
     def make_inflation_offsets(self):
         if self.inflation_radius <= 0.0:
@@ -558,6 +688,124 @@ class ProjectedTerrainMap(Node):
         msg.info.origin.orientation.w = 1.0
         msg.data = array("b", data.ravel(order="C"))
         return msg
+
+    def odom_guard_is_valid(self):
+        if not self.reference_odom_enabled:
+            return True, ""
+        if self.robot_xy is None:
+            return False, f"waiting for odometry on {self.odom_topic}"
+        if self.reference_xy is None:
+            return False, f"waiting for reference odometry on {self.reference_odom_topic}"
+
+        age = time.monotonic() - self.reference_odom_received_monotonic
+        if self.reference_odom_timeout > 0.0 and age > self.reference_odom_timeout:
+            return False, (
+                f"reference odometry {self.reference_odom_topic} is stale "
+                f"({age:.2f}s > {self.reference_odom_timeout:.2f}s)"
+            )
+
+        self.ensure_odom_guard_baseline()
+        expected_xy = self.expected_reference_xy_in_odom_frame()
+        xy_error = hypot(
+            self.robot_xy[0] - expected_xy[0],
+            self.robot_xy[1] - expected_xy[1],
+        )
+        if (
+            self.max_reference_odom_error > 0.0
+            and xy_error > self.max_reference_odom_error
+        ):
+            return False, (
+                f"{self.odom_topic} relative drift from "
+                f"{self.reference_odom_topic} is {xy_error:.2f} m; "
+                "freezing projected-map integration"
+            )
+
+        yaw_error = abs(
+            self.normalize_angle(
+                self.robot_yaw
+                - self.reference_yaw
+                - self.odom_guard_yaw_offset
+            )
+        )
+        if (
+            self.max_reference_yaw_error > 0.0
+            and yaw_error > self.max_reference_yaw_error
+        ):
+            return False, (
+                f"{self.odom_topic} relative yaw drift from "
+                f"{self.reference_odom_topic} is {yaw_error:.2f} rad; "
+                "freezing projected-map integration"
+            )
+
+        if self.last_odom_guard_reason is not None:
+            self.get_logger().info("Projected-map odom guard cleared; accepting point clouds.")
+            self.last_odom_guard_reason = None
+        return True, ""
+
+    def warn_odom_guard(self, reason):
+        now = time.monotonic()
+        if (
+            reason == self.last_odom_guard_reason
+            and now - self.last_odom_guard_warn_monotonic
+            < self.reference_odom_warn_period
+        ):
+            return
+
+        self.last_odom_guard_reason = reason
+        self.last_odom_guard_warn_monotonic = now
+        self.get_logger().warn(reason)
+
+    def ensure_odom_guard_baseline(self):
+        if self.odom_guard_robot_start_xy is not None:
+            return
+
+        self.odom_guard_robot_start_xy = self.robot_xy
+        self.odom_guard_reference_start_xy = self.reference_xy
+        self.odom_guard_yaw_offset = self.normalize_angle(
+            self.robot_yaw - self.reference_yaw
+        )
+        initial_xy_offset = hypot(
+            self.robot_xy[0] - self.reference_xy[0],
+            self.robot_xy[1] - self.reference_xy[1],
+        )
+        self.get_logger().info(
+            "Projected-map odom guard baseline set: "
+            f"initial_xy_offset={initial_xy_offset:.2f} m, "
+            f"initial_yaw_offset={self.odom_guard_yaw_offset:.2f} rad."
+        )
+
+    def expected_reference_xy_in_odom_frame(self):
+        reference_dx = self.reference_xy[0] - self.odom_guard_reference_start_xy[0]
+        reference_dy = self.reference_xy[1] - self.odom_guard_reference_start_xy[1]
+        yaw_cos = cos(self.odom_guard_yaw_offset)
+        yaw_sin = sin(self.odom_guard_yaw_offset)
+        return (
+            self.odom_guard_robot_start_xy[0]
+            + reference_dx * yaw_cos
+            - reference_dy * yaw_sin,
+            self.odom_guard_robot_start_xy[1]
+            + reference_dx * yaw_sin
+            + reference_dy * yaw_cos,
+        )
+
+    @staticmethod
+    def yaw_from_odom(msg):
+        orientation = msg.pose.pose.orientation
+        siny_cosp = 2.0 * (
+            orientation.w * orientation.z + orientation.x * orientation.y
+        )
+        cosy_cosp = 1.0 - 2.0 * (
+            orientation.y * orientation.y + orientation.z * orientation.z
+        )
+        return atan2(siny_cosp, cosy_cosp)
+
+    @staticmethod
+    def normalize_angle(angle):
+        while angle > np.pi:
+            angle -= 2.0 * np.pi
+        while angle < -np.pi:
+            angle += 2.0 * np.pi
+        return angle
 
 
 def main(args=None):

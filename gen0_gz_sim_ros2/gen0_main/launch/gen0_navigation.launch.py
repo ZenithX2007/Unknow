@@ -147,6 +147,10 @@ def generate_launch_description():
     nav2_smoothing_frequency = LaunchConfiguration('nav2_smoothing_frequency')
     publish_identity_map_to_odom = LaunchConfiguration('publish_identity_map_to_odom')
     odom_topic = LaunchConfiguration('odom_topic')
+    reference_odom_topic = LaunchConfiguration('reference_odom_topic')
+    max_reference_odom_error = LaunchConfiguration('max_reference_odom_error')
+    max_reference_yaw_error = LaunchConfiguration('max_reference_yaw_error')
+    reference_odom_timeout = LaunchConfiguration('reference_odom_timeout')
     map_source = LaunchConfiguration('map_source')
     map_server_topic = LaunchConfiguration('map_server_topic')
     projected_map_topic = LaunchConfiguration('projected_map_topic')
@@ -305,7 +309,7 @@ def generate_launch_description():
     )
     declare_projected_map_fixed_origin_y = DeclareLaunchArgument(
         'projected_map_fixed_origin_y',
-        default_value='-30.0',
+        default_value='-40.0',
         description='Fixed projected map origin Y in the map frame.',
     )
     declare_projected_map_fixed_width = DeclareLaunchArgument(
@@ -315,7 +319,7 @@ def generate_launch_description():
     )
     declare_projected_map_fixed_height = DeclareLaunchArgument(
         'projected_map_fixed_height',
-        default_value='600',
+        default_value='1000',
         description='Fixed projected map height in cells.',
     )
     declare_projected_map_fixed_resolution = DeclareLaunchArgument(
@@ -327,6 +331,26 @@ def generate_launch_description():
         'odom_topic',
         default_value='/odom',
         description='Odometry topic used by Nav2 controller, BT navigator, and velocity smoother.',
+    )
+    declare_reference_odom_topic = DeclareLaunchArgument(
+        'reference_odom_topic',
+        default_value='',
+        description='Reference odometry for Nav2 odom health checks; empty disables the check.',
+    )
+    declare_max_reference_odom_error = DeclareLaunchArgument(
+        'max_reference_odom_error',
+        default_value='0.0',
+        description='Block Nav2 cmd_vel when odom differs from the reference by more than this many meters; 0 disables.',
+    )
+    declare_max_reference_yaw_error = DeclareLaunchArgument(
+        'max_reference_yaw_error',
+        default_value='0.0',
+        description='Block Nav2 cmd_vel when odom yaw differs from the reference by more than this many radians; 0 disables.',
+    )
+    declare_reference_odom_timeout = DeclareLaunchArgument(
+        'reference_odom_timeout',
+        default_value='2.0',
+        description='Maximum age in seconds for Nav2 reference odometry.',
     )
     declare_default_nav_to_pose_bt_xml = DeclareLaunchArgument(
         'default_nav_to_pose_bt_xml',
@@ -444,6 +468,19 @@ def generate_launch_description():
                         'output_cmd_vel_topic': '/cmd_vel',
                         'map_topic': '/map',
                         'odom_topic': odom_topic,
+                        'reference_odom_topic': reference_odom_topic,
+                        'max_reference_odom_error': ParameterValue(
+                            max_reference_odom_error,
+                            value_type=float,
+                        ),
+                        'max_reference_yaw_error': ParameterValue(
+                            max_reference_yaw_error,
+                            value_type=float,
+                        ),
+                        'reference_odom_timeout': ParameterValue(
+                            reference_odom_timeout,
+                            value_type=float,
+                        ),
                         'map_frame': 'map',
                         'base_frame': 'base_link',
                         'bounds_margin': 5.0,
@@ -552,6 +589,10 @@ def generate_launch_description():
         declare_projected_map_fixed_resolution,
         OpaqueFunction(function=ensure_nav2_costmap_overlay),
         declare_odom_topic,
+        declare_reference_odom_topic,
+        declare_max_reference_odom_error,
+        declare_max_reference_yaw_error,
+        declare_reference_odom_timeout,
         declare_default_nav_to_pose_bt_xml,
         declare_default_nav_through_poses_bt_xml,
         load_nodes,

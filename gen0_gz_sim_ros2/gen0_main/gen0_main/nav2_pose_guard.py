@@ -19,6 +19,10 @@ class Nav2PoseGuard(Node):
         self.declare_parameter('output_cmd_vel_topic', '/cmd_vel')
         self.declare_parameter('map_topic', '/map')
         self.declare_parameter('odom_topic', '/odom')
+        self.declare_parameter('reference_odom_topic', '')
+        self.declare_parameter('max_reference_odom_error', 0.0)
+        self.declare_parameter('max_reference_yaw_error', 0.0)
+        self.declare_parameter('reference_odom_timeout', 2.0)
         self.declare_parameter('map_frame', 'map')
         self.declare_parameter('base_frame', 'base_link')
         self.declare_parameter('bounds_margin', 5.0)
@@ -35,6 +39,24 @@ class Nav2PoseGuard(Node):
         self.output_cmd_vel_topic = self.get_parameter('output_cmd_vel_topic').value
         self.map_topic = self.get_parameter('map_topic').value
         self.odom_topic = self.get_parameter('odom_topic').value
+        self.reference_odom_topic = self.get_parameter('reference_odom_topic').value
+        self.max_reference_odom_error = float(
+            self.get_parameter('max_reference_odom_error').value
+        )
+        self.max_reference_yaw_error = float(
+            self.get_parameter('max_reference_yaw_error').value
+        )
+        self.reference_odom_timeout = float(
+            self.get_parameter('reference_odom_timeout').value
+        )
+        self.reference_odom_enabled = (
+            bool(self.reference_odom_topic)
+            and self.reference_odom_topic != self.odom_topic
+            and (
+                self.max_reference_odom_error > 0.0
+                or self.max_reference_yaw_error > 0.0
+            )
+        )
         self.map_frame = self.get_parameter('map_frame').value
         self.base_frame = self.get_parameter('base_frame').value
         self.bounds_margin = float(self.get_parameter('bounds_margin').value)
@@ -53,6 +75,11 @@ class Nav2PoseGuard(Node):
 
         self.map_bounds = None
         self.last_odom = None
+        self.last_reference_odom = None
+        self.last_reference_odom_monotonic = 0.0
+        self.odom_guard_start_xy = None
+        self.reference_odom_guard_start_xy = None
+        self.reference_odom_guard_yaw_offset = 0.0
         self.last_pose_xy = None
         self.blocked_reason = None
         self.last_warn_monotonic = 0.0
@@ -71,6 +98,13 @@ class Nav2PoseGuard(Node):
         self.create_subscription(Twist, self.input_cmd_vel_topic, self.cmd_callback, 10)
         self.create_subscription(OccupancyGrid, self.map_topic, self.map_callback, map_qos)
         self.create_subscription(Odometry, self.odom_topic, self.odom_callback, qos_profile_sensor_data)
+        if self.reference_odom_enabled:
+            self.create_subscription(
+                Odometry,
+                self.reference_odom_topic,
+                self.reference_odom_callback,
+                qos_profile_sensor_data,
+            )
         self.create_timer(self.stop_publish_period, self.timer_callback)
 
         self.get_logger().info(
@@ -83,6 +117,14 @@ class Nav2PoseGuard(Node):
             self.get_logger().info(
                 'Ackermann curvature limiting enabled: '
                 f'|angular.z| <= |linear.x| / {self.min_turning_radius:.2f}.'
+            )
+        if self.reference_odom_enabled:
+            self.get_logger().info(
+                'FAST-LIO odom health guard enabled: comparing '
+                f'relative motion from {self.odom_topic} to '
+                f'{self.reference_odom_topic}; '
+                f'max_xy_error={self.max_reference_odom_error:.2f} m, '
+                f'max_yaw_error={self.max_reference_yaw_error:.2f} rad.'
             )
 
     def map_callback(self, msg):
@@ -106,6 +148,10 @@ class Nav2PoseGuard(Node):
 
     def odom_callback(self, msg):
         self.last_odom = msg
+
+    def reference_odom_callback(self, msg):
+        self.last_reference_odom = msg
+        self.last_reference_odom_monotonic = time.monotonic()
 
     def cmd_callback(self, msg):
         valid, reason = self.pose_is_valid()
@@ -137,6 +183,9 @@ class Nav2PoseGuard(Node):
                 'non-finite odometry pose: '
                 f'x={odom_position.x}, y={odom_position.y}, z={odom_position.z}'
             )
+        reference_valid, reference_reason = self.reference_odom_is_valid()
+        if not reference_valid:
+            return False, reference_reason
 
         try:
             transform = self.tf_buffer.lookup_transform(
@@ -189,6 +238,114 @@ class Nav2PoseGuard(Node):
             )
 
         return True, ''
+
+    def reference_odom_is_valid(self):
+        if not self.reference_odom_enabled:
+            return True, ''
+        if self.last_reference_odom is None:
+            return False, f'waiting for reference odometry on {self.reference_odom_topic}'
+
+        age = time.monotonic() - self.last_reference_odom_monotonic
+        if self.reference_odom_timeout > 0.0 and age > self.reference_odom_timeout:
+            return False, (
+                f'reference odometry {self.reference_odom_topic} is stale '
+                f'({age:.2f}s > {self.reference_odom_timeout:.2f}s)'
+            )
+
+        odom_position = self.last_odom.pose.pose.position
+        reference_position = self.last_reference_odom.pose.pose.position
+        if not self.values_are_finite(
+            reference_position.x,
+            reference_position.y,
+            reference_position.z,
+        ):
+            return False, (
+                f'non-finite reference odometry pose on {self.reference_odom_topic}: '
+                f'x={reference_position.x}, y={reference_position.y}, '
+                f'z={reference_position.z}'
+            )
+
+        self.ensure_reference_odom_baseline()
+        expected_xy = self.expected_reference_xy_in_odom_frame()
+        xy_error = math.hypot(
+            float(odom_position.x) - expected_xy[0],
+            float(odom_position.y) - expected_xy[1],
+        )
+        if (
+            self.max_reference_odom_error > 0.0
+            and xy_error > self.max_reference_odom_error
+        ):
+            return False, (
+                f'{self.odom_topic} relative drift from '
+                f'{self.reference_odom_topic} is {xy_error:.2f} m; '
+                'FAST-LIO/Nav2 odom chain is unhealthy'
+            )
+
+        yaw_error = abs(
+            self.normalize_angle(
+                self.yaw_from_odom(self.last_odom)
+                - self.yaw_from_odom(self.last_reference_odom)
+                - self.reference_odom_guard_yaw_offset
+            )
+        )
+        if (
+            self.max_reference_yaw_error > 0.0
+            and yaw_error > self.max_reference_yaw_error
+        ):
+            return False, (
+                f'{self.odom_topic} relative yaw drift from '
+                f'{self.reference_odom_topic} is {yaw_error:.2f} rad; '
+                'FAST-LIO/Nav2 odom chain is unhealthy'
+            )
+
+        return True, ''
+
+    def ensure_reference_odom_baseline(self):
+        if self.odom_guard_start_xy is not None:
+            return
+
+        odom_position = self.last_odom.pose.pose.position
+        reference_position = self.last_reference_odom.pose.pose.position
+        self.odom_guard_start_xy = (
+            float(odom_position.x),
+            float(odom_position.y),
+        )
+        self.reference_odom_guard_start_xy = (
+            float(reference_position.x),
+            float(reference_position.y),
+        )
+        self.reference_odom_guard_yaw_offset = self.normalize_angle(
+            self.yaw_from_odom(self.last_odom)
+            - self.yaw_from_odom(self.last_reference_odom)
+        )
+        initial_xy_offset = math.hypot(
+            self.odom_guard_start_xy[0] - self.reference_odom_guard_start_xy[0],
+            self.odom_guard_start_xy[1] - self.reference_odom_guard_start_xy[1],
+        )
+        self.get_logger().info(
+            'FAST-LIO odom health guard baseline set: '
+            f'initial_xy_offset={initial_xy_offset:.2f} m, '
+            f'initial_yaw_offset={self.reference_odom_guard_yaw_offset:.2f} rad.'
+        )
+
+    def expected_reference_xy_in_odom_frame(self):
+        reference_position = self.last_reference_odom.pose.pose.position
+        reference_dx = (
+            float(reference_position.x) - self.reference_odom_guard_start_xy[0]
+        )
+        reference_dy = (
+            float(reference_position.y) - self.reference_odom_guard_start_xy[1]
+        )
+        yaw_cos = math.cos(self.reference_odom_guard_yaw_offset)
+        yaw_sin = math.sin(self.reference_odom_guard_yaw_offset)
+        return (
+            self.odom_guard_start_xy[0]
+            + reference_dx * yaw_cos
+            - reference_dy * yaw_sin,
+            self.odom_guard_start_xy[1]
+            + reference_dx * yaw_sin
+            + reference_dy * yaw_cos,
+        )
 
     def publish_zero(self, reason):
         self.cmd_pub.publish(Twist())
@@ -247,6 +404,25 @@ class Nav2PoseGuard(Node):
     @staticmethod
     def values_are_finite(*values):
         return all(math.isfinite(float(value)) for value in values)
+
+    @staticmethod
+    def yaw_from_odom(msg):
+        orientation = msg.pose.pose.orientation
+        siny_cosp = 2.0 * (
+            orientation.w * orientation.z + orientation.x * orientation.y
+        )
+        cosy_cosp = 1.0 - 2.0 * (
+            orientation.y * orientation.y + orientation.z * orientation.z
+        )
+        return math.atan2(siny_cosp, cosy_cosp)
+
+    @staticmethod
+    def normalize_angle(angle):
+        while angle > math.pi:
+            angle -= 2.0 * math.pi
+        while angle < -math.pi:
+            angle += 2.0 * math.pi
+        return angle
 
 
 def main(args=None):
