@@ -44,14 +44,14 @@
         <link name="back_right_steering_link">
             <pose>-1.4 -0.7925 0.33 0 0 0</pose>
             <inertial>
-                <mass>50.00</mass>
+                <mass>8.0</mass>
                 <inertia>
-                    <ixx>0.25</ixx>
+                    <ixx>0.08</ixx>
                     <ixy>0</ixy>
                     <ixz>0</ixz>
-                    <iyy>0.1354</iyy>
+                    <iyy>0.04</iyy>
                     <iyz>0</iyz>
-                    <izz>0.1354</izz>
+                    <izz>0.04</izz>
                 </inertia>
             </inertial>
             <visual name='visual_back_right_steering'>
@@ -113,8 +113,8 @@
                 <surface>
                     <friction>
                         <ode>
-                            <mu>10000000</mu>
-                            <mu2>7000</mu2>
+                            <mu>1.2</mu>
+                            <mu2>1.0</mu2>
                         </ode>
                     </friction>
                     <bounce>
@@ -124,8 +124,8 @@
                         <ode>
                             <soft_cfm>0.001</soft_cfm>
                             <soft_erp>0.5</soft_erp>
-                            <kp>10000000</kp>
-                            <kd>1</kd>
+                            <kp>1000000</kp>
+                            <kd>100</kd>
                         </ode>
                     </contact>
                 </surface>
@@ -136,14 +136,14 @@
         <link name="back_left_steering_link">
             <pose>-1.4 0.7925 0.33 0 0 0</pose>
             <inertial>
-                <mass>50.00</mass>
+                <mass>8.0</mass>
                 <inertia>
-                    <ixx>0.25</ixx>
+                    <ixx>0.08</ixx>
                     <ixy>0</ixy>
                     <ixz>0</ixz>
-                    <iyy>0.1354</iyy>
+                    <iyy>0.04</iyy>
                     <iyz>0</iyz>
-                    <izz>0.1354</izz>
+                    <izz>0.04</izz>
                 </inertia>
             </inertial>
             <visual name='visual_back_left_steering'>
@@ -205,8 +205,8 @@
                 <surface>
                     <friction>
                         <ode>
-                            <mu>10000000</mu>
-                            <mu2>7000</mu2>
+                            <mu>1.2</mu>
+                            <mu2>1.0</mu2>
                         </ode>
                     </friction>
                     <bounce>
@@ -216,8 +216,8 @@
                         <ode>
                             <soft_cfm>0.001</soft_cfm>
                             <soft_erp>0.5</soft_erp>
-                            <kp>10000000</kp>
-                            <kd>1</kd>
+                            <kp>1000000</kp>
+                            <kd>100</kd>
                         </ode>
                     </contact>
                 </surface>
@@ -227,14 +227,14 @@
         <link name="front_right_steering_link">
             <pose>1.4 -0.7925 0.33 0 0 0</pose>
             <inertial>
-                <mass>50.00</mass>
+                <mass>8.0</mass>
                 <inertia>
-                    <ixx>0.25</ixx>
+                    <ixx>0.08</ixx>
                     <ixy>0</ixy>
                     <ixz>0</ixz>
-                    <iyy>0.1354</iyy>
+                    <iyy>0.04</iyy>
                     <iyz>0</iyz>
-                    <izz>0.1354</izz>
+                    <izz>0.04</izz>
                 </inertia>
             </inertial>
             <visual name='visual_front_right_steering'>
@@ -296,8 +296,8 @@
                 <surface>
                     <friction>
                         <ode>
-                            <mu>10000000</mu>
-                            <mu2>7000</mu2>
+                            <mu>1.2</mu>
+                            <mu2>1.0</mu2>
                         </ode>
                     </friction>
                     <bounce>
@@ -307,8 +307,8 @@
                         <ode>
                             <soft_cfm>0.001</soft_cfm>
                             <soft_erp>0.5</soft_erp>
-                            <kp>10000000</kp>
-                            <kd>1</kd>
+                            <kp>1000000</kp>
+                            <kd>100</kd>
                         </ode>
                     </contact>
                 </surface>
@@ -318,14 +318,14 @@
         <link name="front_left_steering_link">
             <pose>1.4 0.7925 0.33 0 0 0</pose>
             <inertial>
-                <mass>50.00</mass>
+                <mass>8.0</mass>
                 <inertia>
-                    <ixx>0.25</ixx>
+                    <ixx>0.08</ixx>
                     <ixy>0</ixy>
                     <ixz>0</ixz>
-                    <iyy>0.1354</iyy>
+                    <iyy>0.04</iyy>
                     <iyz>0</iyz>
-                    <izz>0.1354</izz>
+                    <izz>0.04</izz>
                 </inertia>
             </inertial>
             <visual name='visual_front_left_steering'>
@@ -387,8 +387,8 @@
                 <surface>
                     <friction>
                         <ode>
-                            <mu>10000000</mu>
-                            <mu2>7000</mu2>
+                            <mu>1.2</mu>
+                            <mu2>1.0</mu2>
                         </ode>
                     </friction>
                     <bounce>
@@ -398,8 +398,8 @@
                         <ode>
                             <soft_cfm>0.001</soft_cfm>
                             <soft_erp>0.5</soft_erp>
-                            <kp>10000000</kp>
-                            <kd>1</kd>
+                            <kp>1000000</kp>
+                            <kd>100</kd>
                         </ode>
                     </contact>
                 </surface>
@@ -717,18 +717,10 @@
         </joint>
 
 
-        <joint name="back_right_steering_joint" type="revolute">
+        <!-- Standard Ackermann: rear wheels are fixed, non-steering wheels. -->
+        <joint name="back_right_steering_joint" type="fixed">
             <parent>base_link</parent>
             <child>back_right_steering_link</child>
-            <axis>
-                <xyz>0 0 1</xyz>
-                <limit>
-                    <lower>-0.31</lower>
-                    <upper>0.31</upper>
-                    <velocity>1000</velocity>
-                    <effort>10000</effort>
-                </limit>
-            </axis>
         </joint>
 
         <joint name="back_right_wheel_joint" type="revolute">
@@ -752,18 +744,9 @@
             </joint_properties>
         </joint>
 
-        <joint name="back_left_steering_joint" type="revolute">
+        <joint name="back_left_steering_joint" type="fixed">
             <parent>base_link</parent>
             <child>back_left_steering_link</child>
-            <axis>
-                <xyz>0 0 1</xyz>
-                <limit>
-                    <lower>-0.31</lower>
-                    <upper>0.31</upper>
-                    <velocity>1000</velocity>
-                    <effort>10000</effort>
-                </limit>
-            </axis>
         </joint>
 
         <joint name="back_left_wheel_joint" type="revolute">
@@ -793,8 +776,8 @@
             <axis>
                 <xyz>0 0 1</xyz>
                 <limit>
-                    <lower>-0.31</lower>
-                    <upper>0.31</upper>
+                    <lower>-0.4</lower>
+                    <upper>0.4</upper>
                     <velocity>1000</velocity>
                     <effort>10000</effort>
                 </limit>
@@ -828,8 +811,8 @@
             <axis>
                 <xyz>0 0 1</xyz>
                 <limit>
-                    <lower>-0.31</lower>
-                    <upper>0.31</upper>
+                    <lower>-0.4</lower>
+                    <upper>0.4</upper>
                     <velocity>1000</velocity>
                     <effort>10000</effort>
                 </limit>
@@ -858,104 +841,43 @@
             </joint_properties>
         </joint>
 
-        <!-- The ackermann plugin is only being used for speed control -->
-        <!-- <plugin
+        <!-- Standard front-steering, four-wheel-drive Ackermann control. -->
+        <plugin
             filename="ignition-gazebo-ackermann-steering-system"
             name="gz::sim::systems::AckermannSteering">
-            <topic>/model/gen0_model/speed_cmd</topic>
-            <odom_topic>ackodom</odom_topic>
+            <topic>/cmd_vel</topic>
+            <left_joint>front_left_wheel_joint</left_joint>
             <left_joint>back_left_wheel_joint</left_joint>
+            <right_joint>front_right_wheel_joint</right_joint>
             <right_joint>back_right_wheel_joint</right_joint>
             <left_steering_joint>front_left_steering_joint</left_steering_joint>
             <right_steering_joint>front_right_steering_joint</right_steering_joint>
-            <kingpin_width>1.0</kingpin_width>
-            <steering_limit>0.5</steering_limit>
+            <kingpin_width>1.585</kingpin_width>
+            <steering_limit>0.4</steering_limit>
             <wheel_base>2.8</wheel_base>
-            <wheel_separation>1.385</wheel_separation>
+            <wheel_separation>1.585</wheel_separation>
             <wheel_radius>0.33</wheel_radius>
-            <min_velocity>-3</min_velocity>
-            <max_velocity>7</max_velocity>
-            <min_acceleration>-6.25</min_acceleration> 
-            <max_acceleration>3</max_acceleration>
-        </plugin> -->
+            <min_velocity>-1.0</min_velocity>
+            <max_velocity>3.0</max_velocity>
+            <min_acceleration>-1.5</min_acceleration>
+            <max_acceleration>1.0</max_acceleration>
+        </plugin>
+
+        <plugin
+            filename="ignition-gazebo-odometry-publisher-system"
+            name="ignition::gazebo::systems::OdometryPublisher">
+            <odom_frame>odom</odom_frame>
+            <robot_base_frame>base_link</robot_base_frame>
+            <dimensions>3</dimensions>
+            <odom_publish_frequency>50</odom_publish_frequency>
+            <odom_topic>/odom</odom_topic>
+            <tf_topic>/tf</tf_topic>
+        </plugin>
 
         <plugin
             filename="ignition-gazebo-joint-state-publisher-system"
             name="gz::sim::systems::JointStatePublisher">
         </plugin>
-
-        <plugin
-            filename="ignition-gazebo-joint-position-controller-system"
-            name="gz::sim::systems::JointPositionController">
-            <joint_name>front_left_steering_joint</joint_name>
-            <topic>/model/gen0_model/joint/front_left_steering_joint/cmd_pos</topic>
-            <p_gain>8.0</p_gain>
-            <i_gain>0.0</i_gain>
-            <d_gain>0.2</d_gain>
-            <cmd_max>1.5</cmd_max>
-            <cmd_min>-1.5</cmd_min>
-            <use_velocity_commands>true</use_velocity_commands>
-        </plugin>
-
-        <plugin
-            filename="ignition-gazebo-joint-position-controller-system"
-            name="gz::sim::systems::JointPositionController">
-            <joint_name>front_right_steering_joint</joint_name>
-            <topic>/model/gen0_model/joint/front_right_steering_joint/cmd_pos</topic>
-            <p_gain>8.0</p_gain>
-            <i_gain>0.0</i_gain>
-            <d_gain>0.2</d_gain>
-            <cmd_max>1.5</cmd_max>
-            <cmd_min>-1.5</cmd_min>
-            <use_velocity_commands>true</use_velocity_commands>
-        </plugin>
-
-        <plugin
-            filename="ignition-gazebo-joint-position-controller-system"
-            name="gz::sim::systems::JointPositionController">
-            <joint_name>back_left_steering_joint</joint_name>
-            <topic>/model/gen0_model/joint/back_left_steering_joint/cmd_pos</topic>
-            <p_gain>8.0</p_gain>
-            <i_gain>0.0</i_gain>
-            <d_gain>0.2</d_gain>
-            <cmd_max>1.5</cmd_max>
-            <cmd_min>-1.5</cmd_min>
-            <use_velocity_commands>true</use_velocity_commands>
-        </plugin>
-
-        <plugin
-            filename="ignition-gazebo-joint-position-controller-system"
-            name="gz::sim::systems::JointPositionController">
-            <joint_name>back_right_steering_joint</joint_name>
-            <topic>/model/gen0_model/joint/back_right_steering_joint/cmd_pos</topic>
-            <p_gain>8.0</p_gain>
-            <i_gain>0.0</i_gain>
-            <d_gain>0.2</d_gain>
-            <cmd_max>1.5</cmd_max>
-            <cmd_min>-1.5</cmd_min>
-            <use_velocity_commands>true</use_velocity_commands>
-        </plugin>
-
-        <plugin
-            filename="ignition-gazebo-joint-controller-system"
-            name="gz::sim::systems::JointController">
-            <joint_name>back_left_wheel_joint</joint_name>
-            <topic>/model/gen0_model/joint/back_left_wheel_joint/cmd_pos</topic>
-        </plugin>
-
-        <plugin
-            filename="ignition-gazebo-joint-controller-system"
-            name="gz::sim::systems::JointController">
-            <joint_name>back_right_wheel_joint</joint_name>
-            <topic>/model/gen0_model/joint/back_right_wheel_joint/cmd_pos</topic>
-        </plugin>
-
-        <!-- <plugin
-            filename="ignition-gazebo-velocity-control-system"
-            name="gz::sim::systems::VelocityControl">
-            <initial_linear>0 0 0</initial_linear>
-            <initial_angular>0 0 0</initial_angular>
-         </plugin> -->
 
         <plugin
             filename="ignition-gazebo-pose-publisher-system"

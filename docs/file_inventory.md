@@ -15,8 +15,8 @@ gen0_gz_sim_ros2/sweeper_integration/launch/navigation_online_slam.launch.py
 gen0_gz_sim_ros2/sweeper_integration/config/nav2_online_slam.yaml
 gen0_gz_sim_ros2/sweeper_integration/config/nav2_online_slam_mppi.yaml
 gen0_gz_sim_ros2/sweeper_integration/launch/explore_gen0.launch.py
-gen0_gz_sim_ros2/gen0_interface/gen0_interface/cmdvel_to_vehicle.py
 gen0_gz_sim_ros2/gen0_main/config/bridge.yaml
+gen0_gz_sim_ros2/gen0_main/urdf/gen0_model.sdf
 ```
 
 ## Must Keep For Current Demo

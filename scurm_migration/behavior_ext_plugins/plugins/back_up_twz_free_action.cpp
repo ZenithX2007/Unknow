@@ -102,12 +102,32 @@ namespace nav2_behaviors
 
     nav2_util::declare_parameter_if_not_declared(
       node,
-      prefix + "min_turning_radius", rclcpp::ParameterValue(4.5));
+      prefix + "min_turning_radius", rclcpp::ParameterValue(6.62));
     node->get_parameter(prefix + "min_turning_radius", min_turning_radius_);
     if (min_turning_radius_ < 0.0)
     {
       RCLCPP_WARN(node->get_logger(), "min_turning_radius is negative. Disabling curvature limiting.");
       min_turning_radius_ = 0.0;
+    }
+
+    nav2_util::declare_parameter_if_not_declared(
+      node,
+      prefix + "ackermann_heading_tolerance", rclcpp::ParameterValue(0.35));
+    node->get_parameter(prefix + "ackermann_heading_tolerance", ackermann_heading_tolerance_);
+    if (ackermann_heading_tolerance_ < 0.0)
+    {
+      RCLCPP_WARN(node->get_logger(), "ackermann_heading_tolerance is negative. Setting it to 0.");
+      ackermann_heading_tolerance_ = 0.0;
+    }
+
+    nav2_util::declare_parameter_if_not_declared(
+      node,
+      prefix + "min_free_space_direction", rclcpp::ParameterValue(0.25));
+    node->get_parameter(prefix + "min_free_space_direction", min_free_space_direction_);
+    if (min_free_space_direction_ < 0.0)
+    {
+      RCLCPP_WARN(node->get_logger(), "min_free_space_direction is negative. Setting it to 0.");
+      min_free_space_direction_ = 0.0;
     }
     
     costmap_client_ = node->create_client<nav2_msgs::srv::GetCostmap>(service_name_);
@@ -228,6 +248,17 @@ namespace nav2_behaviors
     avg_y /= free_points.size();
     RCLCPP_WARN(node->get_logger(), "avg_x: %f, avg_y: %f", avg_x, avg_y);
 
+    const double free_space_direction = std::hypot(avg_x - pose_x, avg_y - pose_y);
+    if (free_space_direction < min_free_space_direction_)
+    {
+      RCLCPP_WARN(
+        node->get_logger(),
+        "Free-space centroid is only %.3f m from the robot; recovery direction is undefined. "
+        "Aborting Ackermann recovery.",
+        free_space_direction);
+      return Status::FAILED;
+    }
+
     // visualize free space and destination
     if(visualization_){
       visualization_msgs::msg::MarkerArray markers;
@@ -295,7 +326,21 @@ namespace nav2_behaviors
       twist_y_ = 0.0;
       const double movement_heading = free_space_is_ahead ?
         angle_diff : normalize_angle(angle_diff - std::copysign(M_PI, angle_diff));
-      twist_z_ = clamp(movement_heading, -max_angular_speed_, max_angular_speed_);
+      if (std::abs(movement_heading) > ackermann_heading_tolerance_)
+      {
+        RCLCPP_WARN(
+          node->get_logger(),
+          "free-space heading %.1f deg exceeds Ackermann recovery tolerance %.1f deg; "
+          "aborting recovery instead of issuing a straight %s command",
+          movement_heading * 180.0 / M_PI,
+          ackermann_heading_tolerance_ * 180.0 / M_PI,
+          twist_x_ >= 0.0 ? "forward" : "reverse");
+        return Status::FAILED;
+      }
+      else
+      {
+        twist_z_ = clamp(movement_heading, -max_angular_speed_, max_angular_speed_);
+      }
       if (min_turning_radius_ > 0.0)
       {
         const double feasible_angular_speed =

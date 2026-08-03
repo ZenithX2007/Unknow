@@ -34,13 +34,6 @@ def generate_launch_description():
             output='screen',
             parameters=[config, {'use_sim_time': True}],
         ),
-        Node(
-            package='sweeper_integration',
-            executable='cmd_vel_adapter',
-            name='cmd_vel_adapter',
-            output='screen',
-            parameters=[config, {'use_sim_time': True}],
-        ),
         static_transform(
             'base_footprint_to_base_link',
             'base_footprint', 'base_link', 0.0, 0.0, 0.0),

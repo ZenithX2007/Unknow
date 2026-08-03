@@ -46,6 +46,8 @@ private:
   double twist_x_, twist_y_, twist_z_;
   double max_radius_, robot_radius_;
   double max_angular_speed_, min_turning_radius_;
+  double ackermann_heading_tolerance_;
+  double min_free_space_direction_;
   int free_threshold_;
   double cost_threshold_;
   bool visualization_, holonomic_motion_;

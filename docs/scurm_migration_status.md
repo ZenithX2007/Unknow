@@ -222,27 +222,18 @@ The SCURM-aligned Gen0 profile is now the main migration path:
 
 GEN0_WORKSPACE=$PWD \
 GEN0_NAV2_PROFILE=scurm_gen0 \
-GEN0_NAV2_START_VEHICLE_INTERFACE=true \
 ./run_gen0_nav2.sh
 ```
 
-Set `GEN0_NAV2_START_VEHICLE_INTERFACE=true` in the same command when validating
-actual vehicle execution. Setting it after Nav2 is already running does not
-start `cmdvel_to_vehicle`.
-
-The Gen0 Gazebo steering interface has been validated against FAST-LIO yaw; the
-vehicle adapter now defaults to `GEN0_VEHICLE_ANGULAR_Z_SIGN=1.0`. A positive
-Nav2 angular command increases map-frame yaw with this setting.
+Gazebo's native `AckermannSteering` plugin receives `/cmd_vel` directly through
+`ros_gz_bridge`. No vehicle command adapter is started.
 
 Navigation execution now uses Gen0 Ackermann-aware validation defaults:
 
 - Nav2 `FollowPath` uses `nav2_mppi_controller::MPPIController` with
-  `motion_model: Ackermann` and `min_turning_r: 4.5`.
+  `motion_model: Ackermann` and `min_turning_r: 6.62`.
 - Velocity smoothing limits forward speed to `0.65 m/s` and angular speed to
-  `0.12 rad/s`, matching the Gen0 steering geometry.
-- `cmdvel_to_vehicle` applies the same caps as a final safety layer.
-- The optional front-laser hard stop remains available, but is disabled by
-  default so it does not hide controller/costmap behavior during tuning.
+  `0.07 rad/s`, matching the standard front-steering Ackermann geometry.
 - Nav2 `xy_goal_tolerance` is `0.35 m`; final yaw is ignored for position-only
   goal testing.
 
@@ -278,11 +269,8 @@ Validated on July 30, 2026:
 - `controller_server` and `planner_server` reach lifecycle state `active [3]`.
 - `/local_costmap/costmap_raw` publishes continuously.
 - `/compute_path_to_pose` succeeds against the generated Gen0 blank map.
-- With `GEN0_NAV2_START_VEHICLE_INTERFACE=true`, `cmdvel_to_vehicle` starts and
-  listens on `/control/cmd_vel`.
-- Manual `/control/cmd_vel` testing showed the raw Gen0 steering command has
-  reversed yaw direction; `cmdvel_to_vehicle` applies the default
-  `angular_z_sign=-1.0` correction for Nav2 execution.
+- `/cmd_vel` is the single ROS command topic bridged to Gazebo.
+- `/gen0_model/ackermann/odom` is available as native Gazebo Ackermann odometry.
 
 The generated `/tmp/gen0_my_map_nav.yaml` is intentionally blank. It verifies
 Nav2 lifecycle, TF, behavior-tree, planner, controller, and local obstacle

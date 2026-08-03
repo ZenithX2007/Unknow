@@ -25,8 +25,10 @@
       <ReactiveFallback name="RecoveryFallback">
         <GoalUpdated/>
         <RoundRobin name="AckermannRecoveryActions">
-          <BackUp name="FreeSpaceRecoveryShort" backup_dist="0.35" backup_speed="0.10" time_allowance="7"/>
-          <BackUp name="FreeSpaceRecoveryLong" backup_dist="0.55" backup_speed="0.10" time_allowance="9"/>
+          <Sequence name="ClearingActions">
+            <ClearEntireCostmap name="ClearLocalCostmap-Subtree" service_name="local_costmap/clear_entirely_local_costmap"/>
+            <ClearEntireCostmap name="ClearGlobalCostmap-Subtree" service_name="global_costmap/clear_entirely_global_costmap"/>
+          </Sequence>
           <Wait name="WaitRecovery" wait_duration="1"/>
         </RoundRobin>
       </ReactiveFallback>

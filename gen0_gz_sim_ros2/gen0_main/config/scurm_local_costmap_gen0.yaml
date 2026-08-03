@@ -8,8 +8,8 @@ costmap:
       robot_base_frame: base_link
       transform_tolerance: 0.5
       rolling_window: true
-      width: 12
-      height: 12
+      width: 16
+      height: 16
       resolution: 0.05
       footprint: "[[2.2, 1.1], [2.2, -1.1], [-2.2, -1.1], [-2.2, 1.1]]"
       footprint_padding: 0.03
@@ -18,8 +18,8 @@ costmap:
 
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 5.0
-        inflation_radius: 0.75
+        cost_scaling_factor: 4.0
+        inflation_radius: 1.4
 
       local_obstacle_layer:
         plugin: "costmap_intensity::ObstacleLayerIntensity"

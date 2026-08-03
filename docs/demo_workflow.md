@@ -6,7 +6,7 @@ WSL + ROS 2 Humble + Gazebo Fortress setup.
 The current integration is split into these layers:
 
 - simulator / bridge layer
-- interface adapter layer
+- vehicle control bridge layer
 - perception layer
 - mapping layer
 - navigation layer
@@ -30,9 +30,8 @@ Gazebo front 3D lidar
 -> NavfnPlanner global path
 -> MPPI local control with Ackermann constraints
 -> /cmd_vel
--> cmd_vel_adapter
--> /control/cmd_vel
--> gen0_interface cmdvel_to_vehicle
+-> ros_gz_bridge
+-> Gazebo AckermannSteering
 -> Gazebo vehicle motion
 ```
 
@@ -43,7 +42,7 @@ online SLAM map
 -> explore_lite frontier selection
 -> Nav2 /navigate_to_pose goals
 -> /cmd_vel
--> /control/cmd_vel
+-> Gazebo AckermannSteering
 -> Gazebo vehicle motion while the map grows
 ```
 
@@ -102,12 +101,9 @@ The demo uses these repository files:
     and manual Gazebo tests.
   - Starts the ROS-Gazebo bridge and `robot_state_publisher`.
 - `gen0_gz_sim_ros2/sweeper_integration/launch/interfaces.launch.py`
-  - Starts `/ground_truth_odometry`, `/cmd_vel_adapter`, and static sensor TFs.
+  - Starts `/ground_truth_odometry` and static sensor TFs.
 - `gen0_gz_sim_ros2/sweeper_integration/config/interfaces.yaml`
-  - Configures `/cmd_vel_adapter`.
-  - Converts Nav2 pure rotation commands into a slow forward arc for Gen0,
-    because the four-wheel steering interface cannot move when
-    `linear.x == 0` and only `angular.z` is commanded.
+  - Configures `/ground_truth_odometry`.
 - `gen0_gz_sim_ros2/sweeper_integration/launch/mapping.launch.py`
   - Starts `pointcloud_to_laserscan` and `slam_toolbox`.
 - `gen0_gz_sim_ros2/sweeper_integration/config/pointcloud_to_laserscan.yaml`
@@ -145,8 +141,9 @@ The demo uses these repository files:
   - Uses `base_footprint` and the online `/map`.
 - `gen0_gz_sim_ros2/sweeper_integration/launch/explore_gen0.launch.py`
   - Starts the official `explore_lite` executable with Gen0 parameters.
-- `gen0_gz_sim_ros2/gen0_interface/gen0_interface/cmdvel_to_vehicle.py`
-  - Converts `/control/cmd_vel` into vehicle steering and wheel commands.
+- `gen0_gz_sim_ros2/gen0_main/urdf/gen0_model.sdf`
+  - Configures the native Gazebo `AckermannSteering` plugin. It receives
+    `/cmd_vel` through `ros_gz_bridge`.
 
 ## Build
 
@@ -224,17 +221,7 @@ source install/setup.bash
 ros2 launch sweeper_integration interfaces.launch.py
 ```
 
-### Terminal 3: Vehicle Command Interface
-
-```bash
-cd ~/gen0_gz_sim_ros2
-source /opt/ros/humble/setup.bash
-source install/setup.bash
-
-ros2 run gen0_interface cmdvel_to_vehicle
-```
-
-### Terminal 4: Online SLAM and Nav2
+### Terminal 3: Online SLAM and Nav2
 
 ```bash
 cd ~/gen0_gz_sim_ros2
@@ -252,7 +239,7 @@ If `nav2_params_file` is omitted, the launch file uses
 `nav2_online_slam.yaml`, which is the older Regulated Pure Pursuit
 configuration.
 
-### Terminal 5: Frontier Exploration
+### Terminal 4: Frontier Exploration
 
 ```bash
 cd ~/gen0_gz_sim_ros2
@@ -268,7 +255,7 @@ If needed, resume exploration:
 ros2 topic pub --once /explore/resume std_msgs/msg/Bool "{data: true}"
 ```
 
-### Terminal 6: RViz Map View
+### Terminal 5: RViz Map View
 
 Use RViz software rendering only in this terminal:
 
@@ -292,7 +279,7 @@ cd ~/gen0_gz_sim_ros2
 source /opt/ros/humble/setup.bash
 source install/setup.bash
 
-ros2 node list | grep -E "ros_gz_bridge|ground_truth_odometry|cmd_vel_adapter|vehicle_movement_interface|pointcloud_to_laserscan|slam_toolbox|controller_server|explore_node"
+ros2 node list | grep -E "ros_gz_bridge|ground_truth_odometry|pointcloud_to_laserscan|slam_toolbox|controller_server|explore_node"
 ros2 lifecycle get /controller_server
 ros2 param get /controller_server controller_plugins
 ros2 param get /controller_server FollowPath.plugin
@@ -318,8 +305,8 @@ Expected:
 - `map -> base_footprint` prints translation and rotation.
 - `/explore/status` is `exploration_started`, `exploration_in_progress`, or
   `exploration_complete`.
-- While exploration is in progress, `/cmd_vel` and `/control/cmd_vel` may
-  publish nonzero commands and `/odom` should change.
+- While exploration is in progress, `/cmd_vel` may publish nonzero commands
+  and `/odom` should change.
 
 Stop here if `/scan` is all `inf` or `/map` reports `width: 0` and `height: 0`.
 That is a Gazebo sensor/rendering input failure, not an exploration tuning issue.
@@ -365,29 +352,15 @@ Expected nodes include:
 
 ```text
 /ground_truth_odometry
-/cmd_vel_adapter
 /ros_gz_bridge
 /robot_state_publisher
 ```
-
-## Terminal 3: Start Vehicle Command Interface
-
-```bash
-cd ~/gen0_gz_sim_ros2
-source /opt/ros/humble/setup.bash
-source install/setup.bash
-
-ros2 run gen0_interface cmdvel_to_vehicle
-```
-
-This node consumes `/control/cmd_vel` and sends steering / wheel commands to the
-Gazebo model.
 
 ## Mapping Workflow
 
 Use this section when creating a new map.
 
-### Terminal 4: Start Mapping
+### Terminal 3: Start Mapping
 
 ```bash
 cd ~/gen0_gz_sim_ros2
@@ -404,7 +377,7 @@ pointcloud_to_laserscan: Got a subscriber to laserscan
 slam_toolbox: Registering sensor: [Custom Described Lidar]
 ```
 
-### Terminal 5: Open RViz for Mapping
+### Terminal 4: Open RViz for Mapping
 
 Use software rendering for RViz only.
 
@@ -493,7 +466,7 @@ Stop mapping first:
 
 - Stop `mapping.launch.py`.
 - Stop `teleop_twist_keyboard`.
-- Keep Gazebo, bridge, interfaces, and `cmdvel_to_vehicle` running.
+- Keep Gazebo, bridge, and interfaces running.
 
 ### Start Nav2 With Saved Map
 
@@ -572,7 +545,6 @@ Keep these terminals running first:
 
 - `spawn.launch.py` with `world:=san_roundabout rviz:=false`
 - `interfaces.launch.py`
-- `cmdvel_to_vehicle`
 
 Stop these before starting online SLAM navigation:
 
@@ -755,16 +727,13 @@ Check command flow:
 
 ```bash
 ros2 topic info /cmd_vel
-ros2 topic info /control/cmd_vel
 timeout 10 ros2 topic echo /cmd_vel
+ros2 topic echo --once /gen0_model/ackermann/odom
 ```
 
-If `/cmd_vel` publishes but the vehicle does not move, verify that
-`cmdvel_to_vehicle` is running:
-
-```bash
-ros2 node list | grep vehicle_movement_interface
-```
+If `/cmd_vel` publishes but the vehicle does not move, verify that the
+`ros_gz_bridge` process is running and that `/gen0_model/ackermann/odom`
+changes after a command.
 
 Also stop `teleop_twist_keyboard` before Nav2 tests, so teleop does not compete
 with Nav2 for `/cmd_vel`.
@@ -871,7 +840,6 @@ Keep these terminals running first:
 
 - `spawn.launch.py` with `world:=san_roundabout rviz:=false`
 - `interfaces.launch.py`
-- `cmdvel_to_vehicle`
 - `navigation_online_slam.launch.py`
 
 Do not run `teleop_twist_keyboard` while testing autonomous exploration.

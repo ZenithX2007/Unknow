@@ -57,15 +57,23 @@ def ensure_default_gen0_nav_map(context, *args, **kwargs):
 def ensure_nav2_costmap_overlay(context, *args, **kwargs):
     costmap_source = LaunchConfiguration('costmap_source').perform(context)
     map_source = LaunchConfiguration('map_source').perform(context)
+    projected_map_unknown_as_free = (
+        LaunchConfiguration('projected_map_unknown_as_free').perform(context).lower()
+        == 'true'
+    )
     namespace = LaunchConfiguration('namespace').perform(context)
 
     if costmap_source == 'scurm_terrain':
-        global_track_unknown = 'false' if map_source == 'projected_map' else 'true'
+        global_track_unknown = (
+            'false'
+            if map_source == 'projected_map' and projected_map_unknown_as_free
+            else 'true'
+        )
         pointcloud_clearing = 'false' if map_source == 'projected_map' else 'true'
         overlay = f"""local_costmap:
   local_costmap:
     ros__parameters:
-      transform_tolerance: 0.5
+      transform_tolerance: 1.0
       update_frequency: 20.0
       publish_frequency: 20.0
       global_frame: map
@@ -73,8 +81,8 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
       plugins: ["local_obstacle_layer", "local_inflation_layer"]
       local_inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 5.0
-        inflation_radius: 0.4
+        cost_scaling_factor: 4.0
+        inflation_radius: 1.4
       local_obstacle_layer:
         plugin: "costmap_intensity::ObstacleLayerIntensity"
         enabled: true
@@ -106,8 +114,8 @@ global_costmap:
         map_subscribe_transient_local: true
       global_inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 10.0
-        inflation_radius: 0.5
+        cost_scaling_factor: 4.0
+        inflation_radius: 1.4
 """
     else:
         overlay = """local_costmap:
@@ -137,20 +145,18 @@ def generate_launch_description():
     nav2_controller_frequency = LaunchConfiguration('nav2_controller_frequency')
     nav2_model_dt = LaunchConfiguration('nav2_model_dt')
     nav2_smoothing_frequency = LaunchConfiguration('nav2_smoothing_frequency')
-    start_vehicle_interface = LaunchConfiguration('start_vehicle_interface')
-    vehicle_angular_z_sign = LaunchConfiguration('vehicle_angular_z_sign')
-    vehicle_max_forward_speed = LaunchConfiguration('vehicle_max_forward_speed')
-    vehicle_max_reverse_speed = LaunchConfiguration('vehicle_max_reverse_speed')
-    vehicle_max_angular_z = LaunchConfiguration('vehicle_max_angular_z')
-    vehicle_front_stop_enabled = LaunchConfiguration('vehicle_front_stop_enabled')
-    vehicle_front_stop_distance = LaunchConfiguration('vehicle_front_stop_distance')
-    vehicle_front_slow_distance = LaunchConfiguration('vehicle_front_slow_distance')
     publish_identity_map_to_odom = LaunchConfiguration('publish_identity_map_to_odom')
     odom_topic = LaunchConfiguration('odom_topic')
     map_source = LaunchConfiguration('map_source')
     map_server_topic = LaunchConfiguration('map_server_topic')
     projected_map_topic = LaunchConfiguration('projected_map_topic')
     projected_map_unknown_as_free = LaunchConfiguration('projected_map_unknown_as_free')
+    projected_map_fixed_geometry = LaunchConfiguration('projected_map_fixed_geometry')
+    projected_map_fixed_origin_x = LaunchConfiguration('projected_map_fixed_origin_x')
+    projected_map_fixed_origin_y = LaunchConfiguration('projected_map_fixed_origin_y')
+    projected_map_fixed_width = LaunchConfiguration('projected_map_fixed_width')
+    projected_map_fixed_height = LaunchConfiguration('projected_map_fixed_height')
+    projected_map_fixed_resolution = LaunchConfiguration('projected_map_fixed_resolution')
     default_nav_to_pose_bt_xml = LaunchConfiguration('default_nav_to_pose_bt_xml')
     default_nav_through_poses_bt_xml = LaunchConfiguration('default_nav_through_poses_bt_xml')
 
@@ -239,60 +245,18 @@ def generate_launch_description():
     )
     declare_nav2_controller_frequency = DeclareLaunchArgument(
         'nav2_controller_frequency',
-        default_value='80.0',
-        description='Controller loop frequency. Keep 80.0 for SCURM parity; lower in simulation if MPPI misses its rate.',
+        default_value='20.0',
+        description='Controller loop frequency for the Ackermann Nav2 stack.',
     )
     declare_nav2_model_dt = DeclareLaunchArgument(
         'nav2_model_dt',
-        default_value='0.014',
+        default_value='0.05',
         description='MPPI model timestep. It must be at least the controller period.',
     )
     declare_nav2_smoothing_frequency = DeclareLaunchArgument(
         'nav2_smoothing_frequency',
-        default_value='80.0',
+        default_value='20.0',
         description='Velocity smoother frequency. Usually match nav2_controller_frequency.',
-    )
-    declare_start_vehicle_interface = DeclareLaunchArgument(
-        'start_vehicle_interface',
-        default_value='true',
-        choices=['true', 'false'],
-        description='Start the gen0 Twist-to-vehicle-joint command adapter.',
-    )
-    declare_vehicle_angular_z_sign = DeclareLaunchArgument(
-        'vehicle_angular_z_sign',
-        default_value='1.0',
-        description='Multiplier applied to Twist.angular.z before converting to Gen0 steering joints.',
-    )
-    declare_vehicle_max_forward_speed = DeclareLaunchArgument(
-        'vehicle_max_forward_speed',
-        default_value='0.65',
-        description='Maximum forward velocity accepted by the Gen0 vehicle adapter.',
-    )
-    declare_vehicle_max_reverse_speed = DeclareLaunchArgument(
-        'vehicle_max_reverse_speed',
-        default_value='0.25',
-        description='Maximum reverse velocity accepted by the Gen0 vehicle adapter.',
-    )
-    declare_vehicle_max_angular_z = DeclareLaunchArgument(
-        'vehicle_max_angular_z',
-        default_value='0.12',
-        description='Maximum Twist.angular.z magnitude accepted by the Gen0 vehicle adapter.',
-    )
-    declare_vehicle_front_stop_enabled = DeclareLaunchArgument(
-        'vehicle_front_stop_enabled',
-        default_value='false',
-        choices=['true', 'false'],
-        description='Enable optional front laser hard-stop protection in the Gen0 vehicle adapter.',
-    )
-    declare_vehicle_front_stop_distance = DeclareLaunchArgument(
-        'vehicle_front_stop_distance',
-        default_value='0.65',
-        description='Stop forward vehicle commands when front laser clearance is below this distance.',
-    )
-    declare_vehicle_front_slow_distance = DeclareLaunchArgument(
-        'vehicle_front_slow_distance',
-        default_value='1.5',
-        description='Start scaling down forward vehicle commands below this front laser clearance.',
     )
     declare_publish_identity_map_to_odom = DeclareLaunchArgument(
         'publish_identity_map_to_odom',
@@ -327,6 +291,37 @@ def generate_launch_description():
         default_value='false',
         choices=['true', 'false'],
         description='Convert unknown cells in projected_map to free cells for mapless SCURM validation.',
+    )
+    declare_projected_map_fixed_geometry = DeclareLaunchArgument(
+        'projected_map_fixed_geometry',
+        default_value='true',
+        choices=['true', 'false'],
+        description='Keep the relayed projected map geometry fixed so Nav2 StaticLayer does not resize during navigation.',
+    )
+    declare_projected_map_fixed_origin_x = DeclareLaunchArgument(
+        'projected_map_fixed_origin_x',
+        default_value='-20.0',
+        description='Fixed projected map origin X in the map frame.',
+    )
+    declare_projected_map_fixed_origin_y = DeclareLaunchArgument(
+        'projected_map_fixed_origin_y',
+        default_value='-30.0',
+        description='Fixed projected map origin Y in the map frame.',
+    )
+    declare_projected_map_fixed_width = DeclareLaunchArgument(
+        'projected_map_fixed_width',
+        default_value='900',
+        description='Fixed projected map width in cells.',
+    )
+    declare_projected_map_fixed_height = DeclareLaunchArgument(
+        'projected_map_fixed_height',
+        default_value='600',
+        description='Fixed projected map height in cells.',
+    )
+    declare_projected_map_fixed_resolution = DeclareLaunchArgument(
+        'projected_map_fixed_resolution',
+        default_value='0.10',
+        description='Fixed projected map resolution in meters per cell.',
     )
     declare_odom_topic = DeclareLaunchArgument(
         'odom_topic',
@@ -446,13 +441,16 @@ def generate_launch_description():
                     {
                         'use_sim_time': use_sim_time,
                         'input_cmd_vel_topic': '/control/cmd_vel_raw',
-                        'output_cmd_vel_topic': '/control/cmd_vel',
+                        'output_cmd_vel_topic': '/cmd_vel',
                         'map_topic': '/map',
                         'odom_topic': odom_topic,
                         'map_frame': 'map',
                         'base_frame': 'base_link',
                         'bounds_margin': 5.0,
                         'max_abs_z': 20.0,
+                        'min_turning_radius': 6.62,
+                        'curvature_warn_period': 2.0,
+                        'max_pose_jump': 3.0,
                     }
                 ],
             ),
@@ -471,9 +469,34 @@ def generate_launch_description():
                         'input_topic': projected_map_topic,
                         'output_topic': '/map',
                         'output_frame': 'map',
+                        'publish_period': 1.0,
                         'unknown_as_free': ParameterValue(
                             projected_map_unknown_as_free,
                             value_type=bool,
+                        ),
+                        'fixed_geometry': ParameterValue(
+                            projected_map_fixed_geometry,
+                            value_type=bool,
+                        ),
+                        'fixed_origin_x': ParameterValue(
+                            projected_map_fixed_origin_x,
+                            value_type=float,
+                        ),
+                        'fixed_origin_y': ParameterValue(
+                            projected_map_fixed_origin_y,
+                            value_type=float,
+                        ),
+                        'fixed_width': ParameterValue(
+                            projected_map_fixed_width,
+                            value_type=int,
+                        ),
+                        'fixed_height': ParameterValue(
+                            projected_map_fixed_height,
+                            value_type=int,
+                        ),
+                        'fixed_resolution': ParameterValue(
+                            projected_map_fixed_resolution,
+                            value_type=float,
                         ),
                     }
                 ],
@@ -491,26 +514,6 @@ def generate_launch_description():
                 ],
             ),
         ],
-    )
-
-    vehicle_interface_node = Node(
-        package='gen0_interface',
-        executable='cmdvel_to_vehicle',
-        name='cmdvel_to_vehicle',
-        output='screen',
-        parameters=[
-            {
-                'cmd_vel_topic': '/control/cmd_vel',
-                'angular_z_sign': ParameterValue(vehicle_angular_z_sign, value_type=float),
-                'max_forward_speed': ParameterValue(vehicle_max_forward_speed, value_type=float),
-                'max_reverse_speed': ParameterValue(vehicle_max_reverse_speed, value_type=float),
-                'max_angular_z': ParameterValue(vehicle_max_angular_z, value_type=float),
-                'front_stop_enabled': ParameterValue(vehicle_front_stop_enabled, value_type=bool),
-                'front_stop_distance': ParameterValue(vehicle_front_stop_distance, value_type=float),
-                'front_slow_distance': ParameterValue(vehicle_front_slow_distance, value_type=float),
-            }
-        ],
-        condition=IfCondition(start_vehicle_interface),
     )
 
     identity_map_to_odom_node = Node(
@@ -535,25 +538,22 @@ def generate_launch_description():
         declare_nav2_controller_frequency,
         declare_nav2_model_dt,
         declare_nav2_smoothing_frequency,
-        declare_start_vehicle_interface,
-        declare_vehicle_angular_z_sign,
-        declare_vehicle_max_forward_speed,
-        declare_vehicle_max_reverse_speed,
-        declare_vehicle_max_angular_z,
-        declare_vehicle_front_stop_enabled,
-        declare_vehicle_front_stop_distance,
-        declare_vehicle_front_slow_distance,
         declare_publish_identity_map_to_odom,
         declare_costmap_source,
         declare_map_source,
         declare_map_server_topic,
         declare_projected_map_topic,
         declare_projected_map_unknown_as_free,
+        declare_projected_map_fixed_geometry,
+        declare_projected_map_fixed_origin_x,
+        declare_projected_map_fixed_origin_y,
+        declare_projected_map_fixed_width,
+        declare_projected_map_fixed_height,
+        declare_projected_map_fixed_resolution,
         OpaqueFunction(function=ensure_nav2_costmap_overlay),
         declare_odom_topic,
         declare_default_nav_to_pose_bt_xml,
         declare_default_nav_through_poses_bt_xml,
         load_nodes,
         identity_map_to_odom_node,
-        vehicle_interface_node,
     ])

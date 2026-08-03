@@ -29,22 +29,22 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument(
                 "vehicle_length",
-                default_value="3.50",
+                default_value="4.40",
                 description="Vehicle top-down rectangular footprint length in meters.",
             ),
             DeclareLaunchArgument(
                 "vehicle_width",
-                default_value="1.80",
+                default_value="2.20",
                 description="Vehicle top-down rectangular footprint width in meters.",
             ),
             DeclareLaunchArgument(
                 "vehicle_center_offset_x",
-                default_value="0.25",
+                default_value="0.0",
                 description="Forward x offset from odom pose to vehicle footprint center.",
             ),
             DeclareLaunchArgument(
                 "vehicle_center_offset_y",
-                default_value="-0.25",
+                default_value="0.0",
                 description="Left y offset from odom pose to vehicle footprint center.",
             ),
             DeclareLaunchArgument(

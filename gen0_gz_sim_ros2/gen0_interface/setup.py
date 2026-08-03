@@ -15,12 +15,11 @@ setup(
     zip_safe=True,
     maintainer='zjxue2007',
     maintainer_email='zjxue2007@example.com',
-    description='Vehicle command interface for converting adapted Twist commands into Gen0 steering and wheel joint commands.',
+    description='Gen0 mapping-drive and keyboard teleoperation tools for Gazebo Ackermann control.',
     license='Apache-2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'cmdvel_to_vehicle = gen0_interface.cmdvel_to_vehicle:main',
             'mapping_drive = gen0_interface.mapping_drive:main',
             'keyboard_teleop = gen0_interface.keyboard_teleop:main',
         ],

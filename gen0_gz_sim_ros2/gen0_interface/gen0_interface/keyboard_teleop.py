@@ -31,11 +31,11 @@ class KeyboardTeleop(Node):
     def __init__(self):
         super().__init__("gen0_keyboard_teleop")
 
-        self.declare_parameter("cmd_vel_topic", "/control/cmd_vel")
+        self.declare_parameter("cmd_vel_topic", "/cmd_vel")
         self.declare_parameter("linear_speed", 0.20)
         self.declare_parameter("turn_linear_speed", 0.16)
         self.declare_parameter("reverse_speed", 0.12)
-        self.declare_parameter("angular_speed", 0.25)
+        self.declare_parameter("angular_speed", 0.02)
         self.declare_parameter("key_timeout", 0.35)
         self.declare_parameter("publish_rate", 10.0)
 

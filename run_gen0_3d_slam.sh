@@ -7,10 +7,10 @@ WORLD="${GEN0_WORLD:-my_map}"
 ACTORS_SCENARIO="${GEN0_ACTORS_SCENARIO:-}"
 TRASH_SCENARIO="${GEN0_TRASH_SCENARIO-small_trash_dense}"
 TRASH_CLEANUP="${GEN0_TRASH_CLEANUP:-true}"
-TRASH_VEHICLE_LENGTH="${GEN0_TRASH_VEHICLE_LENGTH:-3.50}"
-TRASH_VEHICLE_WIDTH="${GEN0_TRASH_VEHICLE_WIDTH:-1.80}"
-TRASH_VEHICLE_CENTER_OFFSET_X="${GEN0_TRASH_VEHICLE_CENTER_OFFSET_X:-0.25}"
-TRASH_VEHICLE_CENTER_OFFSET_Y="${GEN0_TRASH_VEHICLE_CENTER_OFFSET_Y:--0.25}"
+TRASH_VEHICLE_LENGTH="${GEN0_TRASH_VEHICLE_LENGTH:-4.40}"
+TRASH_VEHICLE_WIDTH="${GEN0_TRASH_VEHICLE_WIDTH:-2.20}"
+TRASH_VEHICLE_CENTER_OFFSET_X="${GEN0_TRASH_VEHICLE_CENTER_OFFSET_X:-0.0}"
+TRASH_VEHICLE_CENTER_OFFSET_Y="${GEN0_TRASH_VEHICLE_CENTER_OFFSET_Y:-0.0}"
 TRASH_COVERAGE_MARGIN="${GEN0_TRASH_COVERAGE_MARGIN:-0.0}"
 TRASH_DEBUG_ITEM="${GEN0_TRASH_DEBUG_ITEM:-}"
 TRASH_DEBUG_PERIOD="${GEN0_TRASH_DEBUG_PERIOD:-1.0}"
@@ -19,15 +19,9 @@ PARTITION="${GEN0_PARTITION:-gen0_scurm_demo}"
 GAZEBO_GUI="${GEN0_GAZEBO_GUI:-true}"
 GROUND_TRUTH_LOCALIZATION="${GEN0_GROUND_TRUTH_LOCALIZATION:-false}"
 STATIC_ODOM_BASE="${GEN0_STATIC_ODOM_BASE:-false}"
+GAZEBO_BRIDGE_FILE="${GEN0_GAZEBO_BRIDGE_FILE:-$WORKSPACE/gen0_gz_sim_ros2/gen0_main/config/bridge_no_gz_odom_tf.yaml}"
 MAPPING_DRIVE="${GEN0_MAPPING_DRIVE:-true}"
 DRIVE_SPEED="${GEN0_DRIVE_SPEED:-0.25}"
-VEHICLE_ANGULAR_Z_SIGN="${GEN0_VEHICLE_ANGULAR_Z_SIGN:-1.0}"
-VEHICLE_MAX_FORWARD_SPEED="${GEN0_VEHICLE_MAX_FORWARD_SPEED:-0.65}"
-VEHICLE_MAX_REVERSE_SPEED="${GEN0_VEHICLE_MAX_REVERSE_SPEED:-0.25}"
-VEHICLE_MAX_ANGULAR_Z="${GEN0_VEHICLE_MAX_ANGULAR_Z:-0.12}"
-VEHICLE_FRONT_STOP_ENABLED="${GEN0_VEHICLE_FRONT_STOP_ENABLED:-false}"
-VEHICLE_FRONT_STOP_DISTANCE="${GEN0_VEHICLE_FRONT_STOP_DISTANCE:-0.65}"
-VEHICLE_FRONT_SLOW_DISTANCE="${GEN0_VEHICLE_FRONT_SLOW_DISTANCE:-1.5}"
 RVIZ="${GEN0_RVIZ:-true}"
 RVIZ_CONFIG="${GEN0_RVIZ_CONFIG:-$WORKSPACE/gen0_gz_sim_ros2/gen0_main/config/gen0_3d_mapping.rviz}"
 LOG_DIR="${GEN0_LOG_DIR:-$WORKSPACE/runtime_logs}"
@@ -215,6 +209,7 @@ cd "$WORKSPACE"
 require_file /opt/ros/humble/setup.bash
 require_file "$WORKSPACE/install/setup.bash"
 require_file "$RVIZ_CONFIG"
+require_file "$GAZEBO_BRIDGE_FILE"
 if [[ "$SIMULATED_LIDAR" == "true" ]]; then
   require_file "$WORLD_OBJ_PATH"
 fi
@@ -249,7 +244,8 @@ log "World: $WORLD, actors_scenario: $ACTORS_SCENARIO, trash_scenario=$TRASH_SCE
 log "Simulated lidar: $SIMULATED_LIDAR, world_obj_path: $WORLD_OBJ_PATH"
 log "Front 3D source topic: $FRONT3D_SOURCE_TOPIC, simulated_topic=$SIMULATED_FRONT3D_TOPIC, gazebo_topic=$GAZEBO_FRONT3D_TOPIC"
 log "TF localization: ground_truth_localization=$GROUND_TRUTH_LOCALIZATION, static_odom_base=$STATIC_ODOM_BASE"
-log "Mapping drive: $MAPPING_DRIVE, drive_speed=$DRIVE_SPEED, vehicle_angular_z_sign=$VEHICLE_ANGULAR_Z_SIGN, vehicle_max_forward_speed=$VEHICLE_MAX_FORWARD_SPEED"
+log "Gazebo bridge file: $GAZEBO_BRIDGE_FILE"
+log "Mapping drive: $MAPPING_DRIVE, drive_speed=$DRIVE_SPEED, command_topic=/cmd_vel"
 log "SCURM view: terrain_analysis=$TERRAIN_ANALYSIS, terrain_analysis_ext=$TERRAIN_ANALYSIS_EXT, projected_map=$PROJECTED_MAP, local_costmap=$LOCAL_COSTMAP, relocalization=$RELOCALIZATION, rviz=$RVIZ"
 log "FAST-LIO map save: pcd_save=$FAST_LIO_PCD_SAVE, map_file_path=$FAST_LIO_MAP_FILE_PATH, interval=$FAST_LIO_PCD_SAVE_INTERVAL"
 if [[ "$RELOCALIZATION" == "true" ]]; then
@@ -272,6 +268,7 @@ gazebo_launch=(
   rviz:=false
   ground_truth_localization:="$GROUND_TRUTH_LOCALIZATION"
   static_odom_base:="$STATIC_ODOM_BASE"
+  bridge_file:="$GAZEBO_BRIDGE_FILE"
   render_env:=unset
 )
 if [[ -n "$GPU_ADAPTER" ]]; then
@@ -352,13 +349,6 @@ if wait_for_relocalized_odometry "$FAST_LIO_PID"; then
       ros2 launch gen0_main gen0_mapping_drive.launch.py \
         enabled:=true \
         drive_speed:="$DRIVE_SPEED" \
-        vehicle_angular_z_sign:="$VEHICLE_ANGULAR_Z_SIGN" \
-        vehicle_max_forward_speed:="$VEHICLE_MAX_FORWARD_SPEED" \
-        vehicle_max_reverse_speed:="$VEHICLE_MAX_REVERSE_SPEED" \
-        vehicle_max_angular_z:="$VEHICLE_MAX_ANGULAR_Z" \
-        vehicle_front_stop_enabled:="$VEHICLE_FRONT_STOP_ENABLED" \
-        vehicle_front_stop_distance:="$VEHICLE_FRONT_STOP_DISTANCE" \
-        vehicle_front_slow_distance:="$VEHICLE_FRONT_SLOW_DISTANCE" \
         front3d_topic:="$FRONT3D_SOURCE_TOPIC"
   else
     log "Skipping mapping_drive because GEN0_MAPPING_DRIVE=$MAPPING_DRIVE"

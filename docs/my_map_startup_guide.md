@@ -166,17 +166,10 @@ export IGN_PARTITION=my_map_demo
 ros2 launch sweeper_integration interfaces.launch.py
 ```
 
-终端 3，车辆命令转换：
-
-```bash
-cd ~/gen0_gz_sim_ros2_v2
-source /opt/ros/humble/setup.bash
-source install/setup.bash
-export IGN_PARTITION=my_map_demo
-ros2 run gen0_interface cmdvel_to_vehicle
-```
-
-后续 SLAM、Nav2、探索流程可参考 `docs/demo_workflow.md`，但把旧文档里的 `world:=san_roundabout` 替换为 `world:=my_map`。
+Gazebo 的原生 AckermannSteering 通过 `ros_gz_bridge` 直接接收 `/cmd_vel`；
+不再单独启动车辆命令转换节点。后续 SLAM、Nav2、探索流程可参考
+`docs/demo_workflow.md`，但把旧文档里的 `world:=san_roundabout` 替换为
+`world:=my_map`。
 
 ## 快速验证
 

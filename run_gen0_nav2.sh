@@ -6,22 +6,12 @@ PROFILE="${GEN0_NAV2_PROFILE:-legacy}"
 WORLD="${GEN0_WORLD:-my_map}"
 FAST_LIO_ODOM_TOPIC="${GEN0_FAST_LIO_ODOM_TOPIC:-/gen0_mapping/fast_lio/odom}"
 USE_RESPAWN="${GEN0_NAV2_USE_RESPAWN:-false}"
-START_VEHICLE_INTERFACE="${GEN0_NAV2_START_VEHICLE_INTERFACE:-false}"
-VEHICLE_ANGULAR_Z_SIGN="${GEN0_VEHICLE_ANGULAR_Z_SIGN:-1.0}"
-VEHICLE_MAX_FORWARD_SPEED="${GEN0_VEHICLE_MAX_FORWARD_SPEED:-0.65}"
-VEHICLE_MAX_REVERSE_SPEED="${GEN0_VEHICLE_MAX_REVERSE_SPEED:-0.25}"
-VEHICLE_MAX_ANGULAR_Z="${GEN0_VEHICLE_MAX_ANGULAR_Z:-0.12}"
-VEHICLE_FRONT_STOP_ENABLED="${GEN0_VEHICLE_FRONT_STOP_ENABLED:-false}"
-VEHICLE_FRONT_STOP_DISTANCE="${GEN0_VEHICLE_FRONT_STOP_DISTANCE:-0.65}"
-VEHICLE_FRONT_SLOW_DISTANCE="${GEN0_VEHICLE_FRONT_SLOW_DISTANCE:-1.5}"
-NAV2_CONTROLLER_FREQUENCY="${GEN0_NAV2_CONTROLLER_FREQUENCY:-80.0}"
+NAV2_CONTROLLER_FREQUENCY="${GEN0_NAV2_CONTROLLER_FREQUENCY:-20.0}"
 NAV2_SMOOTHING_FREQUENCY="${GEN0_NAV2_SMOOTHING_FREQUENCY:-$NAV2_CONTROLLER_FREQUENCY}"
 if [[ -n "${GEN0_NAV2_MODEL_DT:-}" ]]; then
   NAV2_MODEL_DT="$GEN0_NAV2_MODEL_DT"
-elif [[ "$NAV2_CONTROLLER_FREQUENCY" == "80" || "$NAV2_CONTROLLER_FREQUENCY" == "80.0" || "$NAV2_CONTROLLER_FREQUENCY" == "80.00" ]]; then
-  NAV2_MODEL_DT="0.014"
 else
-  NAV2_MODEL_DT="$(awk -v frequency="$NAV2_CONTROLLER_FREQUENCY" 'BEGIN { if (frequency > 0.0) printf "%.6f", 1.0 / frequency; else print "0.014" }')"
+  NAV2_MODEL_DT="$(awk -v frequency="$NAV2_CONTROLLER_FREQUENCY" 'BEGIN { if (frequency > 0.0) printf "%.6f", 1.0 / frequency; else print "0.050000" }')"
 fi
 ALLOW_GROUND_TRUTH_LOCALIZATION="${GEN0_NAV2_ALLOW_GROUND_TRUTH_LOCALIZATION:-false}"
 ODOM_WAIT_TIMEOUT="${GEN0_NAV2_ODOM_WAIT_TIMEOUT:-20}"
@@ -32,6 +22,13 @@ TF_SOURCE_FRAME="${GEN0_NAV2_TF_SOURCE_FRAME:-base_link}"
 TERRAIN_WAIT_TIMEOUT="${GEN0_NAV2_TERRAIN_WAIT_TIMEOUT:-20}"
 PROJECTED_MAP_WAIT_TIMEOUT="${GEN0_NAV2_PROJECTED_MAP_WAIT_TIMEOUT:-20}"
 PROJECTED_MAP_TOPIC="${GEN0_NAV2_PROJECTED_MAP_TOPIC:-/projected_map}"
+PROJECTED_MAP_FIXED_GEOMETRY="${GEN0_NAV2_PROJECTED_MAP_FIXED_GEOMETRY:-true}"
+PROJECTED_MAP_FIXED_ORIGIN_X="${GEN0_NAV2_PROJECTED_MAP_FIXED_ORIGIN_X:--20.0}"
+PROJECTED_MAP_FIXED_ORIGIN_Y="${GEN0_NAV2_PROJECTED_MAP_FIXED_ORIGIN_Y:--30.0}"
+PROJECTED_MAP_FIXED_WIDTH="${GEN0_NAV2_PROJECTED_MAP_FIXED_WIDTH:-900}"
+PROJECTED_MAP_FIXED_HEIGHT="${GEN0_NAV2_PROJECTED_MAP_FIXED_HEIGHT:-600}"
+PROJECTED_MAP_FIXED_RESOLUTION="${GEN0_NAV2_PROJECTED_MAP_FIXED_RESOLUTION:-0.10}"
+PROJECTED_MAP_BOUNDS_MARGIN="${GEN0_NAV2_PROJECTED_MAP_BOUNDS_MARGIN:-5.0}"
 MAP_TF_WAIT_TIMEOUT="${GEN0_NAV2_MAP_TF_WAIT_TIMEOUT:-10}"
 POSE_SANITY_MAX_ABS_XY="${GEN0_NAV2_MAX_ABS_XY:-500.0}"
 POSE_SANITY_MAX_ABS_Z="${GEN0_NAV2_MAX_ABS_Z:-20.0}"
@@ -52,6 +49,8 @@ case "$PROFILE" in
     DEFAULT_COSTMAP_SOURCE="scurm_terrain"
     DEFAULT_LOCALIZATION_MODE="odom_only"
     DEFAULT_MAP_SOURCE="projected_map"
+    # The online projected map is local and intentionally incomplete. Keep
+    # unknown cells traversable for long-range odom-only navigation.
     DEFAULT_PROJECTED_MAP_UNKNOWN_AS_FREE="true"
     DEFAULT_NAV_TO_POSE_BT="$WORKSPACE/gen0_gz_sim_ros2/gen0_main/behavior_tree/ackermann_scurm_recovery.xml"
     DEFAULT_NAV_THROUGH_POSES_BT="$WORKSPACE/gen0_gz_sim_ros2/gen0_main/behavior_tree/ackermann_scurm_through_poses.xml"
@@ -199,6 +198,68 @@ print(f'Nav2 pose sanity OK: x={x:.2f}, y={y:.2f}, z={z:.2f}')
 PY
 }
 
+check_projected_map_pose_bounds() {
+  local target_frame="$1"
+  local source_frame="$2"
+  local origin_x="$3"
+  local origin_y="$4"
+  local width="$5"
+  local height="$6"
+  local resolution="$7"
+  local margin="$8"
+  local probe_timeout="$9"
+  local output
+  local translation
+  local x
+  local y
+  local z
+
+  output="$(timeout "$probe_timeout" ros2 run tf2_ros tf2_echo "$target_frame" "$source_frame" 2>/dev/null || true)"
+  translation="$(printf '%s\n' "$output" | awk -F'[][]' '/Translation:/ {print $2; exit}')"
+  if [[ -z "$translation" ]]; then
+    printf 'Could not sample TF %s -> %s for projected-map bounds check.\n' "$target_frame" "$source_frame" >&2
+    return 1
+  fi
+
+  IFS=',' read -r x y z <<< "$translation"
+  python3 - "$x" "$y" "$z" "$origin_x" "$origin_y" "$width" "$height" "$resolution" "$margin" <<'PY'
+import math
+import sys
+
+x, y, z, origin_x, origin_y, width, height, resolution, margin = (
+    float(value.strip()) for value in sys.argv[1:10]
+)
+if not all(math.isfinite(value) for value in (x, y, z)):
+    print(f'Pose contains non-finite values: x={x}, y={y}, z={z}', file=sys.stderr)
+    sys.exit(1)
+
+min_x = origin_x
+max_x = origin_x + width * resolution
+min_y = origin_y
+max_y = origin_y + height * resolution
+if not (min_x - margin <= x <= max_x + margin):
+    print(
+        'Initial pose is outside the fixed projected-map X bounds: '
+        f'x={x:.2f}, bounds=[{min_x:.2f}, {max_x:.2f}], margin={margin:.2f}',
+        file=sys.stderr,
+    )
+    sys.exit(1)
+if not (min_y - margin <= y <= max_y + margin):
+    print(
+        'Initial pose is outside the fixed projected-map Y bounds: '
+        f'y={y:.2f}, bounds=[{min_y:.2f}, {max_y:.2f}], margin={margin:.2f}',
+        file=sys.stderr,
+    )
+    sys.exit(1)
+
+print(
+    'Projected-map pose bounds OK: '
+    f'x={x:.2f}, y={y:.2f}, bounds='
+    f'x[{min_x:.2f},{max_x:.2f}] y[{min_y:.2f},{max_y:.2f}]'
+)
+PY
+}
+
 if [[ ! -f /opt/ros/humble/setup.bash ]]; then
   printf 'ROS 2 Humble setup not found at /opt/ros/humble/setup.bash\n' >&2
   exit 1
@@ -321,27 +382,50 @@ if [[ "$MAP_SOURCE" == "projected_map" ]]; then
   fi
 fi
 
-log "Starting Gen0 Nav2: profile=$PROFILE, map_source=$MAP_SOURCE, map=$MAP_YAML, params=$PARAMS_FILE, odom_topic=$FAST_LIO_ODOM_TOPIC, localization_mode=$LOCALIZATION_MODE, start_vehicle_interface=$START_VEHICLE_INTERFACE, costmap_source=$COSTMAP_SOURCE, controller_frequency=$NAV2_CONTROLLER_FREQUENCY, model_dt=$NAV2_MODEL_DT, smoothing_frequency=$NAV2_SMOOTHING_FREQUENCY, vehicle_angular_z_sign=$VEHICLE_ANGULAR_Z_SIGN, vehicle_max_forward_speed=$VEHICLE_MAX_FORWARD_SPEED"
+if [[ "$PROFILE" == "scurm_gen0" && "$MAP_SOURCE" == "projected_map" && "$PROJECTED_MAP_FIXED_GEOMETRY" == "true" ]]; then
+  log "Checking initial pose against fixed projected-map bounds."
+  if ! check_projected_map_pose_bounds \
+      "$TF_TARGET_FRAME" \
+      "$TF_SOURCE_FRAME" \
+      "$PROJECTED_MAP_FIXED_ORIGIN_X" \
+      "$PROJECTED_MAP_FIXED_ORIGIN_Y" \
+      "$PROJECTED_MAP_FIXED_WIDTH" \
+      "$PROJECTED_MAP_FIXED_HEIGHT" \
+      "$PROJECTED_MAP_FIXED_RESOLUTION" \
+      "$PROJECTED_MAP_BOUNDS_MARGIN" \
+      "$TF_PROBE_TIMEOUT"; then
+    printf '\nThe current vehicle pose is outside the fixed projected-map canvas.\n' >&2
+    printf 'Stop and restart Gazebo/3D SLAM to reset the vehicle, or enlarge the projected-map canvas deliberately.\n' >&2
+    printf 'Current canvas: origin=(%s,%s), size=%sx%s cells at %sm/cell, margin=%sm.\n' \
+      "$PROJECTED_MAP_FIXED_ORIGIN_X" \
+      "$PROJECTED_MAP_FIXED_ORIGIN_Y" \
+      "$PROJECTED_MAP_FIXED_WIDTH" \
+      "$PROJECTED_MAP_FIXED_HEIGHT" \
+      "$PROJECTED_MAP_FIXED_RESOLUTION" \
+      "$PROJECTED_MAP_BOUNDS_MARGIN" >&2
+    exit 1
+  fi
+fi
+
+log "Starting Gen0 Nav2: profile=$PROFILE, map_source=$MAP_SOURCE, map=$MAP_YAML, params=$PARAMS_FILE, odom_topic=$FAST_LIO_ODOM_TOPIC, localization_mode=$LOCALIZATION_MODE, costmap_source=$COSTMAP_SOURCE, controller_frequency=$NAV2_CONTROLLER_FREQUENCY, model_dt=$NAV2_MODEL_DT, smoothing_frequency=$NAV2_SMOOTHING_FREQUENCY, projected_map_unknown_as_free=$PROJECTED_MAP_UNKNOWN_AS_FREE, projected_map_fixed=${PROJECTED_MAP_FIXED_GEOMETRY}:${PROJECTED_MAP_FIXED_WIDTH}x${PROJECTED_MAP_FIXED_HEIGHT}@${PROJECTED_MAP_FIXED_RESOLUTION}, projected_map_origin=(${PROJECTED_MAP_FIXED_ORIGIN_X},${PROJECTED_MAP_FIXED_ORIGIN_Y}), command_topic=/cmd_vel"
 exec ros2 launch gen0_main gen0_navigation.launch.py \
   params_file:="$PARAMS_FILE" \
   use_respawn:="$USE_RESPAWN" \
   nav2_controller_frequency:="$NAV2_CONTROLLER_FREQUENCY" \
   nav2_model_dt:="$NAV2_MODEL_DT" \
   nav2_smoothing_frequency:="$NAV2_SMOOTHING_FREQUENCY" \
-  start_vehicle_interface:="$START_VEHICLE_INTERFACE" \
-  vehicle_angular_z_sign:="$VEHICLE_ANGULAR_Z_SIGN" \
-  vehicle_max_forward_speed:="$VEHICLE_MAX_FORWARD_SPEED" \
-  vehicle_max_reverse_speed:="$VEHICLE_MAX_REVERSE_SPEED" \
-  vehicle_max_angular_z:="$VEHICLE_MAX_ANGULAR_Z" \
-  vehicle_front_stop_enabled:="$VEHICLE_FRONT_STOP_ENABLED" \
-  vehicle_front_stop_distance:="$VEHICLE_FRONT_STOP_DISTANCE" \
-  vehicle_front_slow_distance:="$VEHICLE_FRONT_SLOW_DISTANCE" \
   publish_identity_map_to_odom:="$PUBLISH_IDENTITY_MAP_TO_ODOM" \
   costmap_source:="$COSTMAP_SOURCE" \
   map_source:="$MAP_SOURCE" \
   map_server_topic:="$MAP_SERVER_TOPIC" \
   projected_map_topic:="$PROJECTED_MAP_TOPIC" \
   projected_map_unknown_as_free:="$PROJECTED_MAP_UNKNOWN_AS_FREE" \
+  projected_map_fixed_geometry:="$PROJECTED_MAP_FIXED_GEOMETRY" \
+  projected_map_fixed_origin_x:="$PROJECTED_MAP_FIXED_ORIGIN_X" \
+  projected_map_fixed_origin_y:="$PROJECTED_MAP_FIXED_ORIGIN_Y" \
+  projected_map_fixed_width:="$PROJECTED_MAP_FIXED_WIDTH" \
+  projected_map_fixed_height:="$PROJECTED_MAP_FIXED_HEIGHT" \
+  projected_map_fixed_resolution:="$PROJECTED_MAP_FIXED_RESOLUTION" \
   odom_topic:="$FAST_LIO_ODOM_TOPIC" \
   default_nav_to_pose_bt_xml:="$NAV_TO_POSE_BT" \
   default_nav_through_poses_bt_xml:="$NAV_THROUGH_POSES_BT" \

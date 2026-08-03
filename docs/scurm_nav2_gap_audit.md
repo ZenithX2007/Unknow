@@ -16,7 +16,7 @@ SCURM 包和少量参数，再按 Gen0 Ackermann 车辆做了临时改造。这�
 | 模块 | SCURM 原版 | 当前 Gen0 | 问题 |
 | --- | --- | --- | --- |
 | 底盘模型 | `motion_model: Omni`，输出 `vx/vy/wz` | `motion_model: Ackermann`，只用 `vx/wz` | 不能直接照抄 SCURM 控制参数；需要 Gen0 专用控制器/适配逻辑。 |
-| 底盘命令链 | `/cmd_vel -> twist_transformer -> /cmd_vel_in_yaw -> ChassisCmd` | `/cmd_vel_nav -> velocity_smoother -> /control/cmd_vel -> cmdvel_to_vehicle` | 缺少 SCURM 的 yaw-frame 速度转换语义；现有链路是车辆关节适配，不是 sentry chassis 适配。 |
+| 底盘命令链 | `/cmd_vel -> twist_transformer -> /cmd_vel_in_yaw -> ChassisCmd` | `/cmd_vel_nav -> velocity_smoother -> nav2_pose_guard -> /cmd_vel -> ros_gz_bridge -> AckermannSteering` | 已改为 Gazebo 原生标准 Ackermann；仍缺少 SCURM 的 yaw-frame 速度转换语义。 |
 | 控制频率 | controller/velocity smoother 80 Hz | controller 10 Hz, smoother 20 Hz | MPPI 预测窗和采样节奏完全不同，不能期待同样效果。 |
 | MPPI 参数 | `time_steps=180`, `model_dt=0.014`, `vx/vy_std=0.78`, `ObstaclesCritic`, `TwirlingCritic` | `time_steps=50`, `model_dt=0.1`, `vx_std=0.16`, `CostCritic`, `PathAngleCritic`, `PreferForwardCritic` | 当前参数是另一个控制器调法，不是 SCURM 调法。 |
 | 非标准 MPPI 参数 | `adjustThre`, `minAngleDiff`, `adjustHeadingSpeed` | 未实现对应逻辑 | 这些参数不是标准 Humble MPPI 常规参数；若 SCURM 依赖改版 MPPI，当前系统不会执行这段逻辑。 |
@@ -35,7 +35,7 @@ SCURM 包和少量参数，再按 Gen0 Ackermann 车辆做了临时改造。这�
    不能提供可导航道路/障碍物约束。
 
 2. 控制器不是 SCURM 控制器。SCURM 的 MPPI 是全向 sentry 底盘参数；
-   Gen0 是四轮转向 Ackermann 近似，必须重新设计参数，不能直接套原值。
+   Gen0 是前轮转向 Ackermann，必须重新设计参数，不能直接套原值。
 
 3. terrain_analysis 已经跑起来，但 Nav2 只在 `GEN0_NAV2_COSTMAP_SOURCE=scurm_terrain`
    时用 overlay 接入，而且 global/local 的 frame 和 static map 关系仍不完整。
@@ -84,7 +84,7 @@ GEN0_NAV2_COSTMAP_SOURCE=scurm_terrain \
 - `/local_costmap` 使用 `/gen0_mapping/terrain_map`。
 - `/plan` 能绕开静态障碍。
 - `/cmd_vel_nav` 没有 `linear.y`。
-- `/control/cmd_vel` 与 steering joint 和 FAST-LIO yaw 符号一致。
+- `/cmd_vel` 与 Gazebo AckermannSteering 和 FAST-LIO yaw 符号一致。
 
 ## 第一阶段实现
 
@@ -115,7 +115,7 @@ GEN0_NAV2_PROFILE=scurm_gen0
 - Local costmap 使用 `costmap_intensity::ObstacleLayerIntensity` on `/gen0_mapping/terrain_map`。
 - Global costmap 使用在线 `/projected_map` 作为 StaticLayer 输入；map_server 发布到
   `/map_yaml_unused`，避免 prior map 污染验证。
-- MPPI 仍保留 Gen0 Ackermann 约束：`linear.y=0`、`min_turning_r=4.5`、`wz_max=0.12`。
+- MPPI 保留 Gen0 Ackermann 约束：`linear.y=0`、`min_turning_r=6.62`、`wz_max=0.07`。
 
 这只是第一阶段。它把架构拉回 SCURM 主线，但还没有完成最终调参和
 地图坐标校准。当前端到端验证结果：

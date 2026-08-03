@@ -302,13 +302,18 @@ def generate_launch_description():
     )
     static_odom_base_arg = DeclareLaunchArgument(
         'static_odom_base',
-        default_value='true',
+        default_value='false',
         choices=['true', 'false'],
         description='Publish a fixed odom->base_link transform. Disable when a localization stack owns odom->base_link.',
     )
 
     pkg_share_dir = get_package_share_directory('gen0_main')
-    bridge_file = PathJoinSubstitution([pkg_share_dir, 'config', 'bridge.yaml'])
+    default_bridge_file = PathJoinSubstitution([pkg_share_dir, 'config', 'bridge.yaml'])
+    bridge_file_arg = DeclareLaunchArgument(
+        'bridge_file',
+        default_value=default_bridge_file,
+        description='ros_gz_bridge YAML config. Use bridge_no_gz_odom_tf.yaml when FAST-LIO owns odom->base_link.',
+    )
     vehicle_file = os.path.join(pkg_share_dir, 'urdf', 'gen0_model.sdf')
 
     with open(vehicle_file, 'r') as infp:
@@ -329,6 +334,7 @@ def generate_launch_description():
         partition_arg,
         ground_truth_arg,
         static_odom_base_arg,
+        bridge_file_arg,
         SetEnvironmentVariable('IGN_PARTITION', LaunchConfiguration('partition')),
         SetEnvironmentVariable('GZ_PARTITION', LaunchConfiguration('partition')),
         OpaqueFunction(function=actors_launch),
@@ -337,7 +343,7 @@ def generate_launch_description():
             package='ros_gz_bridge',
             executable='parameter_bridge',
             parameters=[{
-                'config_file': bridge_file,
+                'config_file': LaunchConfiguration('bridge_file'),
                 'qos_overrides./tf_static.publisher.durability': 'transient_local',
             }],
             output='screen',

@@ -28,7 +28,6 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'cmd_vel_adapter = sweeper_integration.cmd_vel_adapter:main',
             'ground_truth_odometry = sweeper_integration.ground_truth_odometry:main',
             'nav2_lifecycle_bringup = sweeper_integration.nav2_lifecycle_bringup:main',
         ],

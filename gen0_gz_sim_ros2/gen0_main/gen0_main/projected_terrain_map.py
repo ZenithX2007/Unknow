@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from array import array
-from math import exp, floor, hypot
+from math import atan2, cos, exp, floor, hypot, sin
 
 import numpy as np
 import rclpy
@@ -44,6 +44,9 @@ class ProjectedTerrainMap(Node):
         self.declare_parameter("occupied_padding_radius", 0.0)
         self.declare_parameter("filter_speckles", False)
         self.declare_parameter("robot_clear_radius", 0.8)
+        self.declare_parameter("robot_clear_length", 0.0)
+        self.declare_parameter("robot_clear_width", 0.0)
+        self.declare_parameter("robot_clear_margin", 0.0)
         self.declare_parameter("publish_padding_cells", 25)
         self.declare_parameter("max_side_cells", 1800)
         self.declare_parameter("inflation_radius", 0.7)
@@ -107,6 +110,9 @@ class ProjectedTerrainMap(Node):
         )
         self.filter_speckles = bool(self.get_parameter("filter_speckles").value)
         self.robot_clear_radius = float(self.get_parameter("robot_clear_radius").value)
+        self.robot_clear_length = float(self.get_parameter("robot_clear_length").value)
+        self.robot_clear_width = float(self.get_parameter("robot_clear_width").value)
+        self.robot_clear_margin = float(self.get_parameter("robot_clear_margin").value)
         self.publish_padding_cells = int(
             self.get_parameter("publish_padding_cells").value
         )
@@ -124,6 +130,7 @@ class ProjectedTerrainMap(Node):
         self.log_odds = {}
         self.costs = {}
         self.robot_xy = None
+        self.robot_yaw = 0.0
         self.latest_stamp = None
         self.dirty = False
         self.last_map_msg = None
@@ -160,6 +167,14 @@ class ProjectedTerrainMap(Node):
             float(msg.pose.pose.position.x),
             float(msg.pose.pose.position.y),
         )
+        orientation = msg.pose.pose.orientation
+        siny_cosp = 2.0 * (
+            orientation.w * orientation.z + orientation.x * orientation.y
+        )
+        cosy_cosp = 1.0 - 2.0 * (
+            orientation.y * orientation.y + orientation.z * orientation.z
+        )
+        self.robot_yaw = atan2(siny_cosp, cosy_cosp)
 
     def cloud_callback(self, msg):
         points = self.read_points(msg)
@@ -268,14 +283,44 @@ class ProjectedTerrainMap(Node):
         return points[mask]
 
     def clear_robot_footprint(self):
+        if self.robot_clear_length > 0.0 and self.robot_clear_width > 0.0:
+            self.clear_robot_rectangle()
+            return
+
         robot_cell = self.world_to_cell(*self.robot_xy)
         radius_cells = max(1, int(self.robot_clear_radius / self.resolution))
         for dx in range(-radius_cells, radius_cells + 1):
             for dy in range(-radius_cells, radius_cells + 1):
                 if hypot(dx, dy) * self.resolution <= self.robot_clear_radius:
-                    key = (robot_cell[0] + dx, robot_cell[1] + dy)
-                    self.log_odds[key] = self.min_log_odds
-                    self.costs[key] = 0
+                    self.clear_cell((robot_cell[0] + dx, robot_cell[1] + dy))
+
+    def clear_robot_rectangle(self):
+        robot_cell = self.world_to_cell(*self.robot_xy)
+        half_length = max(0.0, self.robot_clear_length * 0.5 + self.robot_clear_margin)
+        half_width = max(0.0, self.robot_clear_width * 0.5 + self.robot_clear_margin)
+        radius_cells = max(
+            1,
+            int(hypot(half_length, half_width) / self.resolution) + 1,
+        )
+        yaw_cos = cos(self.robot_yaw)
+        yaw_sin = sin(self.robot_yaw)
+
+        for dx in range(-radius_cells, radius_cells + 1):
+            for dy in range(-radius_cells, radius_cells + 1):
+                cell_x = robot_cell[0] + dx
+                cell_y = robot_cell[1] + dy
+                world_x = (cell_x + 0.5) * self.resolution
+                world_y = (cell_y + 0.5) * self.resolution
+                rel_x = world_x - self.robot_xy[0]
+                rel_y = world_y - self.robot_xy[1]
+                body_x = rel_x * yaw_cos + rel_y * yaw_sin
+                body_y = -rel_x * yaw_sin + rel_y * yaw_cos
+                if abs(body_x) <= half_length and abs(body_y) <= half_width:
+                    self.clear_cell((cell_x, cell_y))
+
+    def clear_cell(self, key):
+        self.log_odds[key] = self.min_log_odds
+        self.costs[key] = 0
 
     def mark_raytrace_free_space(self, observed_cells, protected_cells):
         robot_cell = self.world_to_cell(*self.robot_xy)

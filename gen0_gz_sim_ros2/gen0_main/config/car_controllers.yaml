@@ -25,8 +25,8 @@ controller_manager:
 #     front_wheels_names: [front_right_steering_joint, front_left_steering_joint]
 
 #     wheelbase: 2.8
-#     front_wheel_track: 1.385
-#     rear_wheel_track: 1.385
+#     front_wheel_track: 1.585
+#     rear_wheel_track: 1.585
 #     front_wheels_radius: 0.33
 #     rear_wheels_radius: 0.33
 
@@ -44,7 +44,7 @@ test_steering_controllers_library:
     front_wheels_names: [front_right_steering_joint, front_left_steering_joint]
 
     wheelbase: 2.8
-    front_wheel_track: 1.385
-    rear_wheel_track: 1.385
+    front_wheel_track: 1.585
+    rear_wheel_track: 1.585
     front_wheels_radius: 0.33
     rear_wheels_radius: 0.33

@@ -8,8 +8,8 @@ SLAM, Nav2, and exploration launch flow for the `san_roundabout` demo.
 
 - Input pose: `/gen0_model/links/poses` (`geometry_msgs/PoseArray`)
 - Output odometry: `/odom` (`nav_msgs/Odometry`)
-- Navigation command: `/cmd_vel` (`geometry_msgs/Twist`)
-- Gen0 command: `/control/cmd_vel` (`geometry_msgs/Twist`)
+- Navigation and Gen0 command: `/cmd_vel` (`geometry_msgs/Twist`)
+- Gazebo bridge: ROS `/cmd_vel` -> Gazebo Ackermann `/cmd_vel`
 - TF: `odom -> base_footprint -> base_link`
 
 The initial `pose_index` is 15 because the original Gen0 ground-truth node used

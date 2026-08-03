@@ -69,7 +69,7 @@ bt_navigator_navigate_to_pose_rclcpp_node:
 controller_server:
   ros__parameters:
     use_sim_time: true
-    controller_frequency: 80.0
+    controller_frequency: 20.0
     odom_topic: /odom
     min_x_velocity_threshold: 0.05
     min_y_velocity_threshold: 0.05
@@ -81,13 +81,13 @@ controller_server:
 
     progress_checker:
       plugin: nav2_controller::SimpleProgressChecker
-      required_movement_radius: 0.5
-      movement_time_allowance: 8.0
+      required_movement_radius: 0.05
+      movement_time_allowance: 20.0
 
     general_goal_checker:
-      stateful: false
+      stateful: true
       plugin: nav2_controller::SimpleGoalChecker
-      xy_goal_tolerance: 0.3
+      xy_goal_tolerance: 0.45
       yaw_goal_tolerance: 3.14
 
     FollowPath:
@@ -95,57 +95,69 @@ controller_server:
       adjustThre: 14.0
       minAngleDiff: 365.0
       adjustHeadingSpeed: 0.2
-      time_steps: 180
-      model_dt: 0.014
-      batch_size: 900
+      time_steps: 40
+      model_dt: 0.05
+      batch_size: 600
       iteration_count: 1
       temperature: 0.3
       gamma: 0.07
       vx_std: 0.78
       vy_std: 0.0
-      wz_std: 0.2
-      vx_max: 0.45
-      vx_min: -0.25
+      wz_std: 0.15
+      vx_max: 3.0
+      vx_min: -1.0
       vy_max: 0.0
-      wz_max: 0.1
+      wz_max: 0.45
       retry_attempt_limit: 3
       motion_model: Ackermann
       AckermannConstraints:
-        min_turning_r: 4.5
+        min_turning_r: 6.62
       visualize: false
       reset_period: 1.0
       regenerate_noises: false
-      prune_distance: 4.0
-      transform_tolerance: 0.5
+      prune_distance: 6.0
+      transform_tolerance: 1.0
       TrajectoryVisualizer:
         trajectory_step: 5
         time_step: 3
       critics:
+        - ConstraintCritic
         - ObstaclesCritic
         - GoalCritic
         - PathAlignCritic
         - PathFollowCritic
+        - PreferForwardCritic
+        - VelocityDeadbandCritic
+      ConstraintCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 5.0
       GoalCritic:
         enabled: true
         cost_power: 1
         cost_weight: 5.0
-        threshold_to_consider: 0.7
+        threshold_to_consider: 1.5
       PreferForwardCritic:
-        enabled: false
+        enabled: true
         cost_power: 1
-        cost_weight: 5.0
+        cost_weight: 6.0
         threshold_to_consider: 0.7
+      VelocityDeadbandCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 35.0
+        deadband_velocities: [0.12, 0.0, 0.02]
       ObstaclesCritic:
         enabled: true
         cost_power: 1
         repulsion_weight: 0.2
         critical_weight: 20.0
-        consider_footprint: false
+        consider_footprint: true
         collision_cost: 40.0
         collision_margin_distance: 0.05
         near_goal_distance: 0.1
-        inflation_radius: 0.4
-        cost_scaling_factor: 10.0
+        inflation_radius: 1.4
+        cost_scaling_factor: 4.0
         inflation_layer_name: ["local_inflation_layer", "global_inflation_layer"]
       PathAlignCritic:
         enabled: true
@@ -153,7 +165,7 @@ controller_server:
         cost_weight: 20.0
         max_path_occupancy_ratio: 0.001
         trajectory_point_step: 3
-        threshold_to_consider: 0.7
+        threshold_to_consider: 0.4
         offset_from_furthest: 2
         use_path_orientations: false
       PathFollowCritic:
@@ -161,7 +173,7 @@ controller_server:
         cost_power: 1
         cost_weight: 25.0
         offset_from_furthest: 10
-        threshold_to_consider: 0.7
+        threshold_to_consider: 0.4
       PathAngleCritic:
         enabled: false
         cost_power: 1
@@ -183,19 +195,20 @@ local_costmap:
       publish_frequency: 20.0
       global_frame: map
       robot_base_frame: base_link
-      transform_tolerance: 0.5
+      transform_tolerance: 1.0
       rolling_window: true
-      width: 7
-      height: 7
+      width: 16
+      height: 16
       resolution: 0.05
-      robot_radius: 0.35
+      footprint: "[[2.2, 1.1], [2.2, -1.1], [-2.2, -1.1], [-2.2, 1.1]]"
+      footprint_padding: 0.05
       track_unknown_space: false
       plugins: ["local_obstacle_layer", "local_inflation_layer"]
 
       local_inflation_layer:
         plugin: nav2_costmap_2d::InflationLayer
-        cost_scaling_factor: 5.0
-        inflation_radius: 0.4
+        cost_scaling_factor: 4.0
+        inflation_radius: 1.4
 
       local_obstacle_layer:
         plugin: costmap_intensity::ObstacleLayerIntensity
@@ -228,10 +241,11 @@ global_costmap:
       publish_frequency: 1.0
       global_frame: map
       robot_base_frame: base_link
-      transform_tolerance: 0.5
+      transform_tolerance: 1.0
       resolution: 0.1
       track_unknown_space: true
-      robot_radius: 0.35
+      footprint: "[[2.2, 1.1], [2.2, -1.1], [-2.2, -1.1], [-2.2, 1.1]]"
+      footprint_padding: 0.05
       plugins: ["static_layer", "global_inflation_layer"]
 
       static_layer:
@@ -240,8 +254,8 @@ global_costmap:
 
       global_inflation_layer:
         plugin: nav2_costmap_2d::InflationLayer
-        cost_scaling_factor: 10.0
-        inflation_radius: 0.5
+        cost_scaling_factor: 4.0
+        inflation_radius: 1.4
 
       always_send_full_costmap: true
 
@@ -261,15 +275,39 @@ map_saver:
 planner_server:
   ros__parameters:
     use_sim_time: true
-    expected_planner_frequency: 20.0
+    expected_planner_frequency: 1.0
     planner_plugins: ["GridBased"]
 
     GridBased:
-      plugin: nav2_theta_star_planner/ThetaStarPlanner
-      how_many_corners: 8
-      w_euc_cost: 1.0
-      w_traversal_cost: 2.0
-      w_heuristic_cost: 1.0
+      plugin: nav2_smac_planner/SmacPlannerHybrid
+      tolerance: 0.2
+      downsample_costmap: true
+      downsampling_factor: 2
+      # Online projected_map is local and incomplete; unknown cells must remain
+      # traversable for long-range odom-only navigation.
+      allow_unknown: true
+      max_iterations: 1000000
+      max_on_approach_iterations: 1000
+      max_planning_time: 5.0
+      motion_model_for_search: REEDS_SHEPP
+      angle_quantization_bins: 72
+      analytic_expansion_ratio: 3.5
+      analytic_expansion_max_length: 35.0
+      analytic_expansion_max_cost: 200.0
+      analytic_expansion_max_cost_override: false
+      minimum_turning_radius: 6.62
+      reverse_penalty: 2.0
+      change_penalty: 0.0
+      non_straight_penalty: 1.2
+      cost_penalty: 2.0
+      retrospective_penalty: 0.015
+      lookup_table_size: 30.0
+      cache_obstacle_heuristic: false
+      debug_visualizations: false
+      use_quadratic_cost_penalty: false
+      downsample_obstacle_heuristic: true
+      allow_primitive_interpolation: false
+      smooth_path: true
 
 smoother_server:
   ros__parameters:
@@ -278,12 +316,12 @@ smoother_server:
 
     SmoothPath:
       plugin: nav2_constrained_smoother/ConstrainedSmoother
-      reversing_enabled: false
+      reversing_enabled: true
       path_downsampling_factor: 3
       path_upsampling_factor: 1
       keep_start_orientation: false
       keep_goal_orientation: false
-      minimum_turning_radius: 4.5
+      minimum_turning_radius: 6.62
       w_curve: 30.0
       w_dist: 0.0
       w_smooth: 2000000.0
@@ -307,13 +345,15 @@ behavior_server:
     backup:
       plugin: nav2_behaviors/BackUpTwzFree
       service_name: /local_costmap/get_costmap
-      robot_radius: 0.8
-      max_radius: 2.0
+      robot_radius: 2.6
+      max_radius: 3.5
       free_threshold: 5
       cost_threshold: 5.0
       holonomic_motion: false
-      max_angular_speed: 0.12
-      min_turning_radius: 4.5
+      max_angular_speed: 0.45
+      min_turning_radius: 6.62
+      ackermann_heading_tolerance: 0.35
+      min_free_space_direction: 0.25
       visualization: false
     drive_on_heading:
       plugin: nav2_behaviors/DriveOnHeading
@@ -321,11 +361,11 @@ behavior_server:
       plugin: nav2_behaviors/Wait
     global_frame: map
     robot_base_frame: base_link
-    transform_tolerance: 0.5
+    transform_tolerance: 1.0
     simulate_ahead_time: 2.0
-    max_rotational_vel: 0.12
+    max_rotational_vel: 0.45
     min_rotational_vel: 0.05
-    rotational_acc_lim: 0.4
+    rotational_acc_lim: 0.7
 
 waypoint_follower:
   ros__parameters:
@@ -341,14 +381,14 @@ waypoint_follower:
 velocity_smoother:
   ros__parameters:
     use_sim_time: true
-    smoothing_frequency: 80.0
-    scale_velocities: false
+    smoothing_frequency: 20.0
+    scale_velocities: true
     feedback: OPEN_LOOP
-    max_velocity: [0.45, 0.0, 0.1]
-    min_velocity: [-0.25, 0.0, -0.1]
-    max_accel: [0.45, 0.0, 1.0]
-    max_decel: [-0.70, 0.0, -1.0]
+    max_velocity: [3.0, 0.0, 0.45]
+    min_velocity: [-1.0, 0.0, -0.45]
+    max_accel: [1.0, 0.0, 0.7]
+    max_decel: [-1.5, 0.0, -0.7]
     odom_topic: /odom
     odom_duration: 0.1
-    deadband_velocity: [0.05, 0.0, 0.05]
+    deadband_velocity: [0.0, 0.0, 0.0]
     velocity_timeout: 1.0

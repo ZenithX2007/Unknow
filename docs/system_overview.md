@@ -20,10 +20,9 @@ Gazebo world + Gen0 vehicle
 -> NavfnPlanner global path
 -> MPPI local control with Ackermann constraints
 -> /cmd_vel
--> cmd_vel_adapter
--> /control/cmd_vel
--> cmdvel_to_vehicle
--> Gazebo steering and wheel joint commands
+-> ros_gz_bridge
+-> Gazebo AckermannSteering
+-> Gen0 steering and wheel joints
 ```
 
 ## Main Startup Sequence
@@ -34,9 +33,8 @@ autonomous mapping check uses these terminals:
 ```text
 1. gen0_main spawn.launch.py
 2. sweeper_integration interfaces.launch.py
-3. gen0_interface cmdvel_to_vehicle
-4. sweeper_integration navigation_online_slam.launch.py
-5. sweeper_integration explore_gen0.launch.py
+3. sweeper_integration navigation_online_slam.launch.py
+4. sweeper_integration explore_gen0.launch.py
 ```
 
 ## Packages
@@ -61,8 +59,7 @@ and are not the best place to learn the navigation algorithm.
 
 ### sweeper_integration
 
-Purpose: integration layer for odometry, velocity adaptation, SLAM, Nav2, RViz,
-and exploration.
+Purpose: integration layer for odometry, SLAM, Nav2, RViz, and exploration.
 
 Important files:
 
@@ -76,7 +73,6 @@ gen0_gz_sim_ros2/sweeper_integration/config/nav2_online_slam.yaml
 gen0_gz_sim_ros2/sweeper_integration/config/nav2_online_slam_mppi.yaml
 gen0_gz_sim_ros2/sweeper_integration/config/explore_gen0.yaml
 gen0_gz_sim_ros2/sweeper_integration/sweeper_integration/ground_truth_odometry.py
-gen0_gz_sim_ros2/sweeper_integration/sweeper_integration/cmd_vel_adapter.py
 gen0_gz_sim_ros2/sweeper_integration/sweeper_integration/nav2_lifecycle_bringup.py
 ```
 
@@ -84,13 +80,14 @@ This is the first package to read when learning the current navigation system.
 
 ### gen0_interface
 
-Purpose: converts adapted `/control/cmd_vel` commands into Gazebo joint commands
-for the Gen0 steering and wheels.
+Purpose: manual mapping-drive and keyboard teleoperation tools. Gazebo's native
+Ackermann plugin consumes `/cmd_vel` through `ros_gz_bridge`.
 
 Important file:
 
 ```text
-gen0_gz_sim_ros2/gen0_interface/gen0_interface/cmdvel_to_vehicle.py
+gen0_gz_sim_ros2/gen0_interface/gen0_interface/mapping_drive.py
+gen0_gz_sim_ros2/gen0_interface/gen0_interface/keyboard_teleop.py
 ```
 
 ### m-explore-ros2
@@ -213,11 +210,11 @@ Current MPPI settings:
 
 ```text
 motion_model: Ackermann
-min_turning_r: 4.38
+min_turning_r: 6.62
 vx_min: 0.0
 vx_max: 0.30
 vy_max: 0.0
-wz_max: 0.12
+wz_max: 0.07
 critics: Constraint, Cost, Goal, GoalAngle, PathAlign, PathFollow, PathAngle,
          PreferForward, VelocityDeadband
 ```
