@@ -77,7 +77,7 @@ class SimulatedWorldLidar(Node):
         self.declare_parameter("world_voxel_size", 0.25)
         self.declare_parameter("surface_sampling_enabled", False)
         self.declare_parameter("surface_sample_count", 0)
-        self.declare_parameter("add_obstacle_columns", True)
+        self.declare_parameter("add_obstacle_columns", False)
         self.declare_parameter("column_voxel_size", 0.35)
         self.declare_parameter("column_min_height", 0.5)
         self.declare_parameter("column_sample_step", 0.4)
@@ -189,7 +189,11 @@ class SimulatedWorldLidar(Node):
 
         self.get_logger().info(
             f"Publishing simulated world lidar {self.output_topic} from "
-            f"{len(self.world_points)} environment points, pose_topic={self.pose_topic}"
+            f"{len(self.world_points)} environment points, pose_topic={self.pose_topic}, "
+            f"max_points={self.max_points}, max_range={self.max_range:.1f}, "
+            f"h=[{self.horizontal_min_angle:.2f}, {self.horizontal_max_angle:.2f}], "
+            f"v=[{self.vertical_min_angle:.2f}, {self.vertical_max_angle:.2f}], "
+            f"add_obstacle_columns={self.add_obstacle_columns}"
         )
 
     def vector_parameter(self, name, fallback):

@@ -8,6 +8,7 @@ from launch.actions import TimerAction
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
+from launch.substitutions import PythonExpression
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 
@@ -38,6 +39,14 @@ def generate_launch_description():
     params_file = LaunchConfiguration("params_file")
     use_sim_time = LaunchConfiguration("use_sim_time")
     odom_output_topic = LaunchConfiguration("odom_output_topic")
+    fast_lio_send_odom_base_tf = LaunchConfiguration("fast_lio_send_odom_base_tf")
+    fast_lio_sensor_frame_id = LaunchConfiguration("fast_lio_sensor_frame_id")
+    stable_sim_odom = LaunchConfiguration("stable_sim_odom")
+    stable_odom_input_topic = LaunchConfiguration("stable_odom_input_topic")
+    stable_odom_output_topic = LaunchConfiguration("stable_odom_output_topic")
+    stable_registered_scan_topic = LaunchConfiguration("stable_registered_scan_topic")
+    scurm_odom_topic = LaunchConfiguration("scurm_odom_topic")
+    scurm_registered_scan_topic = LaunchConfiguration("scurm_registered_scan_topic")
     front3d_source_topic = LaunchConfiguration("front3d_source_topic")
     simulated_lidar_output_topic = LaunchConfiguration("simulated_lidar_output_topic")
     fast_lio_map_file_path = LaunchConfiguration("fast_lio_map_file_path")
@@ -48,6 +57,7 @@ def generate_launch_description():
     terrain_analysis = LaunchConfiguration("terrain_analysis")
     terrain_analysis_ext = LaunchConfiguration("terrain_analysis_ext")
     projected_map = LaunchConfiguration("projected_map")
+    projected_map_backend = LaunchConfiguration("projected_map_backend")
     projected_map_reference_odom_topic = LaunchConfiguration(
         "projected_map_reference_odom_topic"
     )
@@ -102,6 +112,9 @@ def generate_launch_description():
     simulated_lidar_surface_samples = LaunchConfiguration(
         "simulated_lidar_surface_samples"
     )
+    simulated_lidar_add_obstacle_columns = LaunchConfiguration(
+        "simulated_lidar_add_obstacle_columns"
+    )
     simulated_lidar_horizontal_min_angle = LaunchConfiguration(
         "simulated_lidar_horizontal_min_angle"
     )
@@ -113,6 +126,28 @@ def generate_launch_description():
     )
     simulated_lidar_vertical_max_angle = LaunchConfiguration(
         "simulated_lidar_vertical_max_angle"
+    )
+    scurm_octomap_projected_map = IfCondition(
+        PythonExpression(
+            [
+                "'",
+                projected_map,
+                "' == 'true' and '",
+                projected_map_backend,
+                "' == 'octomap'",
+            ]
+        )
+    )
+    python_projected_map = IfCondition(
+        PythonExpression(
+            [
+                "'",
+                projected_map,
+                "' == 'true' and '",
+                projected_map_backend,
+                "' == 'python'",
+            ]
+        )
     )
 
     return LaunchDescription(
@@ -131,6 +166,48 @@ def generate_launch_description():
                 "odom_output_topic",
                 default_value="/gen0_mapping/fast_lio/odom",
                 description="FAST_LIO odometry output topic. Use /odom only when ground-truth odom is disabled.",
+            ),
+            DeclareLaunchArgument(
+                "fast_lio_send_odom_base_tf",
+                default_value="true",
+                choices=["true", "false"],
+                description="Allow FAST_LIO to publish its odom TF.",
+            ),
+            DeclareLaunchArgument(
+                "fast_lio_sensor_frame_id",
+                default_value="base_link",
+                description="FAST_LIO odometry child frame. Use a non-nav frame when another source owns odom->base_link.",
+            ),
+            DeclareLaunchArgument(
+                "stable_sim_odom",
+                default_value="false",
+                choices=["true", "false"],
+                description="Publish normalized Gazebo odom and a matching registered scan for simulation-stable SCURM/Nav2.",
+            ),
+            DeclareLaunchArgument(
+                "stable_odom_input_topic",
+                default_value="/odom",
+                description="Raw odometry topic normalized for simulation-stable SCURM/Nav2.",
+            ),
+            DeclareLaunchArgument(
+                "stable_odom_output_topic",
+                default_value="/gen0_mapping/stable_odom",
+                description="Normalized odometry topic used by stable simulation mapping.",
+            ),
+            DeclareLaunchArgument(
+                "stable_registered_scan_topic",
+                default_value="/gen0_mapping/stable_registered_scan",
+                description="PointCloud2 scan transformed into the stable odom frame.",
+            ),
+            DeclareLaunchArgument(
+                "scurm_odom_topic",
+                default_value="/gen0_mapping/fast_lio/odom",
+                description="Odometry topic consumed by SCURM terrain analysis and projected map.",
+            ),
+            DeclareLaunchArgument(
+                "scurm_registered_scan_topic",
+                default_value="/gen0_mapping/cloud_registered",
+                description="Registered scan topic consumed by SCURM terrain analysis.",
             ),
             DeclareLaunchArgument(
                 "front3d_source_topic",
@@ -181,7 +258,13 @@ def generate_launch_description():
             DeclareLaunchArgument(
                 "projected_map",
                 default_value="true",
-                description="Publish /projected_map and /projected_costmap from SCURM terrain points.",
+                description="Publish the online projected occupancy map used by SCURM/Nav2.",
+            ),
+            DeclareLaunchArgument(
+                "projected_map_backend",
+                default_value="python",
+                choices=["octomap", "python"],
+                description="Projected map backend. python is the SCURM-style terrain projection; octomap is the optional 3D fallback.",
             ),
             DeclareLaunchArgument(
                 "projected_map_reference_odom_topic",
@@ -292,17 +375,17 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument(
                 "simulated_lidar_max_points",
-                default_value="16000",
+                default_value="48000",
                 description="Maximum points per simulated world-lidar scan.",
             ),
             DeclareLaunchArgument(
                 "simulated_lidar_max_range",
-                default_value="25.0",
+                default_value="35.0",
                 description="Maximum range for the simulated world-lidar fallback.",
             ),
             DeclareLaunchArgument(
                 "simulated_lidar_world_voxel_size",
-                default_value="0.10",
+                default_value="0.08",
                 description="Voxel size for the loaded world mesh point source.",
             ),
             DeclareLaunchArgument(
@@ -313,27 +396,33 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument(
                 "simulated_lidar_surface_samples",
-                default_value="500000",
+                default_value="1000000",
                 description="Number of deterministic OBJ surface samples added before voxel filtering.",
             ),
             DeclareLaunchArgument(
+                "simulated_lidar_add_obstacle_columns",
+                default_value="false",
+                choices=["true", "false"],
+                description="Add synthetic vertical obstacle columns from the mesh. Disabled by default to match SCURM's real surface-only LiDAR input.",
+            ),
+            DeclareLaunchArgument(
                 "simulated_lidar_horizontal_min_angle",
-                default_value="-1.5707",
+                default_value="-3.14159",
                 description="Minimum horizontal angle for simulated world-lidar points.",
             ),
             DeclareLaunchArgument(
                 "simulated_lidar_horizontal_max_angle",
-                default_value="1.5707",
+                default_value="3.14159",
                 description="Maximum horizontal angle for simulated world-lidar points.",
             ),
             DeclareLaunchArgument(
                 "simulated_lidar_vertical_min_angle",
-                default_value="-0.3926991",
+                default_value="-0.55",
                 description="Minimum vertical angle for simulated world-lidar points.",
             ),
             DeclareLaunchArgument(
                 "simulated_lidar_vertical_max_angle",
-                default_value="0.3926991",
+                default_value="0.55",
                 description="Maximum vertical angle for simulated world-lidar points.",
             ),
             Node(
@@ -362,6 +451,9 @@ def generate_launch_description():
                         ),
                         "surface_sample_count": ParameterValue(
                             simulated_lidar_surface_samples, value_type=int
+                        ),
+                        "add_obstacle_columns": ParameterValue(
+                            simulated_lidar_add_obstacle_columns, value_type=bool
                         ),
                         "lidar_xyz_in_base": [1.9, 0.0, 1.9],
                         "min_range": 0.6,
@@ -400,16 +492,61 @@ def generate_launch_description():
                         "input_topic": front3d_source_topic,
                         "output_topic": "/livox/lidar",
                         "scan_rate": 10.0,
-                        "line_count": 64,
-                        "vertical_min_angle": -1.2,
-                        "vertical_max_angle": 0.8,
-                        "max_points": 20000,
+                        "line_count": 16,
+                        "vertical_min_angle": ParameterValue(
+                            simulated_lidar_vertical_min_angle, value_type=float
+                        ),
+                        "vertical_max_angle": ParameterValue(
+                            simulated_lidar_vertical_max_angle, value_type=float
+                        ),
+                        "max_points": ParameterValue(
+                            simulated_lidar_max_points, value_type=int
+                        ),
                         "min_range": 0.5,
                         "max_range": 80.0,
                         "self_filter_enabled": True,
                         "lidar_xyz_in_base": [1.9, 0.0, 1.9],
                         "self_filter_min_xyz": [-2.8, -1.4, -0.4],
                         "self_filter_max_xyz": [2.8, 1.4, 2.9],
+                    }
+                ],
+            ),
+            Node(
+                package="gen0_main",
+                executable="stable_odom",
+                name="gen0_stable_odom",
+                output="screen",
+                condition=IfCondition(stable_sim_odom),
+                parameters=[
+                    {
+                        "use_sim_time": use_sim_time,
+                        "input_topic": stable_odom_input_topic,
+                        "output_topic": stable_odom_output_topic,
+                        "odom_frame_id": "odom",
+                        "base_frame_id": "base_link",
+                        "publish_tf": True,
+                        "compute_twist_from_pose": True,
+                    }
+                ],
+            ),
+            Node(
+                package="gen0_main",
+                executable="odom_registered_scan",
+                name="gen0_odom_registered_scan",
+                output="screen",
+                condition=IfCondition(stable_sim_odom),
+                parameters=[
+                    {
+                        "use_sim_time": use_sim_time,
+                        "input_topic": front3d_source_topic,
+                        "odom_topic": stable_odom_output_topic,
+                        "output_topic": stable_registered_scan_topic,
+                        "output_frame": "odom",
+                        "lidar_xyz_in_base": [1.9, 0.0, 1.9],
+                        "max_odom_age": 1.0,
+                        "max_points": ParameterValue(
+                            simulated_lidar_max_points, value_type=int
+                        ),
                     }
                 ],
             ),
@@ -499,6 +636,10 @@ def generate_launch_description():
                         "pcd_save.interval": ParameterValue(
                             fast_lio_pcd_save_interval, value_type=int
                         ),
+                        "common.send_odom_base_tf": ParameterValue(
+                            fast_lio_send_odom_base_tf, value_type=bool
+                        ),
+                        "common.sensor_frame_id": fast_lio_sensor_frame_id,
                     },
                 ],
                 remappings=[
@@ -544,8 +685,8 @@ def generate_launch_description():
                         "vehicleHeight": 1.5,
                         "sensorOffsetX": 0.0,
                         "sensorOffsetY": 0.0,
-                        "vehicleLength": 4.4,
-                        "vehicleWidth": 2.2,
+                        "vehicleLength": 0.7,
+                        "vehicleWidth": 0.7,
                         "voxelPointUpdateThre": 100,
                         "voxelTimeUpdateThre": 2.0,
                         "minRelZ": -2.5,
@@ -554,8 +695,8 @@ def generate_launch_description():
                     }
                 ],
                 remappings=[
-                    ("/state_estimation", odom_output_topic),
-                    ("/registered_scan", "/gen0_mapping/cloud_registered"),
+                    ("/state_estimation", scurm_odom_topic),
+                    ("/registered_scan", scurm_registered_scan_topic),
                     ("/terrain_map", "/gen0_mapping/terrain_map"),
                 ],
             ),
@@ -569,7 +710,7 @@ def generate_launch_description():
                     {
                         "use_sim_time": use_sim_time,
                         "map_frame": "odom",
-                        "scanVoxelSize": 0.08,
+                        "scanVoxelSize": 0.1,
                         "decayTime": 0.5,
                         "noDecayDis": 0.0,
                         "clearingDis": 30.0,
@@ -580,8 +721,8 @@ def generate_launch_description():
                         "vehicleHeight": 1.5,
                         "sensorOffsetX": 0.0,
                         "sensorOffsetY": 0.0,
-                        "vehicleLength": 4.4,
-                        "vehicleWidth": 2.2,
+                        "vehicleLength": 0.7,
+                        "vehicleWidth": 0.7,
                         "voxelPointUpdateThre": 100,
                         "voxelTimeUpdateThre": 2.0,
                         "lowerBoundZ": -2.5,
@@ -595,11 +736,87 @@ def generate_launch_description():
                     }
                 ],
                 remappings=[
-                    ("/state_estimation", odom_output_topic),
-                    ("/registered_scan", "/gen0_mapping/cloud_registered"),
+                    ("/state_estimation", scurm_odom_topic),
+                    ("/registered_scan", scurm_registered_scan_topic),
                     ("/terrain_map", "/gen0_mapping/terrain_map"),
                     ("/terrain_map_ext", "/gen0_mapping/terrain_map_ext"),
                     ("/cloud_clearing", "/gen0_mapping/cloud_clearing"),
+                ],
+            ),
+            Node(
+                package="tf2_ros",
+                executable="static_transform_publisher",
+                name="gen0_scurm_map_to_odom",
+                output="screen",
+                condition=scurm_octomap_projected_map,
+                arguments=[
+                    "--frame-id",
+                    "map",
+                    "--child-frame-id",
+                    "odom",
+                    "--x",
+                    "0.0",
+                    "--y",
+                    "0.0",
+                    "--z",
+                    "0.0",
+                    "--qx",
+                    "0.0",
+                    "--qy",
+                    "0.0",
+                    "--qz",
+                    "0.0",
+                    "--qw",
+                    "1.0",
+                ],
+            ),
+            Node(
+                package="terrain_analysis",
+                executable="exchangeField",
+                name="gen0_scurm_exchange_field",
+                output="screen",
+                condition=scurm_octomap_projected_map,
+                remappings=[
+                    ("/input_topic", "/gen0_mapping/terrain_map_ext"),
+                    ("/output_topic", "/gen0_mapping/terrain_map_ext_exchanged"),
+                ],
+            ),
+            Node(
+                package="sensor_scan_generation",
+                executable="sensorScanGeneration",
+                name="gen0_scurm_sensor_scan_generation",
+                output="screen",
+                condition=scurm_octomap_projected_map,
+                remappings=[
+                    ("/state_estimation", scurm_odom_topic),
+                    ("/registered_scan", "/gen0_mapping/terrain_map_ext_exchanged"),
+                    ("/sensor_scan", "/gen0_mapping/terrain_map_at_scan"),
+                    (
+                        "/state_estimation_at_scan",
+                        "/gen0_mapping/state_estimation_at_scan",
+                    ),
+                ],
+            ),
+            Node(
+                package="octomap_server",
+                executable="octomap_server_node",
+                name="gen0_scurm_octomap_server",
+                output="screen",
+                condition=scurm_octomap_projected_map,
+                parameters=[
+                    {
+                        "use_sim_time": use_sim_time,
+                        "frame_id": "map",
+                        "base_frame_id": "sensor_at_scan",
+                        "point_cloud_min_z": 0.15,
+                        "filter_speckles": True,
+                        "filter_ground_plane": False,
+                        "resolution": 0.1,
+                        "latch": True,
+                    }
+                ],
+                remappings=[
+                    ("/cloud_in", "/gen0_mapping/terrain_map_at_scan"),
                 ],
             ),
             Node(
@@ -607,31 +824,32 @@ def generate_launch_description():
                 executable="projected_terrain_map",
                 name="gen0_projected_terrain_map",
                 output="screen",
-                condition=IfCondition(projected_map),
+                condition=python_projected_map,
                 parameters=[
                     {
                         "use_sim_time": use_sim_time,
                         "input_topic": "/gen0_mapping/terrain_map_ext",
-                        "odom_topic": odom_output_topic,
+                        "odom_topic": scurm_odom_topic,
                         "map_topic": "/projected_map",
                         "costmap_topic": "/projected_costmap",
                         "frame_id": "odom",
                         "resolution": 0.10,
                         "publish_period": 1.0,
+                        "accumulate_history": True,
                         "free_intensity_threshold": 0.10,
-                        "occupied_intensity_threshold": 0.15,
-                        "occupied_cost_intensity": 0.45,
+                        "occupied_intensity_threshold": 0.22,
+                        "occupied_cost_intensity": 0.35,
                         "hit_log_odds": 0.85,
-                        "miss_log_odds": 0.20,
-                        "occupied_log_odds_threshold": 0.0,
+                        "miss_log_odds": 0.35,
+                        "occupied_log_odds_threshold": 0.75,
                         "free_log_odds_threshold": -0.2,
                         "mark_low_intensity_free": True,
-                        "ground_clears_occupied": False,
+                        "ground_clears_occupied": True,
                         "occupied_padding_radius": 0.0,
                         "filter_speckles": True,
                         "min_occupied_component_cells": 2,
                         "min_occupied_component_span_cells": 2,
-                        "occupied_gap_bridge_cells": 1,
+                        "occupied_gap_bridge_cells": 0,
                         "reference_odom_topic": projected_map_reference_odom_topic,
                         "max_reference_odom_error": ParameterValue(
                             projected_map_max_reference_odom_error,
@@ -647,15 +865,15 @@ def generate_launch_description():
                         ),
                         "raytrace_free_space": True,
                         "raytrace_clears_occupied": True,
-                        "occupied_clear_log_odds_threshold": 1.7,
+                        "occupied_clear_log_odds_threshold": 1.70,
                         "raytrace_max_range": 22.0,
                         "max_raytrace_cells_per_update": 5000,
-                        "robot_clear_radius": 0.8,
-                        "robot_clear_length": 4.4,
-                        "robot_clear_width": 2.2,
-                        "robot_clear_margin": 0.1,
-                        "inflation_radius": 0.7,
-                        "inflation_cost_scaling": 3.0,
+                        "robot_clear_radius": 0.0,
+                        "robot_clear_length": 0.0,
+                        "robot_clear_width": 0.0,
+                        "robot_clear_margin": 0.0,
+                        "inflation_radius": 0.5,
+                        "inflation_cost_scaling": 5.0,
                     }
                 ],
             ),
@@ -694,6 +912,7 @@ def generate_launch_description():
                     "rviz_config": rviz_config,
                     "use_sim_time": use_sim_time,
                     "raw_front3d_input_topic": front3d_source_topic,
+                    "registered_preview_input_topic": scurm_registered_scan_topic,
                 }.items(),
             ),
         ]

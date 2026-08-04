@@ -83,6 +83,7 @@ def generate_launch_description():
     rviz_config = LaunchConfiguration("rviz_config")
     use_sim_time = LaunchConfiguration("use_sim_time")
     raw_front3d_input_topic = LaunchConfiguration("raw_front3d_input_topic")
+    registered_preview_input_topic = LaunchConfiguration("registered_preview_input_topic")
     condition = IfCondition(rviz)
 
     return LaunchDescription(
@@ -107,6 +108,11 @@ def generate_launch_description():
                 default_value="/gen0_model/front3d/lidar/points",
                 description="Raw front 3D point-cloud topic to preview in RViz.",
             ),
+            DeclareLaunchArgument(
+                "registered_preview_input_topic",
+                default_value="/gen0_mapping/cloud_registered",
+                description="Registered point-cloud topic to preview and accumulate in RViz.",
+            ),
             preview_node(
                 "raw_front3d_preview",
                 raw_front3d_input_topic,
@@ -122,7 +128,7 @@ def generate_launch_description():
             ),
             preview_node(
                 "cloud_registered_preview",
-                "/gen0_mapping/cloud_registered",
+                registered_preview_input_topic,
                 "/gen0_mapping/rviz/cloud_registered",
                 50000,
                 0.12,
@@ -155,7 +161,7 @@ def generate_launch_description():
             ),
             accumulator_node(
                 "fast_lio_map_preview",
-                "/gen0_mapping/cloud_registered",
+                registered_preview_input_topic,
                 "/gen0_mapping/rviz/fast_lio_map",
                 350000,
                 0.18,

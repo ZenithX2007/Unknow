@@ -69,6 +69,10 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
             if map_source == 'projected_map' and projected_map_unknown_as_free
             else 'true'
         )
+        # terrain_map is already in the global odom/map frame, not a live sensor
+        # frame. Enabling Nav2 raytrace clearing makes ObservationBuffer use the
+        # cloud frame origin (0,0) as the sensor origin, which falls outside the
+        # rolling local costmap after the robot drives away from startup.
         pointcloud_clearing = 'false' if map_source == 'projected_map' else 'true'
         overlay = f"""local_costmap:
   local_costmap:
@@ -77,12 +81,14 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
       update_frequency: 20.0
       publish_frequency: 20.0
       global_frame: map
+      footprint: "[[0.35, 0.00], [0.25, 0.25], [0.00, 0.35], [-0.25, 0.25], [-0.35, 0.00], [-0.25, -0.25], [0.00, -0.35], [0.25, -0.25]]"
+      robot_radius: 0.35
       track_unknown_space: false
       plugins: ["local_obstacle_layer", "local_inflation_layer"]
       local_inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 4.0
-        inflation_radius: 1.4
+        cost_scaling_factor: 5.0
+        inflation_radius: 0.4
       local_obstacle_layer:
         plugin: "costmap_intensity::ObstacleLayerIntensity"
         enabled: true
@@ -107,6 +113,8 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
 global_costmap:
   global_costmap:
     ros__parameters:
+      footprint: "[[0.35, 0.00], [0.25, 0.25], [0.00, 0.35], [-0.25, 0.25], [-0.35, 0.00], [-0.25, -0.25], [0.00, -0.35], [0.25, -0.25]]"
+      robot_radius: 0.35
       track_unknown_space: {global_track_unknown}
       plugins: ["static_layer", "global_inflation_layer"]
       static_layer:
@@ -114,8 +122,8 @@ global_costmap:
         map_subscribe_transient_local: true
       global_inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 4.0
-        inflation_radius: 1.4
+        cost_scaling_factor: 10.0
+        inflation_radius: 0.5
 """
     else:
         overlay = """local_costmap:
@@ -304,22 +312,22 @@ def generate_launch_description():
     )
     declare_projected_map_fixed_origin_x = DeclareLaunchArgument(
         'projected_map_fixed_origin_x',
-        default_value='-20.0',
+        default_value='-40.0',
         description='Fixed projected map origin X in the map frame.',
     )
     declare_projected_map_fixed_origin_y = DeclareLaunchArgument(
         'projected_map_fixed_origin_y',
-        default_value='-40.0',
+        default_value='-45.0',
         description='Fixed projected map origin Y in the map frame.',
     )
     declare_projected_map_fixed_width = DeclareLaunchArgument(
         'projected_map_fixed_width',
-        default_value='900',
+        default_value='1200',
         description='Fixed projected map width in cells.',
     )
     declare_projected_map_fixed_height = DeclareLaunchArgument(
         'projected_map_fixed_height',
-        default_value='1000',
+        default_value='1100',
         description='Fixed projected map height in cells.',
     )
     declare_projected_map_fixed_resolution = DeclareLaunchArgument(

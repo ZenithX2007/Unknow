@@ -97,7 +97,11 @@ class Nav2ProjectedMapRelay(Node):
         out.info.origin.orientation.w = 1.0
 
         fill_value = 0 if self.unknown_as_free else -1
-        canvas = np.full((self.fixed_height, self.fixed_width), fill_value, dtype=np.int8)
+        canvas = np.full(
+            (self.fixed_height, self.fixed_width),
+            fill_value,
+            dtype=np.int8,
+        )
 
         input_resolution = float(msg.info.resolution)
         input_width = int(msg.info.width)
@@ -114,9 +118,11 @@ class Nav2ProjectedMapRelay(Node):
             out.data = array('b', canvas.ravel(order='C'))
             return out
 
-        src = np.asarray(msg.data, dtype=np.int8).reshape((input_height, input_width))
+        raw_src = np.asarray(msg.data, dtype=np.int8).reshape((input_height, input_width))
+        src_unknown = raw_src < 0
+        src = raw_src
         if self.unknown_as_free:
-            src = np.where(src < 0, 0, src).astype(np.int8, copy=False)
+            src = np.where(src_unknown, 0, raw_src).astype(np.int8, copy=False)
 
         dst_x0 = int(round((float(msg.info.origin.position.x) - self.fixed_origin_x) / resolution))
         dst_y0 = int(round((float(msg.info.origin.position.y) - self.fixed_origin_y) / resolution))
@@ -140,7 +146,9 @@ class Nav2ProjectedMapRelay(Node):
         src_y0 = copy_dst_y0 - dst_y0
         src_x1 = src_x0 + (copy_dst_x1 - copy_dst_x0)
         src_y1 = src_y0 + (copy_dst_y1 - copy_dst_y0)
-        canvas[copy_dst_y0:copy_dst_y1, copy_dst_x0:copy_dst_x1] = src[src_y0:src_y1, src_x0:src_x1]
+        src_region = src[src_y0:src_y1, src_x0:src_x1]
+        canvas_region = canvas[copy_dst_y0:copy_dst_y1, copy_dst_x0:copy_dst_x1]
+        canvas_region[:, :] = src_region
 
         out.data = array('b', canvas.ravel(order='C'))
         return out

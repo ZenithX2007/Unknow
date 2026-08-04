@@ -25,6 +25,7 @@ class ProjectedTerrainMap(Node):
         self.declare_parameter("resolution", 0.10)
         self.declare_parameter("publish_period", 1.0)
         self.declare_parameter("republish_unchanged", True)
+        self.declare_parameter("accumulate_history", False)
         self.declare_parameter("max_points_per_update", 90000)
         self.declare_parameter("free_intensity_threshold", 0.10)
         self.declare_parameter("occupied_intensity_threshold", 0.15)
@@ -47,6 +48,10 @@ class ProjectedTerrainMap(Node):
         self.declare_parameter("min_occupied_component_cells", 1)
         self.declare_parameter("min_occupied_component_span_cells", 1)
         self.declare_parameter("occupied_gap_bridge_cells", 0)
+        self.declare_parameter("remove_dense_blob_components", False)
+        self.declare_parameter("dense_blob_min_cells", 12)
+        self.declare_parameter("dense_blob_min_short_span_cells", 5)
+        self.declare_parameter("dense_blob_min_density", 0.45)
         self.declare_parameter("reference_odom_topic", "")
         self.declare_parameter("max_reference_odom_error", 0.0)
         self.declare_parameter("max_reference_yaw_error", 0.0)
@@ -71,6 +76,9 @@ class ProjectedTerrainMap(Node):
         publish_period = float(self.get_parameter("publish_period").value)
         self.republish_unchanged = bool(
             self.get_parameter("republish_unchanged").value
+        )
+        self.accumulate_history = bool(
+            self.get_parameter("accumulate_history").value
         )
         self.max_points_per_update = int(
             self.get_parameter("max_points_per_update").value
@@ -126,6 +134,18 @@ class ProjectedTerrainMap(Node):
         )
         self.occupied_gap_bridge_cells = max(
             0, int(self.get_parameter("occupied_gap_bridge_cells").value)
+        )
+        self.remove_dense_blob_components = bool(
+            self.get_parameter("remove_dense_blob_components").value
+        )
+        self.dense_blob_min_cells = max(
+            1, int(self.get_parameter("dense_blob_min_cells").value)
+        )
+        self.dense_blob_min_short_span_cells = max(
+            1, int(self.get_parameter("dense_blob_min_short_span_cells").value)
+        )
+        self.dense_blob_min_density = max(
+            0.0, float(self.get_parameter("dense_blob_min_density").value)
         )
         self.reference_odom_topic = str(
             self.get_parameter("reference_odom_topic").value
@@ -213,13 +233,19 @@ class ProjectedTerrainMap(Node):
         self.get_logger().info(
             f"Projecting {self.input_topic} -> {self.map_topic}, "
             f"cost overlay={self.costmap_topic}, resolution={self.resolution:.2f}, "
+            f"accumulate_history={self.accumulate_history}, "
             f"free<={self.free_threshold:.2f}, occupied>={self.occupied_threshold:.2f}, "
             f"hit/miss={self.hit_log_odds:.2f}/{self.miss_log_odds:.2f}, "
             f"protected occupied>={self.occupied_clear_log_odds_threshold:.2f}, "
             f"speckle_filter={self.filter_speckles}:"
             f"{self.min_occupied_component_cells} cells/"
             f"{self.min_occupied_component_span_cells} span, "
-            f"gap_bridge={self.occupied_gap_bridge_cells} cells"
+            f"gap_bridge={self.occupied_gap_bridge_cells} cells, "
+            f"dense_blob_filter={self.remove_dense_blob_components}:"
+            f"{self.dense_blob_min_cells} cells/"
+            f"{self.dense_blob_min_short_span_cells} short_span/"
+            f"{self.dense_blob_min_density:.2f} density, "
+            f"ground_clears={self.ground_clears_occupied}"
         )
         if self.reference_odom_enabled:
             self.get_logger().info(
@@ -259,6 +285,10 @@ class ProjectedTerrainMap(Node):
         if points.size == 0:
             return
 
+        if not self.accumulate_history:
+            self.log_odds.clear()
+            self.costs.clear()
+
         cell_xy = np.floor(points[:, 0:2] / self.resolution).astype(np.int32)
         unique_cells, inverse = np.unique(cell_xy, axis=0, return_inverse=True)
         max_intensity = np.full(unique_cells.shape[0], -np.inf, dtype=np.float32)
@@ -289,7 +319,7 @@ class ProjectedTerrainMap(Node):
         if self.robot_xy is not None:
             if self.raytrace_free_space:
                 self.mark_raytrace_free_space(raytrace_hit_cells, hit_set)
-            self.clear_robot_footprint()
+            self.clear_robot_footprint(hit_set)
 
         for key in free_cells:
             if key in hit_set:
@@ -356,19 +386,22 @@ class ProjectedTerrainMap(Node):
         mask = (dx * dx + dy * dy) <= self.raytrace_max_range * self.raytrace_max_range
         return points[mask]
 
-    def clear_robot_footprint(self):
+    def clear_robot_footprint(self, protected_cells=None):
         if self.robot_clear_length > 0.0 and self.robot_clear_width > 0.0:
-            self.clear_robot_rectangle()
+            self.clear_robot_rectangle(protected_cells)
             return
 
         robot_cell = self.world_to_cell(*self.robot_xy)
         radius_cells = max(1, int(self.robot_clear_radius / self.resolution))
         for dx in range(-radius_cells, radius_cells + 1):
             for dy in range(-radius_cells, radius_cells + 1):
+                key = (robot_cell[0] + dx, robot_cell[1] + dy)
+                if protected_cells is not None and key in protected_cells:
+                    continue
                 if hypot(dx, dy) * self.resolution <= self.robot_clear_radius:
-                    self.clear_cell((robot_cell[0] + dx, robot_cell[1] + dy))
+                    self.clear_cell(key)
 
-    def clear_robot_rectangle(self):
+    def clear_robot_rectangle(self, protected_cells=None):
         robot_cell = self.world_to_cell(*self.robot_xy)
         half_length = max(0.0, self.robot_clear_length * 0.5 + self.robot_clear_margin)
         half_width = max(0.0, self.robot_clear_width * 0.5 + self.robot_clear_margin)
@@ -387,10 +420,13 @@ class ProjectedTerrainMap(Node):
                 world_y = (cell_y + 0.5) * self.resolution
                 rel_x = world_x - self.robot_xy[0]
                 rel_y = world_y - self.robot_xy[1]
+                key = (cell_x, cell_y)
+                if protected_cells is not None and key in protected_cells:
+                    continue
                 body_x = rel_x * yaw_cos + rel_y * yaw_sin
                 body_y = -rel_x * yaw_sin + rel_y * yaw_cos
                 if abs(body_x) <= half_length and abs(body_y) <= half_width:
-                    self.clear_cell((cell_x, cell_y))
+                    self.clear_cell(key)
 
     def clear_cell(self, key):
         self.log_odds[key] = self.min_log_odds
@@ -490,12 +526,14 @@ class ProjectedTerrainMap(Node):
         height = max_y - min_y + 1
         occupancy = np.full((height, width), -1, dtype=np.int8)
         cost = np.full((height, width), -1, dtype=np.int8)
+        odds_grid = np.full((height, width), -np.inf, dtype=np.float32)
 
         for (cell_x, cell_y), odds in self.log_odds.items():
             if cell_x < min_x or cell_x > max_x or cell_y < min_y or cell_y > max_y:
                 continue
             x = cell_x - min_x
             y = cell_y - min_y
+            odds_grid[y, x] = np.float32(odds)
             if odds >= self.occupied_log_odds_threshold:
                 occupancy[y, x] = np.int8(100)
                 cell_cost = max(100, self.costs.get((cell_x, cell_y), 100))
@@ -505,7 +543,7 @@ class ProjectedTerrainMap(Node):
                 cost[y, x] = np.int8(0)
 
         self.bridge_occupied_gaps(occupancy, cost)
-        self.filter_occupied_components(occupancy, cost)
+        self.filter_occupied_components(occupancy, cost, odds_grid)
         self.apply_inflation(cost)
 
         map_msg = self.make_occupancy_grid(occupancy, min_x, min_y)
@@ -537,7 +575,7 @@ class ProjectedTerrainMap(Node):
                     offsets.append((dx, dy, 100))
         return offsets
 
-    def filter_occupied_components(self, occupancy, cost):
+    def filter_occupied_components(self, occupancy, cost, odds_grid=None):
         occupied = occupancy >= 100
         if not occupied.any():
             return
@@ -583,7 +621,7 @@ class ProjectedTerrainMap(Node):
                     visited[next_y, next_x] = True
                     stack.append((next_x, next_y))
 
-            if self.should_keep_occupied_component(component, min_cells):
+            if self.should_keep_occupied_component(component, min_cells, odds_grid):
                 continue
             for cell_x, cell_y in component:
                 remove[cell_y, cell_x] = True
@@ -591,15 +629,41 @@ class ProjectedTerrainMap(Node):
         occupancy[remove] = np.int8(-1)
         cost[remove] = np.int8(-1)
 
-    def should_keep_occupied_component(self, component, min_cells):
-        if len(component) >= min_cells:
-            return True
-
+    def should_keep_occupied_component(self, component, min_cells, odds_grid=None):
         xs = [cell_x for cell_x, _ in component]
         ys = [cell_y for _, cell_y in component]
         span_x = max(xs) - min(xs) + 1
         span_y = max(ys) - min(ys) + 1
-        return max(span_x, span_y) >= self.min_occupied_component_span_cells
+        if (
+            len(component) < min_cells
+            and max(span_x, span_y) < self.min_occupied_component_span_cells
+        ):
+            return False
+
+        if self.should_remove_dense_blob_component(
+            component, span_x, span_y, odds_grid
+        ):
+            return False
+
+        return True
+
+    def should_remove_dense_blob_component(
+        self, component, span_x, span_y, odds_grid=None
+    ):
+        if not self.remove_dense_blob_components:
+            return False
+        if len(component) < self.dense_blob_min_cells:
+            return False
+
+        short_span = min(span_x, span_y)
+        if short_span < self.dense_blob_min_short_span_cells:
+            return False
+
+        density = len(component) / float(max(1, span_x * span_y))
+        if density < self.dense_blob_min_density:
+            return False
+
+        return True
 
     def bridge_occupied_gaps(self, occupancy, cost):
         if self.occupied_gap_bridge_cells <= 0:

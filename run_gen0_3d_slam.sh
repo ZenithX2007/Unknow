@@ -30,6 +30,7 @@ FAST_LIO_ODOM_TOPIC="${GEN0_FAST_LIO_ODOM_TOPIC:-/gen0_mapping/fast_lio/odom}"
 TERRAIN_ANALYSIS="${GEN0_TERRAIN_ANALYSIS:-true}"
 TERRAIN_ANALYSIS_EXT="${GEN0_TERRAIN_ANALYSIS_EXT:-true}"
 PROJECTED_MAP="${GEN0_PROJECTED_MAP:-true}"
+PROJECTED_MAP_BACKEND="${GEN0_PROJECTED_MAP_BACKEND:-python}"
 LOCAL_COSTMAP="${GEN0_LOCAL_COSTMAP:-true}"
 PROJECTED_MAP_ODOM_GUARD="${GEN0_PROJECTED_MAP_ODOM_GUARD:-true}"
 PROJECTED_MAP_REFERENCE_ODOM_TOPIC="${GEN0_PROJECTED_MAP_REFERENCE_ODOM_TOPIC:-/odom}"
@@ -58,15 +59,16 @@ GAZEBO_FRONT3D_TOPIC="${GEN0_GAZEBO_FRONT3D_TOPIC:-/gen0_model/front3d/lidar/poi
 SIMULATED_FRONT3D_TOPIC="${GEN0_SIMULATED_FRONT3D_TOPIC:-/gen0_mapping/simulated_front3d/lidar/points}"
 FRONT3D_SOURCE_TOPIC="${GEN0_FRONT3D_SOURCE_TOPIC:-}"
 WORLD_OBJ_PATH="${GEN0_WORLD_OBJ_PATH:-$WORKSPACE/gen0_gz_sim_ros2/gen0_main/worlds/$WORLD/$WORLD.obj}"
-SIM_LIDAR_MAX_POINTS="${GEN0_SIM_LIDAR_MAX_POINTS:-16000}"
-SIM_LIDAR_MAX_RANGE="${GEN0_SIM_LIDAR_MAX_RANGE:-25.0}"
-SIM_LIDAR_HORIZONTAL_MIN="${GEN0_SIM_LIDAR_HORIZONTAL_MIN:--1.5707}"
-SIM_LIDAR_HORIZONTAL_MAX="${GEN0_SIM_LIDAR_HORIZONTAL_MAX:-1.5707}"
-SIM_LIDAR_VERTICAL_MIN="${GEN0_SIM_LIDAR_VERTICAL_MIN:--0.3926991}"
-SIM_LIDAR_VERTICAL_MAX="${GEN0_SIM_LIDAR_VERTICAL_MAX:-0.3926991}"
-SIM_LIDAR_WORLD_VOXEL_SIZE="${GEN0_SIM_LIDAR_WORLD_VOXEL_SIZE:-0.10}"
+SIM_LIDAR_MAX_POINTS="${GEN0_SIM_LIDAR_MAX_POINTS:-48000}"
+SIM_LIDAR_MAX_RANGE="${GEN0_SIM_LIDAR_MAX_RANGE:-35.0}"
+SIM_LIDAR_HORIZONTAL_MIN="${GEN0_SIM_LIDAR_HORIZONTAL_MIN:--3.14159}"
+SIM_LIDAR_HORIZONTAL_MAX="${GEN0_SIM_LIDAR_HORIZONTAL_MAX:-3.14159}"
+SIM_LIDAR_VERTICAL_MIN="${GEN0_SIM_LIDAR_VERTICAL_MIN:--0.55}"
+SIM_LIDAR_VERTICAL_MAX="${GEN0_SIM_LIDAR_VERTICAL_MAX:-0.55}"
+SIM_LIDAR_WORLD_VOXEL_SIZE="${GEN0_SIM_LIDAR_WORLD_VOXEL_SIZE:-0.08}"
 SIM_LIDAR_SURFACE_SAMPLING="${GEN0_SIM_LIDAR_SURFACE_SAMPLING:-true}"
-SIM_LIDAR_SURFACE_SAMPLES="${GEN0_SIM_LIDAR_SURFACE_SAMPLES:-500000}"
+SIM_LIDAR_SURFACE_SAMPLES="${GEN0_SIM_LIDAR_SURFACE_SAMPLES:-1000000}"
+SIM_LIDAR_ADD_OBSTACLE_COLUMNS="${GEN0_SIM_LIDAR_ADD_OBSTACLE_COLUMNS:-false}"
 
 PIDS=()
 NAMES=()
@@ -78,6 +80,59 @@ if [[ -z "$FRONT3D_SOURCE_TOPIC" ]]; then
     FRONT3D_SOURCE_TOPIC="$GAZEBO_FRONT3D_TOPIC"
   fi
 fi
+
+case "$PROJECTED_MAP_BACKEND" in
+  octomap|python) ;;
+  *)
+    printf 'Invalid GEN0_PROJECTED_MAP_BACKEND=%s. Use octomap or python.\n' "$PROJECTED_MAP_BACKEND" >&2
+    exit 1
+    ;;
+esac
+
+STABLE_SIM_ODOM="${GEN0_STABLE_SIM_ODOM:-}"
+if [[ -z "$STABLE_SIM_ODOM" ]]; then
+  if [[ "$SIMULATED_LIDAR" == "true" && "$RELOCALIZATION" != "true" ]]; then
+    STABLE_SIM_ODOM="true"
+  else
+    STABLE_SIM_ODOM="false"
+  fi
+fi
+STABLE_ODOM_INPUT_TOPIC="${GEN0_STABLE_ODOM_INPUT_TOPIC:-/odom}"
+STABLE_ODOM_TOPIC="${GEN0_STABLE_ODOM_TOPIC:-/gen0_mapping/stable_odom}"
+STABLE_REGISTERED_SCAN_TOPIC="${GEN0_STABLE_REGISTERED_SCAN_TOPIC:-/gen0_mapping/stable_registered_scan}"
+SCURM_ODOM_TOPIC="${GEN0_SCURM_ODOM_TOPIC:-}"
+SCURM_REGISTERED_SCAN_TOPIC="${GEN0_SCURM_REGISTERED_SCAN_TOPIC:-}"
+if [[ -z "$SCURM_ODOM_TOPIC" ]]; then
+  if [[ "$STABLE_SIM_ODOM" == "true" ]]; then
+    SCURM_ODOM_TOPIC="$STABLE_ODOM_TOPIC"
+  else
+    SCURM_ODOM_TOPIC="$FAST_LIO_ODOM_TOPIC"
+  fi
+fi
+if [[ -z "$SCURM_REGISTERED_SCAN_TOPIC" ]]; then
+  if [[ "$STABLE_SIM_ODOM" == "true" ]]; then
+    SCURM_REGISTERED_SCAN_TOPIC="$STABLE_REGISTERED_SCAN_TOPIC"
+  else
+    SCURM_REGISTERED_SCAN_TOPIC="/gen0_mapping/cloud_registered"
+  fi
+fi
+FAST_LIO_SEND_ODOM_BASE_TF="${GEN0_FAST_LIO_SEND_ODOM_BASE_TF:-}"
+if [[ -z "$FAST_LIO_SEND_ODOM_BASE_TF" ]]; then
+  if [[ "$STABLE_SIM_ODOM" == "true" ]]; then
+    FAST_LIO_SEND_ODOM_BASE_TF="false"
+  else
+    FAST_LIO_SEND_ODOM_BASE_TF="true"
+  fi
+fi
+FAST_LIO_SENSOR_FRAME_ID="${GEN0_FAST_LIO_SENSOR_FRAME_ID:-}"
+if [[ -z "$FAST_LIO_SENSOR_FRAME_ID" ]]; then
+  if [[ "$STABLE_SIM_ODOM" == "true" ]]; then
+    FAST_LIO_SENSOR_FRAME_ID="fast_lio_base_link"
+  else
+    FAST_LIO_SENSOR_FRAME_ID="base_link"
+  fi
+fi
+TRASH_ODOM_TOPIC="${GEN0_TRASH_ODOM_TOPIC:-$SCURM_ODOM_TOPIC}"
 
 log() {
   printf '[%(%F %T)T] %s\n' -1 "$*"
@@ -98,7 +153,7 @@ check_existing_ros_nodes() {
   local existing
   existing="$(
     ros2 node list 2>/dev/null \
-      | grep -E '(^/pose_publisher$|^/gen0_simulated_world_lidar$|^/gen0_gazebo_livox_adapter$|^/gen0_icp_transform_publisher$|^/gen0_icp_relocalization$|^/gen0_fast_lio$|^/gen0_mapping_drive$|^/gen0_trash_cleanup$|^/gen0_scurm_terrain_analysis$|^/gen0_scurm_terrain_analysis_ext$|^/gen0_projected_terrain_map$|^/costmap/costmap$|^/lifecycle_manager_costmap$|^/raw_front3d_preview$|^/cloud_registered_preview$|^/terrain_map_preview$|^/terrain_map_ext_preview$|^/fast_lio_map_preview$|^/pointcloud_accumulator_preview$|^/rviz$|^/rviz2$|^/vehicle_movement_interface$)' \
+      | grep -E '(^/pose_publisher$|^/gen0_simulated_world_lidar$|^/gen0_gazebo_livox_adapter$|^/gen0_stable_odom$|^/gen0_odom_registered_scan$|^/gen0_icp_transform_publisher$|^/gen0_icp_relocalization$|^/gen0_fast_lio$|^/gen0_mapping_drive$|^/gen0_trash_cleanup$|^/gen0_scurm_terrain_analysis$|^/gen0_scurm_terrain_analysis_ext$|^/gen0_scurm_map_to_odom$|^/gen0_scurm_exchange_field$|^/gen0_scurm_sensor_scan_generation$|^/gen0_scurm_octomap_server$|^/gen0_projected_terrain_map$|^/costmap/costmap$|^/lifecycle_manager_costmap$|^/raw_front3d_preview$|^/cloud_registered_preview$|^/terrain_map_preview$|^/terrain_map_ext_preview$|^/fast_lio_map_preview$|^/pointcloud_accumulator_preview$|^/rviz$|^/rviz2$|^/vehicle_movement_interface$)' \
       || true
   )"
   if [[ -n "$existing" ]]; then
@@ -252,6 +307,12 @@ log "TF localization: ground_truth_localization=$GROUND_TRUTH_LOCALIZATION, stat
 log "Gazebo bridge file: $GAZEBO_BRIDGE_FILE"
 log "Mapping drive: $MAPPING_DRIVE, drive_speed=$DRIVE_SPEED, command_topic=/cmd_vel"
 log "SCURM view: terrain_analysis=$TERRAIN_ANALYSIS, terrain_analysis_ext=$TERRAIN_ANALYSIS_EXT, projected_map=$PROJECTED_MAP, local_costmap=$LOCAL_COSTMAP, relocalization=$RELOCALIZATION, rviz=$RVIZ"
+log "Projected map backend: $PROJECTED_MAP_BACKEND"
+log "Odometry chain: fast_lio_output=$FAST_LIO_ODOM_TOPIC, scurm_odom=$SCURM_ODOM_TOPIC, stable_sim_odom=$STABLE_SIM_ODOM"
+if [[ "$STABLE_SIM_ODOM" == "true" ]]; then
+  log "Stable sim odom: input=$STABLE_ODOM_INPUT_TOPIC, output=$STABLE_ODOM_TOPIC, registered_scan=$STABLE_REGISTERED_SCAN_TOPIC, scurm_registered_scan=$SCURM_REGISTERED_SCAN_TOPIC"
+  log "FAST-LIO TF isolation: send_odom_base_tf=$FAST_LIO_SEND_ODOM_BASE_TF, sensor_frame_id=$FAST_LIO_SENSOR_FRAME_ID"
+fi
 if [[ "$PROJECTED_MAP_ODOM_GUARD" == "true" ]]; then
   log "Projected-map odom guard: reference=$PROJECTED_MAP_REFERENCE_ODOM_TOPIC, max_xy_error=${PROJECTED_MAP_MAX_ODOM_ERROR}m, max_yaw_error=${PROJECTED_MAP_MAX_YAW_ERROR}rad"
 else
@@ -267,7 +328,7 @@ if [[ "$RELOCALIZATION" == "true" ]]; then
 fi
 if [[ "$SIMULATED_LIDAR" == "true" ]]; then
   log "Simulated lidar scan: max_points=$SIM_LIDAR_MAX_POINTS, max_range=$SIM_LIDAR_MAX_RANGE, h=[$SIM_LIDAR_HORIZONTAL_MIN, $SIM_LIDAR_HORIZONTAL_MAX], v=[$SIM_LIDAR_VERTICAL_MIN, $SIM_LIDAR_VERTICAL_MAX]"
-  log "Simulated lidar mesh: world_voxel_size=$SIM_LIDAR_WORLD_VOXEL_SIZE, surface_sampling=$SIM_LIDAR_SURFACE_SAMPLING, surface_samples=$SIM_LIDAR_SURFACE_SAMPLES"
+  log "Simulated lidar mesh: world_voxel_size=$SIM_LIDAR_WORLD_VOXEL_SIZE, surface_sampling=$SIM_LIDAR_SURFACE_SAMPLING, surface_samples=$SIM_LIDAR_SURFACE_SAMPLES, add_obstacle_columns=$SIM_LIDAR_ADD_OBSTACLE_COLUMNS"
 fi
 log "GPU adapter: $MESA_D3D12_DEFAULT_ADAPTER_NAME"
 log "Logs: $LOG_DIR"
@@ -310,12 +371,21 @@ fi
 fast_lio_launch=(
   ros2 launch gen0_main gen0_fast_lio_mapping.launch.py
   odom_output_topic:="$FAST_LIO_ODOM_TOPIC"
+  fast_lio_send_odom_base_tf:="$FAST_LIO_SEND_ODOM_BASE_TF"
+  fast_lio_sensor_frame_id:="$FAST_LIO_SENSOR_FRAME_ID"
+  stable_sim_odom:="$STABLE_SIM_ODOM"
+  stable_odom_input_topic:="$STABLE_ODOM_INPUT_TOPIC"
+  stable_odom_output_topic:="$STABLE_ODOM_TOPIC"
+  stable_registered_scan_topic:="$STABLE_REGISTERED_SCAN_TOPIC"
+  scurm_odom_topic:="$SCURM_ODOM_TOPIC"
+  scurm_registered_scan_topic:="$SCURM_REGISTERED_SCAN_TOPIC"
   rviz:="$RVIZ"
   rviz_config:="$RVIZ_CONFIG"
   simulated_lidar:="$SIMULATED_LIDAR"
   terrain_analysis:="$TERRAIN_ANALYSIS"
   terrain_analysis_ext:="$TERRAIN_ANALYSIS_EXT"
   projected_map:="$PROJECTED_MAP"
+  projected_map_backend:="$PROJECTED_MAP_BACKEND"
   projected_map_reference_odom_topic:="$PROJECTED_MAP_REFERENCE_ODOM_TOPIC"
   projected_map_max_reference_odom_error:="$PROJECTED_MAP_MAX_ODOM_ERROR"
   projected_map_max_reference_yaw_error:="$PROJECTED_MAP_MAX_YAW_ERROR"
@@ -351,6 +421,7 @@ if [[ "$SIMULATED_LIDAR" == "true" ]]; then
   fast_lio_launch+=(simulated_lidar_world_voxel_size:="$SIM_LIDAR_WORLD_VOXEL_SIZE")
   fast_lio_launch+=(simulated_lidar_surface_sampling:="$SIM_LIDAR_SURFACE_SAMPLING")
   fast_lio_launch+=(simulated_lidar_surface_samples:="$SIM_LIDAR_SURFACE_SAMPLES")
+  fast_lio_launch+=(simulated_lidar_add_obstacle_columns:="$SIM_LIDAR_ADD_OBSTACLE_COLUMNS")
 fi
 
 start_process fast_lio_3d_slam "${fast_lio_launch[@]}"
@@ -377,7 +448,7 @@ if wait_for_relocalized_odometry "$FAST_LIO_PID"; then
       world:="$WORLD" \
       trash_scenario:="$TRASH_SCENARIO" \
       partition:="$PARTITION" \
-      odom_topic:="$FAST_LIO_ODOM_TOPIC" \
+      odom_topic:="$TRASH_ODOM_TOPIC" \
       vehicle_length:="$TRASH_VEHICLE_LENGTH" \
       vehicle_width:="$TRASH_VEHICLE_WIDTH" \
       vehicle_center_offset_x:="$TRASH_VEHICLE_CENTER_OFFSET_X" \
@@ -394,7 +465,11 @@ fi
 
 log "Stack is running. Press Ctrl+C in this terminal to stop everything launched by this script."
 log "Preview topic: /gen0_mapping/rviz/fast_lio_map"
-log "Projected map topics: /projected_map and /projected_costmap"
+if [[ "$PROJECTED_MAP_BACKEND" == "octomap" ]]; then
+  log "Projected map backend: SCURM octomap chain, topics: /projected_map and /projected_map_updates"
+else
+  log "Projected map backend: SCURM terrain projection, topics: /projected_map and /projected_costmap"
+fi
 
 while true; do
   for i in "${!PIDS[@]}"; do

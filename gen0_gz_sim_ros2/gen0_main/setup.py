@@ -66,6 +66,8 @@ setup(
         'gen0_3d_mapper = gen0_main.gen0_3d_mapper:main',
         'gazebo_livox_adapter = gen0_main.gazebo_livox_adapter:main',
         'simulated_world_lidar = gen0_main.simulated_world_lidar:main',
+        'stable_odom = gen0_main.stable_odom:main',
+        'odom_registered_scan = gen0_main.odom_registered_scan:main',
         'pointcloud_preview = gen0_main.pointcloud_preview:main',
         'pointcloud_accumulator_preview = gen0_main.pointcloud_accumulator_preview:main',
         'projected_terrain_map = gen0_main.projected_terrain_map:main',

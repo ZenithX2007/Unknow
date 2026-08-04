@@ -5,6 +5,7 @@ WORKSPACE="${GEN0_WORKSPACE:-$PWD}"
 PROFILE="${GEN0_NAV2_PROFILE:-legacy}"
 WORLD="${GEN0_WORLD:-my_map}"
 FAST_LIO_ODOM_TOPIC="${GEN0_FAST_LIO_ODOM_TOPIC:-/gen0_mapping/fast_lio/odom}"
+NAV2_ODOM_TOPIC_REQUESTED="${GEN0_NAV2_ODOM_TOPIC:-}"
 USE_RESPAWN="${GEN0_NAV2_USE_RESPAWN:-false}"
 NAV2_CONTROLLER_FREQUENCY="${GEN0_NAV2_CONTROLLER_FREQUENCY:-20.0}"
 NAV2_SMOOTHING_FREQUENCY="${GEN0_NAV2_SMOOTHING_FREQUENCY:-$NAV2_CONTROLLER_FREQUENCY}"
@@ -22,11 +23,12 @@ TF_SOURCE_FRAME="${GEN0_NAV2_TF_SOURCE_FRAME:-base_link}"
 TERRAIN_WAIT_TIMEOUT="${GEN0_NAV2_TERRAIN_WAIT_TIMEOUT:-20}"
 PROJECTED_MAP_WAIT_TIMEOUT="${GEN0_NAV2_PROJECTED_MAP_WAIT_TIMEOUT:-20}"
 PROJECTED_MAP_TOPIC="${GEN0_NAV2_PROJECTED_MAP_TOPIC:-/projected_map}"
+PROJECTED_MAP_BACKEND="${GEN0_NAV2_PROJECTED_MAP_BACKEND:-python}"
 PROJECTED_MAP_FIXED_GEOMETRY="${GEN0_NAV2_PROJECTED_MAP_FIXED_GEOMETRY:-true}"
-PROJECTED_MAP_FIXED_ORIGIN_X="${GEN0_NAV2_PROJECTED_MAP_FIXED_ORIGIN_X:--20.0}"
-PROJECTED_MAP_FIXED_ORIGIN_Y="${GEN0_NAV2_PROJECTED_MAP_FIXED_ORIGIN_Y:--40.0}"
-PROJECTED_MAP_FIXED_WIDTH="${GEN0_NAV2_PROJECTED_MAP_FIXED_WIDTH:-900}"
-PROJECTED_MAP_FIXED_HEIGHT="${GEN0_NAV2_PROJECTED_MAP_FIXED_HEIGHT:-1000}"
+PROJECTED_MAP_FIXED_ORIGIN_X="${GEN0_NAV2_PROJECTED_MAP_FIXED_ORIGIN_X:--40.0}"
+PROJECTED_MAP_FIXED_ORIGIN_Y="${GEN0_NAV2_PROJECTED_MAP_FIXED_ORIGIN_Y:--45.0}"
+PROJECTED_MAP_FIXED_WIDTH="${GEN0_NAV2_PROJECTED_MAP_FIXED_WIDTH:-1200}"
+PROJECTED_MAP_FIXED_HEIGHT="${GEN0_NAV2_PROJECTED_MAP_FIXED_HEIGHT:-1100}"
 PROJECTED_MAP_FIXED_RESOLUTION="${GEN0_NAV2_PROJECTED_MAP_FIXED_RESOLUTION:-0.10}"
 PROJECTED_MAP_BOUNDS_MARGIN="${GEN0_NAV2_PROJECTED_MAP_BOUNDS_MARGIN:-5.0}"
 MAP_TF_WAIT_TIMEOUT="${GEN0_NAV2_MAP_TF_WAIT_TIMEOUT:-10}"
@@ -54,8 +56,8 @@ case "$PROFILE" in
     DEFAULT_COSTMAP_SOURCE="scurm_terrain"
     DEFAULT_LOCALIZATION_MODE="odom_only"
     DEFAULT_MAP_SOURCE="projected_map"
-    # The online projected map is local and intentionally incomplete. Keep
-    # unknown cells traversable for long-range odom-only navigation.
+    # The available my_map YAML is a small local map; keep the fixed projected
+    # map canvas as the long-range global map in odom-only validation.
     DEFAULT_PROJECTED_MAP_UNKNOWN_AS_FREE="true"
     DEFAULT_NAV_TO_POSE_BT="$WORKSPACE/gen0_gz_sim_ros2/gen0_main/behavior_tree/ackermann_scurm_recovery.xml"
     DEFAULT_NAV_THROUGH_POSES_BT="$WORKSPACE/gen0_gz_sim_ros2/gen0_main/behavior_tree/ackermann_scurm_through_poses.xml"
@@ -85,6 +87,14 @@ MAP_YAML="${GEN0_NAV2_MAP:-$DEFAULT_MAP_YAML}"
 PROJECTED_MAP_UNKNOWN_AS_FREE="${GEN0_NAV2_PROJECTED_MAP_UNKNOWN_AS_FREE:-$DEFAULT_PROJECTED_MAP_UNKNOWN_AS_FREE}"
 NAV_TO_POSE_BT="${GEN0_NAV2_TO_POSE_BT:-$DEFAULT_NAV_TO_POSE_BT}"
 NAV_THROUGH_POSES_BT="${GEN0_NAV2_THROUGH_POSES_BT:-$DEFAULT_NAV_THROUGH_POSES_BT}"
+
+if [[ -n "$NAV2_ODOM_TOPIC_REQUESTED" ]]; then
+  NAV2_ODOM_TOPIC="$NAV2_ODOM_TOPIC_REQUESTED"
+elif [[ "$PROFILE" == "scurm_gen0" && "$LOCALIZATION_MODE" == "odom_only" ]]; then
+  NAV2_ODOM_TOPIC="/gen0_mapping/stable_odom"
+else
+  NAV2_ODOM_TOPIC="$FAST_LIO_ODOM_TOPIC"
+fi
 
 if [[ "$PROFILE" == "scurm_gen0" && "$MAP_SOURCE" == "projected_map" && -z "${GEN0_NAV2_MAP:-}" ]]; then
   MAP_YAML="/tmp/gen0_my_map_nav.yaml"
@@ -144,7 +154,7 @@ wait_for_topic_once() {
 
 print_3d_slam_start_hint() {
   if [[ "$PROFILE" == "scurm_gen0" && "$LOCALIZATION_MODE" == "odom_only" ]]; then
-    printf 'Start the my_map 3D SLAM/Gazebo stack first and wait for projected_map + FAST-LIO odometry:\n\n' >&2
+    printf 'Start the my_map 3D SLAM/Gazebo stack first and wait for projected_map + terrain_map + stable odometry:\n\n' >&2
     printf '  GEN0_WORKSPACE=%q \\\n' "$WORKSPACE" >&2
     printf '  GEN0_WORLD=%q \\\n' "$WORLD" >&2
     printf '  GEN0_RELOCALIZATION=false \\\n' >&2
@@ -299,6 +309,14 @@ case "$MAP_SOURCE" in
     ;;
 esac
 
+case "$PROJECTED_MAP_BACKEND" in
+  octomap|python) ;;
+  *)
+    printf 'Invalid GEN0_NAV2_PROJECTED_MAP_BACKEND=%s. Use octomap or python.\n' "$PROJECTED_MAP_BACKEND" >&2
+    exit 1
+    ;;
+esac
+
 case "$LOCALIZATION_MODE" in
   relocalized|odom_only) ;;
   *)
@@ -333,9 +351,9 @@ if [[ -n "$existing_ground_truth" && "$ALLOW_GROUND_TRUTH_LOCALIZATION" != "true
   exit 1
 fi
 
-log "Waiting for FAST-LIO odometry on $FAST_LIO_ODOM_TOPIC (timeout=${ODOM_WAIT_TIMEOUT}s)"
-if ! timeout "$ODOM_WAIT_TIMEOUT" ros2 topic echo --once "$FAST_LIO_ODOM_TOPIC" --field header >/dev/null 2>&1; then
-  printf 'Timed out waiting for %s.\n\n' "$FAST_LIO_ODOM_TOPIC" >&2
+log "Waiting for Nav2 odometry on $NAV2_ODOM_TOPIC (timeout=${ODOM_WAIT_TIMEOUT}s)"
+if ! timeout "$ODOM_WAIT_TIMEOUT" ros2 topic echo --once "$NAV2_ODOM_TOPIC" --field header >/dev/null 2>&1; then
+  printf 'Timed out waiting for %s.\n\n' "$NAV2_ODOM_TOPIC" >&2
   print_3d_slam_start_hint
   exit 1
 fi
@@ -353,8 +371,12 @@ log "TF $TF_TARGET_FRAME -> $TF_SOURCE_FRAME is available."
 
 PUBLISH_IDENTITY_MAP_TO_ODOM=false
 if [[ "$LOCALIZATION_MODE" == "odom_only" ]]; then
-  PUBLISH_IDENTITY_MAP_TO_ODOM=true
-  log "Using odom-only Nav2 mode: gen0_navigation will publish identity map -> odom; no prior map or ICP relocalization is required."
+  if [[ "$MAP_SOURCE" == "projected_map" && "$PROJECTED_MAP_BACKEND" == "octomap" ]]; then
+    log "Using odom-only Nav2 mode: projected-map backend already publishes map -> odom; Nav2 will not duplicate the identity TF."
+  else
+    PUBLISH_IDENTITY_MAP_TO_ODOM=true
+    log "Using odom-only Nav2 mode: gen0_navigation will publish identity map -> odom; no prior map or ICP relocalization is required."
+  fi
 else
   log "Waiting for TF map -> $TF_SOURCE_FRAME (timeout=${MAP_TF_WAIT_TIMEOUT}s)"
   if ! wait_for_tf map "$TF_SOURCE_FRAME" "$MAP_TF_WAIT_TIMEOUT" "$TF_PROBE_TIMEOUT"; then
@@ -382,9 +404,19 @@ fi
 
 if [[ "$MAP_SOURCE" == "projected_map" ]]; then
   if ! wait_for_topic_once "$PROJECTED_MAP_TOPIC" "$PROJECTED_MAP_WAIT_TIMEOUT" "online projected occupancy map"; then
-    printf 'Timed out waiting for %s. Keep 3D SLAM and projected_terrain_map running before starting Nav2.\n' "$PROJECTED_MAP_TOPIC" >&2
+    printf 'Timed out waiting for %s. Keep 3D SLAM and the projected map backend running before starting Nav2.\n' "$PROJECTED_MAP_TOPIC" >&2
     exit 1
   fi
+fi
+
+if [[ "$PROFILE" == "scurm_gen0" && "$MAP_SOURCE" == "projected_map" && "$PROJECTED_MAP_BACKEND" == "octomap" ]]; then
+  log "Waiting for SCURM map -> odom TF from the projected-map backend (timeout=${MAP_TF_WAIT_TIMEOUT}s)"
+  if ! wait_for_tf map odom "$MAP_TF_WAIT_TIMEOUT" "$TF_PROBE_TIMEOUT"; then
+    printf 'Timed out waiting for TF map -> odom from the projected-map backend.\n' >&2
+    printf 'Start the SCURM-style mapping stack first so octomap_server can publish the map frame.\n' >&2
+    exit 1
+  fi
+  log "TF map -> odom is available from the projected-map backend."
 fi
 
 if [[ "$PROFILE" == "scurm_gen0" && "$MAP_SOURCE" == "projected_map" && "$PROJECTED_MAP_FIXED_GEOMETRY" == "true" ]]; then
@@ -421,7 +453,7 @@ else
   MAX_REFERENCE_YAW_ERROR="0.0"
 fi
 
-log "Starting Gen0 Nav2: profile=$PROFILE, map_source=$MAP_SOURCE, map=$MAP_YAML, params=$PARAMS_FILE, odom_topic=$FAST_LIO_ODOM_TOPIC, localization_mode=$LOCALIZATION_MODE, costmap_source=$COSTMAP_SOURCE, controller_frequency=$NAV2_CONTROLLER_FREQUENCY, model_dt=$NAV2_MODEL_DT, smoothing_frequency=$NAV2_SMOOTHING_FREQUENCY, projected_map_unknown_as_free=$PROJECTED_MAP_UNKNOWN_AS_FREE, projected_map_fixed=${PROJECTED_MAP_FIXED_GEOMETRY}:${PROJECTED_MAP_FIXED_WIDTH}x${PROJECTED_MAP_FIXED_HEIGHT}@${PROJECTED_MAP_FIXED_RESOLUTION}, projected_map_origin=(${PROJECTED_MAP_FIXED_ORIGIN_X},${PROJECTED_MAP_FIXED_ORIGIN_Y}), command_topic=/cmd_vel"
+log "Starting Gen0 Nav2: profile=$PROFILE, map_source=$MAP_SOURCE, map=$MAP_YAML, params=$PARAMS_FILE, odom_topic=$NAV2_ODOM_TOPIC, localization_mode=$LOCALIZATION_MODE, costmap_source=$COSTMAP_SOURCE, controller_frequency=$NAV2_CONTROLLER_FREQUENCY, model_dt=$NAV2_MODEL_DT, smoothing_frequency=$NAV2_SMOOTHING_FREQUENCY, projected_map_unknown_as_free=$PROJECTED_MAP_UNKNOWN_AS_FREE, projected_map_fixed=${PROJECTED_MAP_FIXED_GEOMETRY}:${PROJECTED_MAP_FIXED_WIDTH}x${PROJECTED_MAP_FIXED_HEIGHT}@${PROJECTED_MAP_FIXED_RESOLUTION}, projected_map_origin=(${PROJECTED_MAP_FIXED_ORIGIN_X},${PROJECTED_MAP_FIXED_ORIGIN_Y}), command_topic=/cmd_vel"
 exec ros2 launch gen0_main gen0_navigation.launch.py \
   params_file:="$PARAMS_FILE" \
   use_respawn:="$USE_RESPAWN" \
@@ -440,7 +472,7 @@ exec ros2 launch gen0_main gen0_navigation.launch.py \
   projected_map_fixed_width:="$PROJECTED_MAP_FIXED_WIDTH" \
   projected_map_fixed_height:="$PROJECTED_MAP_FIXED_HEIGHT" \
   projected_map_fixed_resolution:="$PROJECTED_MAP_FIXED_RESOLUTION" \
-  odom_topic:="$FAST_LIO_ODOM_TOPIC" \
+  odom_topic:="$NAV2_ODOM_TOPIC" \
   reference_odom_topic:="$REFERENCE_ODOM_TOPIC" \
   max_reference_odom_error:="$MAX_REFERENCE_ODOM_ERROR" \
   max_reference_yaw_error:="$MAX_REFERENCE_YAW_ERROR" \
