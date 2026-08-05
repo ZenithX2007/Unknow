@@ -543,6 +543,7 @@ def generate_launch_description():
                             projected_map_fixed_resolution,
                             value_type=float,
                         ),
+                        'merge_fixed_history': True,
                     }
                 ],
             ),

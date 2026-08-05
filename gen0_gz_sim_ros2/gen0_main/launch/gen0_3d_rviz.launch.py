@@ -163,7 +163,7 @@ def generate_launch_description():
                 "fast_lio_map_preview",
                 registered_preview_input_topic,
                 "/gen0_mapping/rviz/fast_lio_map",
-                350000,
+                800000,
                 0.18,
                 2,
                 "z",

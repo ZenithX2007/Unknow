@@ -24,6 +24,7 @@ class Nav2ProjectedMapRelay(Node):
         self.declare_parameter('fixed_width', 500)
         self.declare_parameter('fixed_height', 500)
         self.declare_parameter('fixed_resolution', 0.10)
+        self.declare_parameter('merge_fixed_history', False)
 
         self.input_topic = self.get_parameter('input_topic').value
         self.output_topic = self.get_parameter('output_topic').value
@@ -36,6 +37,9 @@ class Nav2ProjectedMapRelay(Node):
         self.fixed_width = int(self.get_parameter('fixed_width').value)
         self.fixed_height = int(self.get_parameter('fixed_height').value)
         self.fixed_resolution = float(self.get_parameter('fixed_resolution').value)
+        self.merge_fixed_history = bool(
+            self.get_parameter('merge_fixed_history').value
+        )
 
         if self.publish_period <= 0.0:
             self.publish_period = 0.5
@@ -51,6 +55,7 @@ class Nav2ProjectedMapRelay(Node):
         )
 
         self.latest_map = None
+        self.fixed_canvas = None
         self.have_logged_first_map = False
 
         self.map_pub = self.create_publisher(OccupancyGrid, self.output_topic, output_qos)
@@ -60,7 +65,8 @@ class Nav2ProjectedMapRelay(Node):
         self.get_logger().info(
             f'Relaying {self.input_topic} to {self.output_topic} as frame '
             f'{self.output_frame}, unknown_as_free={self.unknown_as_free}, '
-            f'fixed_geometry={self.fixed_geometry}.'
+            f'fixed_geometry={self.fixed_geometry}, '
+            f'merge_fixed_history={self.merge_fixed_history}.'
         )
 
     def map_callback(self, msg):
@@ -96,12 +102,7 @@ class Nav2ProjectedMapRelay(Node):
         out.info.origin.position.z = 0.0
         out.info.origin.orientation.w = 1.0
 
-        fill_value = 0 if self.unknown_as_free else -1
-        canvas = np.full(
-            (self.fixed_height, self.fixed_width),
-            fill_value,
-            dtype=np.int8,
-        )
+        canvas = self.make_fixed_canvas()
 
         input_resolution = float(msg.info.resolution)
         input_width = int(msg.info.width)
@@ -147,11 +148,29 @@ class Nav2ProjectedMapRelay(Node):
         src_x1 = src_x0 + (copy_dst_x1 - copy_dst_x0)
         src_y1 = src_y0 + (copy_dst_y1 - copy_dst_y0)
         src_region = src[src_y0:src_y1, src_x0:src_x1]
+        known_region = raw_src[src_y0:src_y1, src_x0:src_x1] >= 0
         canvas_region = canvas[copy_dst_y0:copy_dst_y1, copy_dst_x0:copy_dst_x1]
-        canvas_region[:, :] = src_region
+        if self.merge_fixed_history:
+            canvas_region[known_region] = src_region[known_region]
+        else:
+            canvas_region[:, :] = src_region
 
+        if self.merge_fixed_history:
+            self.fixed_canvas = canvas
         out.data = array('b', canvas.ravel(order='C'))
         return out
+
+    def make_fixed_canvas(self):
+        shape = (self.fixed_height, self.fixed_width)
+        if (
+            self.merge_fixed_history
+            and self.fixed_canvas is not None
+            and self.fixed_canvas.shape == shape
+        ):
+            return self.fixed_canvas.copy()
+
+        fill_value = 0 if self.unknown_as_free else -1
+        return np.full(shape, fill_value, dtype=np.int8)
 
     def timer_callback(self):
         if self.latest_map is None:

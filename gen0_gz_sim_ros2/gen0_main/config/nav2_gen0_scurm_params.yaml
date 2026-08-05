@@ -87,7 +87,7 @@ controller_server:
     general_goal_checker:
       stateful: true
       plugin: nav2_controller::SimpleGoalChecker
-      xy_goal_tolerance: 0.45
+      xy_goal_tolerance: 0.20
       yaw_goal_tolerance: 3.14
 
     FollowPath:
