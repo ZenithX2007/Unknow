@@ -59,7 +59,7 @@ Visualization Manager:
       Value: true
     - Class: rviz_default_plugins/Path
       Color: 25; 255; 0
-      Enabled: true
+      Enabled: false
       Line Style: Lines
       Line Width: 0.05
       Name: FAST_LIO2 Path
@@ -69,7 +69,7 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /gen0_mapping/fast_lio/path
-      Value: true
+      Value: false
     - Class: rviz_default_plugins/Odometry
       Color: 255; 25; 0
       Enabled: false

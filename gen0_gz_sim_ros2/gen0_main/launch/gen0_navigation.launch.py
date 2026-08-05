@@ -312,22 +312,22 @@ def generate_launch_description():
     )
     declare_projected_map_fixed_origin_x = DeclareLaunchArgument(
         'projected_map_fixed_origin_x',
-        default_value='-40.0',
+        default_value='-140.0',
         description='Fixed projected map origin X in the map frame.',
     )
     declare_projected_map_fixed_origin_y = DeclareLaunchArgument(
         'projected_map_fixed_origin_y',
-        default_value='-45.0',
+        default_value='-135.0',
         description='Fixed projected map origin Y in the map frame.',
     )
     declare_projected_map_fixed_width = DeclareLaunchArgument(
         'projected_map_fixed_width',
-        default_value='1200',
+        default_value='3300',
         description='Fixed projected map width in cells.',
     )
     declare_projected_map_fixed_height = DeclareLaunchArgument(
         'projected_map_fixed_height',
-        default_value='1100',
+        default_value='3300',
         description='Fixed projected map height in cells.',
     )
     declare_projected_map_fixed_resolution = DeclareLaunchArgument(

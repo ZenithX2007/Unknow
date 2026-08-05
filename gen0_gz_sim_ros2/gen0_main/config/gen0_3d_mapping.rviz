@@ -234,7 +234,7 @@ Visualization Manager:
       Value: true
     - Class: rviz_default_plugins/Path
       Color: 25; 255; 0
-      Enabled: true
+      Enabled: false
       Line Style: Lines
       Line Width: 0.05
       Name: FAST_LIO2 Path
@@ -244,18 +244,18 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /gen0_mapping/fast_lio/path
-      Value: true
+      Value: false
     - Class: rviz_default_plugins/Odometry
       Color: 255; 25; 0
       Enabled: true
-      Name: FAST_LIO2 Odometry
+      Name: Stable Odometry
       Shape: Arrow
       Topic:
         Depth: 5
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /gen0_mapping/fast_lio/odom
+        Value: /gen0_mapping/stable_odom
       Value: true
   Enabled: true
   Global Options:

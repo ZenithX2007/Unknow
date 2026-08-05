@@ -25,10 +25,12 @@ PROJECTED_MAP_WAIT_TIMEOUT="${GEN0_NAV2_PROJECTED_MAP_WAIT_TIMEOUT:-20}"
 PROJECTED_MAP_TOPIC="${GEN0_NAV2_PROJECTED_MAP_TOPIC:-/projected_map}"
 PROJECTED_MAP_BACKEND="${GEN0_NAV2_PROJECTED_MAP_BACKEND:-python}"
 PROJECTED_MAP_FIXED_GEOMETRY="${GEN0_NAV2_PROJECTED_MAP_FIXED_GEOMETRY:-true}"
-PROJECTED_MAP_FIXED_ORIGIN_X="${GEN0_NAV2_PROJECTED_MAP_FIXED_ORIGIN_X:--40.0}"
-PROJECTED_MAP_FIXED_ORIGIN_Y="${GEN0_NAV2_PROJECTED_MAP_FIXED_ORIGIN_Y:--45.0}"
-PROJECTED_MAP_FIXED_WIDTH="${GEN0_NAV2_PROJECTED_MAP_FIXED_WIDTH:-1200}"
-PROJECTED_MAP_FIXED_HEIGHT="${GEN0_NAV2_PROJECTED_MAP_FIXED_HEIGHT:-1100}"
+PROJECTED_MAP_AUTO_WORLD_BOUNDS="${GEN0_NAV2_PROJECTED_MAP_AUTO_WORLD_BOUNDS:-true}"
+PROJECTED_MAP_WORLD_BOUNDS_MARGIN="${GEN0_NAV2_PROJECTED_MAP_WORLD_BOUNDS_MARGIN:-15.0}"
+PROJECTED_MAP_FIXED_ORIGIN_X="${GEN0_NAV2_PROJECTED_MAP_FIXED_ORIGIN_X:-}"
+PROJECTED_MAP_FIXED_ORIGIN_Y="${GEN0_NAV2_PROJECTED_MAP_FIXED_ORIGIN_Y:-}"
+PROJECTED_MAP_FIXED_WIDTH="${GEN0_NAV2_PROJECTED_MAP_FIXED_WIDTH:-}"
+PROJECTED_MAP_FIXED_HEIGHT="${GEN0_NAV2_PROJECTED_MAP_FIXED_HEIGHT:-}"
 PROJECTED_MAP_FIXED_RESOLUTION="${GEN0_NAV2_PROJECTED_MAP_FIXED_RESOLUTION:-0.10}"
 PROJECTED_MAP_BOUNDS_MARGIN="${GEN0_NAV2_PROJECTED_MAP_BOUNDS_MARGIN:-5.0}"
 MAP_TF_WAIT_TIMEOUT="${GEN0_NAV2_MAP_TF_WAIT_TIMEOUT:-10}"
@@ -275,6 +277,83 @@ print(
 PY
 }
 
+configure_projected_map_fixed_geometry() {
+  if [[ "$PROJECTED_MAP_FIXED_GEOMETRY" != "true" ]]; then
+    return
+  fi
+
+  local have_explicit_geometry="true"
+  if [[ -z "$PROJECTED_MAP_FIXED_ORIGIN_X" || -z "$PROJECTED_MAP_FIXED_ORIGIN_Y" || \
+        -z "$PROJECTED_MAP_FIXED_WIDTH" || -z "$PROJECTED_MAP_FIXED_HEIGHT" ]]; then
+    have_explicit_geometry="false"
+  fi
+
+  if [[ "$PROJECTED_MAP_AUTO_WORLD_BOUNDS" == "true" && "$have_explicit_geometry" == "false" ]]; then
+    local world_obj="$WORKSPACE/gen0_gz_sim_ros2/gen0_main/worlds/$WORLD/$WORLD.obj"
+    if [[ -f "$world_obj" ]]; then
+      local geometry
+      geometry="$(
+        python3 - "$world_obj" "$PROJECTED_MAP_FIXED_RESOLUTION" "$PROJECTED_MAP_WORLD_BOUNDS_MARGIN" <<'PY'
+import math
+import sys
+
+obj_path, resolution_text, margin_text = sys.argv[1:4]
+resolution = float(resolution_text)
+margin = float(margin_text)
+if resolution <= 0.0:
+    raise SystemExit("resolution must be positive")
+
+mins = [math.inf, math.inf, math.inf]
+maxs = [-math.inf, -math.inf, -math.inf]
+with open(obj_path, "r", encoding="utf-8", errors="ignore") as obj_file:
+    for line in obj_file:
+        if not line.startswith("v "):
+            continue
+        parts = line.split()
+        if len(parts) < 4:
+            continue
+        values = [float(parts[1]), float(parts[2]), float(parts[3])]
+        for idx, value in enumerate(values):
+            mins[idx] = min(mins[idx], value)
+            maxs[idx] = max(maxs[idx], value)
+
+if not all(math.isfinite(value) for value in mins + maxs):
+    raise SystemExit("world mesh has no vertices")
+
+spans = [maxs[idx] - mins[idx] for idx in range(3)]
+vertical_axis = min(range(3), key=lambda idx: spans[idx])
+horizontal_axes = [idx for idx in range(3) if idx != vertical_axis]
+map_x_axis = 0 if 0 in horizontal_axes else horizontal_axes[0]
+map_y_axis = next(idx for idx in horizontal_axes if idx != map_x_axis)
+
+origin_x = math.floor((mins[map_x_axis] - margin) / resolution) * resolution
+origin_y = math.floor((mins[map_y_axis] - margin) / resolution) * resolution
+max_x = math.ceil((maxs[map_x_axis] + margin) / resolution) * resolution
+max_y = math.ceil((maxs[map_y_axis] + margin) / resolution) * resolution
+width = max(1, int(math.ceil((max_x - origin_x) / resolution)))
+height = max(1, int(math.ceil((max_y - origin_y) / resolution)))
+
+axis_names = "xyz"
+print(
+    f"{origin_x:.3f} {origin_y:.3f} {width} {height} "
+    f"{axis_names[map_x_axis]} {axis_names[map_y_axis]}"
+)
+PY
+      )"
+      read -r PROJECTED_MAP_FIXED_ORIGIN_X PROJECTED_MAP_FIXED_ORIGIN_Y \
+        PROJECTED_MAP_FIXED_WIDTH PROJECTED_MAP_FIXED_HEIGHT \
+        PROJECTED_MAP_WORLD_AXIS_X PROJECTED_MAP_WORLD_AXIS_Y <<< "$geometry"
+      log "Projected-map fixed canvas from world mesh: origin=($PROJECTED_MAP_FIXED_ORIGIN_X,$PROJECTED_MAP_FIXED_ORIGIN_Y), size=${PROJECTED_MAP_FIXED_WIDTH}x${PROJECTED_MAP_FIXED_HEIGHT}@${PROJECTED_MAP_FIXED_RESOLUTION}, axes=${PROJECTED_MAP_WORLD_AXIS_X}/${PROJECTED_MAP_WORLD_AXIS_Y}, margin=${PROJECTED_MAP_WORLD_BOUNDS_MARGIN}m"
+      return
+    fi
+  fi
+
+  PROJECTED_MAP_FIXED_ORIGIN_X="${PROJECTED_MAP_FIXED_ORIGIN_X:--40.0}"
+  PROJECTED_MAP_FIXED_ORIGIN_Y="${PROJECTED_MAP_FIXED_ORIGIN_Y:--45.0}"
+  PROJECTED_MAP_FIXED_WIDTH="${PROJECTED_MAP_FIXED_WIDTH:-1200}"
+  PROJECTED_MAP_FIXED_HEIGHT="${PROJECTED_MAP_FIXED_HEIGHT:-1100}"
+}
+
 if [[ ! -f /opt/ros/humble/setup.bash ]]; then
   printf 'ROS 2 Humble setup not found at /opt/ros/humble/setup.bash\n' >&2
   exit 1
@@ -327,6 +406,7 @@ esac
 
 source_ros_setup /opt/ros/humble/setup.bash
 source_ros_setup "$WORKSPACE/install/setup.bash"
+configure_projected_map_fixed_geometry
 
 existing_nav2="$(
   ros2 node list 2>/dev/null \
