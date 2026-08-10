@@ -23,7 +23,10 @@ GAZEBO_BRIDGE_FILE="${GEN0_GAZEBO_BRIDGE_FILE:-$WORKSPACE/gen0_gz_sim_ros2/gen0_
 MAPPING_DRIVE="${GEN0_MAPPING_DRIVE:-true}"
 DRIVE_SPEED="${GEN0_DRIVE_SPEED:-0.25}"
 RVIZ="${GEN0_RVIZ:-true}"
-RVIZ_CONFIG="${GEN0_RVIZ_CONFIG:-$WORKSPACE/gen0_gz_sim_ros2/gen0_main/config/gen0_3d_mapping.rviz}"
+DEFAULT_RVIZ_CONFIG="$WORKSPACE/gen0_gz_sim_ros2/gen0_main/config/gen0_3d_mapping.rviz"
+DEFAULT_RELOCALIZATION_RVIZ_CONFIG="$WORKSPACE/gen0_gz_sim_ros2/gen0_main/config/gen0_relocalization_loam_livox.rviz"
+RVIZ_CONFIG="${GEN0_RVIZ_CONFIG:-}"
+RVIZ_RENDER_ENV="${GEN0_RVIZ_RENDER_ENV:-software}"
 LOG_DIR="${GEN0_LOG_DIR:-$WORKSPACE/runtime_logs}"
 ROS_LOG_DIR="${ROS_LOG_DIR:-$LOG_DIR/ros}"
 FAST_LIO_ODOM_TOPIC="${GEN0_FAST_LIO_ODOM_TOPIC:-/gen0_mapping/fast_lio/odom}"
@@ -38,7 +41,7 @@ PROJECTED_MAP_MAX_ODOM_ERROR="${GEN0_PROJECTED_MAP_MAX_ODOM_ERROR:-3.0}"
 PROJECTED_MAP_MAX_YAW_ERROR="${GEN0_PROJECTED_MAP_MAX_YAW_ERROR:-0.75}"
 PROJECTED_MAP_ODOM_TIMEOUT="${GEN0_PROJECTED_MAP_ODOM_TIMEOUT:-2.0}"
 RELOCALIZATION="${GEN0_RELOCALIZATION:-false}"
-PRIOR_MAP_PATH="${GEN0_PRIOR_MAP_PATH:-$HOME/SCURM_SentryNavigation/sentry_bringup/maps/GlobalMap.pcd}"
+PRIOR_MAP_PATH="${GEN0_PRIOR_MAP_PATH:-$WORKSPACE/gen0_gz_sim_ros2/gen0_main/maps/prior_map.pcd}"
 RELOCALIZATION_INITIAL_X="${GEN0_RELOCALIZATION_INITIAL_X:-0.0}"
 RELOCALIZATION_INITIAL_Y="${GEN0_RELOCALIZATION_INITIAL_Y:-0.0}"
 RELOCALIZATION_INITIAL_Z="${GEN0_RELOCALIZATION_INITIAL_Z:-0.0}"
@@ -51,6 +54,7 @@ RELOCALIZATION_INPUT_CLOUD_TO_BASE_Y="${GEN0_RELOCALIZATION_INPUT_CLOUD_TO_BASE_
 RELOCALIZATION_INPUT_CLOUD_TO_BASE_Z="${GEN0_RELOCALIZATION_INPUT_CLOUD_TO_BASE_Z:-1.9}"
 RELOCALIZATION_LEGACY_LIVOX_ROLL_180="${GEN0_RELOCALIZATION_LEGACY_LIVOX_ROLL_180:-false}"
 RELOCALIZATION_WAIT_TIMEOUT="${GEN0_RELOCALIZATION_WAIT_TIMEOUT:-90}"
+GAZEBO_RENDER_ENV="${GEN0_GAZEBO_RENDER_ENV:-software}"
 FAST_LIO_MAP_FILE_PATH="${GEN0_FAST_LIO_MAP_FILE_PATH:-/tmp/gen0_fast_lio_map.pcd}"
 FAST_LIO_PCD_SAVE="${GEN0_FAST_LIO_PCD_SAVE:-false}"
 FAST_LIO_PCD_SAVE_INTERVAL="${GEN0_FAST_LIO_PCD_SAVE_INTERVAL:--1}"
@@ -70,8 +74,13 @@ SIM_LIDAR_SURFACE_SAMPLING="${GEN0_SIM_LIDAR_SURFACE_SAMPLING:-true}"
 SIM_LIDAR_SURFACE_SAMPLES="${GEN0_SIM_LIDAR_SURFACE_SAMPLES:-1000000}"
 SIM_LIDAR_ADD_OBSTACLE_COLUMNS="${GEN0_SIM_LIDAR_ADD_OBSTACLE_COLUMNS:-false}"
 
+if [[ -z "${GEN0_TRASH_SCENARIO+x}" && "$RELOCALIZATION" == "true" && "$MAPPING_DRIVE" != "true" ]]; then
+  TRASH_SCENARIO=""
+fi
+
 PIDS=()
 NAMES=()
+CRITICALS=()
 
 if [[ -z "$FRONT3D_SOURCE_TOPIC" ]]; then
   if [[ "$SIMULATED_LIDAR" == "true" ]]; then
@@ -134,6 +143,14 @@ if [[ -z "$FAST_LIO_SENSOR_FRAME_ID" ]]; then
 fi
 TRASH_ODOM_TOPIC="${GEN0_TRASH_ODOM_TOPIC:-$SCURM_ODOM_TOPIC}"
 
+if [[ -z "$RVIZ_CONFIG" ]]; then
+  if [[ "$RELOCALIZATION" == "true" ]]; then
+    RVIZ_CONFIG="$DEFAULT_RELOCALIZATION_RVIZ_CONFIG"
+  else
+    RVIZ_CONFIG="$DEFAULT_RVIZ_CONFIG"
+  fi
+fi
+
 log() {
   printf '[%(%F %T)T] %s\n' -1 "$*"
 }
@@ -152,7 +169,7 @@ check_existing_ros_nodes() {
 
   local existing
   existing="$(
-    ros2 node list 2>/dev/null \
+    timeout 5s ros2 node list --no-daemon 2>/dev/null \
       | grep -E '(^/pose_publisher$|^/gen0_simulated_world_lidar$|^/gen0_gazebo_livox_adapter$|^/gen0_stable_odom$|^/gen0_odom_registered_scan$|^/gen0_icp_transform_publisher$|^/gen0_icp_relocalization$|^/gen0_fast_lio$|^/gen0_mapping_drive$|^/gen0_trash_cleanup$|^/gen0_scurm_terrain_analysis$|^/gen0_scurm_terrain_analysis_ext$|^/gen0_scurm_map_to_odom$|^/gen0_scurm_exchange_field$|^/gen0_scurm_sensor_scan_generation$|^/gen0_scurm_octomap_server$|^/gen0_projected_terrain_map$|^/costmap/costmap$|^/lifecycle_manager_costmap$|^/raw_front3d_preview$|^/cloud_registered_preview$|^/terrain_map_preview$|^/terrain_map_ext_preview$|^/fast_lio_map_preview$|^/pointcloud_accumulator_preview$|^/rviz$|^/rviz2$|^/vehicle_movement_interface$)' \
       || true
   )"
@@ -187,15 +204,25 @@ source_ros_setup() {
   set -u
 }
 
-start_process() {
-  local name="$1"
-  shift
+start_managed_process() {
+  local critical="$1"
+  local name="$2"
+  shift 2
 
   log "Starting $name"
   setsid "$@" >"$LOG_DIR/$name.log" 2>&1 &
   PIDS+=("$!")
   NAMES+=("$name")
+  CRITICALS+=("$critical")
   log "$name pid=${PIDS[-1]} log=$LOG_DIR/$name.log"
+}
+
+start_process() {
+  start_managed_process true "$@"
+}
+
+start_optional_process() {
+  start_managed_process false "$@"
 }
 
 process_group_alive() {
@@ -223,7 +250,7 @@ wait_for_relocalized_odometry() {
       log "fast_lio_3d_slam exited before relocalized odometry became available"
       return 1
     fi
-    if timeout 2s ros2 topic echo --once "$FAST_LIO_ODOM_TOPIC" --field header >/dev/null 2>&1; then
+    if timeout 2s ros2 topic echo --no-daemon --once "$FAST_LIO_ODOM_TOPIC" --field header >/dev/null 2>&1; then
       log "Relocalized FAST-LIO odometry is available."
       return 0
     fi
@@ -234,6 +261,28 @@ wait_for_relocalized_odometry() {
   return 1
 }
 
+start_trash_cleanup_if_enabled() {
+  if [[ -n "$TRASH_SCENARIO" && "$TRASH_CLEANUP" == "true" ]]; then
+    trash_cleanup_launch=(
+      ros2 launch gen0_main trash_cleanup.launch.py \
+      world:="$WORLD" \
+      trash_scenario:="$TRASH_SCENARIO" \
+      partition:="$PARTITION" \
+      odom_topic:="$TRASH_ODOM_TOPIC" \
+      vehicle_length:="$TRASH_VEHICLE_LENGTH" \
+      vehicle_width:="$TRASH_VEHICLE_WIDTH" \
+      vehicle_center_offset_x:="$TRASH_VEHICLE_CENTER_OFFSET_X" \
+      vehicle_center_offset_y:="$TRASH_VEHICLE_CENTER_OFFSET_Y" \
+      coverage_margin:="$TRASH_COVERAGE_MARGIN" \
+      debug_period:="$TRASH_DEBUG_PERIOD"
+    )
+    if [[ -n "$TRASH_DEBUG_ITEM" ]]; then
+      trash_cleanup_launch+=(debug_item:="$TRASH_DEBUG_ITEM")
+    fi
+    start_process trash_cleanup "${trash_cleanup_launch[@]}"
+  fi
+}
+
 cleanup() {
   local status=$?
   trap - EXIT INT TERM
@@ -241,23 +290,29 @@ cleanup() {
   if ((${#PIDS[@]} > 0)); then
     log "Stopping launched processes"
     for pid in "${PIDS[@]}"; do
+      [[ -z "$pid" ]] && continue
       if process_group_alive "$pid"; then
         signal_process_group INT "$pid"
       fi
     done
     sleep 4
     for pid in "${PIDS[@]}"; do
+      [[ -z "$pid" ]] && continue
       if process_group_alive "$pid"; then
         signal_process_group TERM "$pid"
       fi
     done
     sleep 2
     for pid in "${PIDS[@]}"; do
+      [[ -z "$pid" ]] && continue
       if process_group_alive "$pid"; then
         signal_process_group KILL "$pid"
       fi
     done
-    wait "${PIDS[@]}" 2>/dev/null || true
+    for pid in "${PIDS[@]}"; do
+      [[ -z "$pid" ]] && continue
+      wait "$pid" 2>/dev/null || true
+    done
   fi
 
   exit "$status"
@@ -284,9 +339,12 @@ mkdir -p "$LOG_DIR"
 mkdir -p "$ROS_LOG_DIR"
 
 export ROS_LOG_DIR
+export RCUTILS_LOGGING_BUFFERED_STREAM="${RCUTILS_LOGGING_BUFFERED_STREAM:-1}"
+export PYTHONUNBUFFERED="${PYTHONUNBUFFERED:-1}"
 
 source_ros_setup /opt/ros/humble/setup.bash
 source_ros_setup "$WORKSPACE/install/setup.bash"
+log "Preflight: checking for existing Gen0/RViz ROS nodes and Gazebo processes"
 check_existing_ros_nodes
 check_existing_gazebo_processes
 
@@ -295,7 +353,6 @@ unset MESA_LOADER_DRIVER_OVERRIDE
 unset GALLIUM_DRIVER
 unset MESA_GL_VERSION_OVERRIDE
 unset QT_XCB_GL_INTEGRATION
-export MESA_D3D12_DEFAULT_ADAPTER_NAME="$GPU_ADAPTER"
 export IGN_PARTITION="$PARTITION"
 export GZ_PARTITION="$PARTITION"
 
@@ -305,6 +362,9 @@ log "Simulated lidar: $SIMULATED_LIDAR, world_obj_path: $WORLD_OBJ_PATH"
 log "Front 3D source topic: $FRONT3D_SOURCE_TOPIC, simulated_topic=$SIMULATED_FRONT3D_TOPIC, gazebo_topic=$GAZEBO_FRONT3D_TOPIC"
 log "TF localization: ground_truth_localization=$GROUND_TRUTH_LOCALIZATION, static_odom_base=$STATIC_ODOM_BASE"
 log "Gazebo bridge file: $GAZEBO_BRIDGE_FILE"
+log "Gazebo render_env: $GAZEBO_RENDER_ENV"
+log "RViz config: $RVIZ_CONFIG"
+log "RViz render env: $RVIZ_RENDER_ENV"
 log "Mapping drive: $MAPPING_DRIVE, drive_speed=$DRIVE_SPEED, command_topic=/cmd_vel"
 log "SCURM view: terrain_analysis=$TERRAIN_ANALYSIS, terrain_analysis_ext=$TERRAIN_ANALYSIS_EXT, projected_map=$PROJECTED_MAP, local_costmap=$LOCAL_COSTMAP, relocalization=$RELOCALIZATION, rviz=$RVIZ"
 log "Projected map backend: $PROJECTED_MAP_BACKEND"
@@ -330,7 +390,7 @@ if [[ "$SIMULATED_LIDAR" == "true" ]]; then
   log "Simulated lidar scan: max_points=$SIM_LIDAR_MAX_POINTS, max_range=$SIM_LIDAR_MAX_RANGE, h=[$SIM_LIDAR_HORIZONTAL_MIN, $SIM_LIDAR_HORIZONTAL_MAX], v=[$SIM_LIDAR_VERTICAL_MIN, $SIM_LIDAR_VERTICAL_MAX]"
   log "Simulated lidar mesh: world_voxel_size=$SIM_LIDAR_WORLD_VOXEL_SIZE, surface_sampling=$SIM_LIDAR_SURFACE_SAMPLING, surface_samples=$SIM_LIDAR_SURFACE_SAMPLES, add_obstacle_columns=$SIM_LIDAR_ADD_OBSTACLE_COLUMNS"
 fi
-log "GPU adapter: $MESA_D3D12_DEFAULT_ADAPTER_NAME"
+log "GPU adapter: $GPU_ADAPTER"
 log "Logs: $LOG_DIR"
 log "ROS logs: $ROS_LOG_DIR"
 
@@ -343,7 +403,7 @@ gazebo_launch=(
   ground_truth_localization:="$GROUND_TRUTH_LOCALIZATION"
   static_odom_base:="$STATIC_ODOM_BASE"
   bridge_file:="$GAZEBO_BRIDGE_FILE"
-  render_env:=unset
+  render_env:="$GAZEBO_RENDER_ENV"
 )
 if [[ -n "$GPU_ADAPTER" ]]; then
   gazebo_launch+=(d3d12_adapter:="$GPU_ADAPTER")
@@ -379,8 +439,9 @@ fast_lio_launch=(
   stable_registered_scan_topic:="$STABLE_REGISTERED_SCAN_TOPIC"
   scurm_odom_topic:="$SCURM_ODOM_TOPIC"
   scurm_registered_scan_topic:="$SCURM_REGISTERED_SCAN_TOPIC"
-  rviz:="$RVIZ"
+  rviz:=false
   rviz_config:="$RVIZ_CONFIG"
+  rviz_render_env:="$RVIZ_RENDER_ENV"
   simulated_lidar:="$SIMULATED_LIDAR"
   terrain_analysis:="$TERRAIN_ANALYSIS"
   terrain_analysis_ext:="$TERRAIN_ANALYSIS_EXT"
@@ -427,7 +488,29 @@ fi
 start_process fast_lio_3d_slam "${fast_lio_launch[@]}"
 FAST_LIO_PID="${PIDS[-1]}"
 
-if wait_for_relocalized_odometry "$FAST_LIO_PID"; then
+if [[ "$RVIZ" == "true" ]]; then
+  start_optional_process rviz \
+    ros2 launch gen0_main gen0_3d_rviz.launch.py \
+      rviz:=true \
+      rviz_config:="$RVIZ_CONFIG" \
+      rviz_render_env:="$RVIZ_RENDER_ENV" \
+      use_sim_time:=true \
+      raw_front3d_input_topic:="$FRONT3D_SOURCE_TOPIC" \
+      registered_preview_input_topic:="$SCURM_REGISTERED_SCAN_TOPIC"
+fi
+
+if [[ "$RELOCALIZATION" == "true" && "$MAPPING_DRIVE" == "true" ]]; then
+  if wait_for_relocalized_odometry "$FAST_LIO_PID"; then
+    start_process mapping_drive \
+      ros2 launch gen0_main gen0_mapping_drive.launch.py \
+        enabled:=true \
+        drive_speed:="$DRIVE_SPEED" \
+        front3d_topic:="$FRONT3D_SOURCE_TOPIC"
+    start_trash_cleanup_if_enabled
+  fi
+elif [[ "$RELOCALIZATION" == "true" ]]; then
+  log "Skipping relocalized odometry wait because GEN0_MAPPING_DRIVE=$MAPPING_DRIVE"
+else
   if [[ "$RELOCALIZATION" != "true" ]]; then
     sleep 8
   fi
@@ -442,25 +525,7 @@ if wait_for_relocalized_odometry "$FAST_LIO_PID"; then
     log "Skipping mapping_drive because GEN0_MAPPING_DRIVE=$MAPPING_DRIVE"
   fi
 
-  if [[ -n "$TRASH_SCENARIO" && "$TRASH_CLEANUP" == "true" ]]; then
-    trash_cleanup_launch=(
-      ros2 launch gen0_main trash_cleanup.launch.py \
-      world:="$WORLD" \
-      trash_scenario:="$TRASH_SCENARIO" \
-      partition:="$PARTITION" \
-      odom_topic:="$TRASH_ODOM_TOPIC" \
-      vehicle_length:="$TRASH_VEHICLE_LENGTH" \
-      vehicle_width:="$TRASH_VEHICLE_WIDTH" \
-      vehicle_center_offset_x:="$TRASH_VEHICLE_CENTER_OFFSET_X" \
-      vehicle_center_offset_y:="$TRASH_VEHICLE_CENTER_OFFSET_Y" \
-      coverage_margin:="$TRASH_COVERAGE_MARGIN" \
-      debug_period:="$TRASH_DEBUG_PERIOD"
-    )
-    if [[ -n "$TRASH_DEBUG_ITEM" ]]; then
-      trash_cleanup_launch+=(debug_item:="$TRASH_DEBUG_ITEM")
-    fi
-    start_process trash_cleanup "${trash_cleanup_launch[@]}"
-  fi
+  start_trash_cleanup_if_enabled
 fi
 
 log "Stack is running. Press Ctrl+C in this terminal to stop everything launched by this script."
@@ -475,13 +540,18 @@ while true; do
   for i in "${!PIDS[@]}"; do
     pid="${PIDS[$i]}"
     name="${NAMES[$i]}"
+    critical="${CRITICALS[$i]}"
+    [[ -z "$pid" ]] && continue
     if ! kill -0 "$pid" 2>/dev/null; then
       set +e
       wait "$pid"
       status=$?
       set -e
       log "$name exited with status $status. Check $LOG_DIR/$name.log"
-      exit "$status"
+      if [[ "$critical" == "true" ]]; then
+        exit "$status"
+      fi
+      PIDS[$i]=""
     fi
   done
   sleep 3

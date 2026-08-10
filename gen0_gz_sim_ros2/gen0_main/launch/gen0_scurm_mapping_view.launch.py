@@ -72,6 +72,7 @@ def generate_launch_description():
     odom_topic = LaunchConfiguration("odom_topic")
     rviz = LaunchConfiguration("rviz")
     rviz_config = LaunchConfiguration("rviz_config")
+    rviz_render_env = LaunchConfiguration("rviz_render_env")
     costmap_params_file = LaunchConfiguration("costmap_params_file")
 
     return LaunchDescription(
@@ -95,6 +96,12 @@ def generate_launch_description():
                 "rviz_config",
                 default_value=default_rviz,
                 description="RViz config for SCURM-style mapping verification.",
+            ),
+            DeclareLaunchArgument(
+                "rviz_render_env",
+                default_value="software",
+                choices=["auto", "software", "passthrough"],
+                description="RViz OpenGL environment. auto/software use llvmpipe; passthrough keeps the host GL path.",
             ),
             DeclareLaunchArgument(
                 "costmap_params_file",
@@ -133,6 +140,7 @@ def generate_launch_description():
                 launch_arguments={
                     "rviz": rviz,
                     "rviz_config": rviz_config,
+                    "rviz_render_env": rviz_render_env,
                     "use_sim_time": use_sim_time,
                 }.items(),
             ),

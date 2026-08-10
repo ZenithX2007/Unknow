@@ -54,6 +54,7 @@ def generate_launch_description():
     fast_lio_pcd_save_interval = LaunchConfiguration("fast_lio_pcd_save_interval")
     rviz = LaunchConfiguration("rviz")
     rviz_config = LaunchConfiguration("rviz_config")
+    rviz_render_env = LaunchConfiguration("rviz_render_env")
     terrain_analysis = LaunchConfiguration("terrain_analysis")
     terrain_analysis_ext = LaunchConfiguration("terrain_analysis_ext")
     projected_map = LaunchConfiguration("projected_map")
@@ -244,6 +245,12 @@ def generate_launch_description():
                 "rviz_config",
                 default_value=default_rviz,
                 description="RViz config for 3D mapping verification.",
+            ),
+            DeclareLaunchArgument(
+                "rviz_render_env",
+                default_value="software",
+                choices=["auto", "software", "passthrough"],
+                description="RViz OpenGL environment. auto/software use llvmpipe; passthrough keeps the host GL path.",
             ),
             DeclareLaunchArgument(
                 "terrain_analysis",
@@ -558,6 +565,7 @@ def generate_launch_description():
                 condition=IfCondition(relocalization),
                 parameters=[
                     {
+                        "use_sim_time": use_sim_time,
                         "map_frame_id": "map",
                         "odom_frame_id": "odom",
                     }
@@ -586,6 +594,10 @@ def generate_launch_description():
                         ),
                         "map_voxel_leaf_size": 0.5,
                         "cloud_voxel_leaf_size": 0.3,
+                        "map_min_z": -1.2,
+                        "map_max_z": 30.0,
+                        "prior_map_publish_voxel_leaf_size": 1.0,
+                        "max_published_prior_map_points": 120000,
                         "map_frame_id": "map",
                         "solver_max_iter": 75,
                         "max_correspondence_distance": ParameterValue(
@@ -629,12 +641,34 @@ def generate_launch_description():
                             relocalization, value_type=bool
                         ),
                         "prior_map_path": prior_map_path,
+                        "prior_map_min_z": -1.2,
+                        "prior_map_max_z": 30.0,
                         "map_file_path": fast_lio_map_file_path,
                         "pcd_save.pcd_save_en": ParameterValue(
                             fast_lio_pcd_save, value_type=bool
                         ),
                         "pcd_save.interval": ParameterValue(
                             fast_lio_pcd_save_interval, value_type=int
+                        ),
+                        "publish.effect_map_en": ParameterValue(
+                            PythonExpression(["'", relocalization, "' == 'false'"]),
+                            value_type=bool,
+                        ),
+                        "publish.map_en": ParameterValue(
+                            PythonExpression(["'", relocalization, "' == 'false'"]),
+                            value_type=bool,
+                        ),
+                        "publish.ikd_tree_en": ParameterValue(
+                            PythonExpression(["'", relocalization, "' == 'false'"]),
+                            value_type=bool,
+                        ),
+                        "publish.dense_publish_en": ParameterValue(
+                            PythonExpression(["'", relocalization, "' == 'false'"]),
+                            value_type=bool,
+                        ),
+                        "publish.scan_bodyframe_pub_en": ParameterValue(
+                            PythonExpression(["'", relocalization, "' == 'false'"]),
+                            value_type=bool,
                         ),
                         "common.send_odom_base_tf": ParameterValue(
                             fast_lio_send_odom_base_tf, value_type=bool
@@ -872,6 +906,7 @@ def generate_launch_description():
                         "robot_clear_length": 0.0,
                         "robot_clear_width": 0.0,
                         "robot_clear_margin": 0.0,
+                        "publish_empty_until_data": True,
                         "inflation_radius": 0.5,
                         "inflation_cost_scaling": 5.0,
                     }
@@ -910,6 +945,7 @@ def generate_launch_description():
                 launch_arguments={
                     "rviz": rviz,
                     "rviz_config": rviz_config,
+                    "rviz_render_env": rviz_render_env,
                     "use_sim_time": use_sim_time,
                     "raw_front3d_input_topic": front3d_source_topic,
                     "registered_preview_input_topic": scurm_registered_scan_topic,

@@ -48,7 +48,8 @@ patterns=(
   "nav2_pose_guard"
   "identity_map_to_odom"
   "nav2_projected_map_relay"
-  "nav2_costmap_2d"
+  "rviz2 .*gen0_nav2_default_view"
+  "gen0_nav2_default_view.rviz"
 )
 
 for pattern in "${patterns[@]}"; do
@@ -65,7 +66,7 @@ if [[ -f /opt/ros/humble/setup.bash ]]; then
   set +u
   source /opt/ros/humble/setup.bash
   set -u
-  ros2 daemon stop >/dev/null 2>&1 || true
+  timeout 5s ros2 daemon stop >/dev/null 2>&1 || true
 fi
 
 log "Done."

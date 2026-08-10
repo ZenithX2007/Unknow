@@ -2,7 +2,7 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, GroupAction, OpaqueFunction, SetEnvironmentVariable
+from launch.actions import DeclareLaunchArgument, GroupAction, OpaqueFunction, SetEnvironmentVariable, UnsetEnvironmentVariable
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
@@ -94,7 +94,7 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
         enabled: true
         footprint_clearing_enabled: true
         max_obstacle_intensity: 2.0
-        min_obstacle_intensity: 0.3
+        min_obstacle_intensity: 0.08
         observation_sources: pointcloud
         pointcloud:
           topic: /gen0_mapping/terrain_map
@@ -142,6 +142,11 @@ global_costmap:
 
 def generate_launch_description():
     pkg_share_dir = get_package_share_directory('gen0_main')
+    default_nav2_rviz = os.path.join(
+        pkg_share_dir,
+        'config',
+        'gen0_nav2_default_view.rviz',
+    )
 
     namespace = LaunchConfiguration('namespace')
     use_sim_time = LaunchConfiguration('use_sim_time')
@@ -169,6 +174,15 @@ def generate_launch_description():
     projected_map_fixed_width = LaunchConfiguration('projected_map_fixed_width')
     projected_map_fixed_height = LaunchConfiguration('projected_map_fixed_height')
     projected_map_fixed_resolution = LaunchConfiguration('projected_map_fixed_resolution')
+    rviz = LaunchConfiguration('rviz')
+    rviz_config = LaunchConfiguration('rviz_config')
+    rviz_render_env = LaunchConfiguration('rviz_render_env')
+    rviz_software = IfCondition(
+        PythonExpression(["'", rviz_render_env, "' == 'software'"])
+    )
+    rviz_passthrough = IfCondition(
+        PythonExpression(["'", rviz_render_env, "' != 'software'"])
+    )
     default_nav_to_pose_bt_xml = LaunchConfiguration('default_nav_to_pose_bt_xml')
     default_nav_through_poses_bt_xml = LaunchConfiguration('default_nav_through_poses_bt_xml')
 
@@ -254,6 +268,23 @@ def generate_launch_description():
         'log_level',
         default_value='info',
         description='ROS log level.',
+    )
+    declare_rviz = DeclareLaunchArgument(
+        'rviz',
+        default_value='true',
+        choices=['true', 'false'],
+        description='Open the Gen0 Nav2 RViz view.',
+    )
+    declare_rviz_config = DeclareLaunchArgument(
+        'rviz_config',
+        default_value=default_nav2_rviz,
+        description='RViz config adapted from SCURM nav2_default_view.rviz.',
+    )
+    declare_rviz_render_env = DeclareLaunchArgument(
+        'rviz_render_env',
+        default_value='passthrough',
+        choices=['auto', 'software', 'passthrough'],
+        description='RViz OpenGL environment. software uses llvmpipe; auto/passthrough keep the host GL path.',
     )
     declare_nav2_controller_frequency = DeclareLaunchArgument(
         'nav2_controller_frequency',
@@ -581,6 +612,9 @@ def generate_launch_description():
         declare_autostart,
         declare_use_respawn,
         declare_log_level,
+        declare_rviz,
+        declare_rviz_config,
+        declare_rviz_render_env,
         declare_nav2_controller_frequency,
         declare_nav2_model_dt,
         declare_nav2_smoothing_frequency,
@@ -606,4 +640,39 @@ def generate_launch_description():
         declare_default_nav_through_poses_bt_xml,
         load_nodes,
         identity_map_to_odom_node,
+        UnsetEnvironmentVariable(
+            'LIBGL_ALWAYS_SOFTWARE',
+            condition=rviz_passthrough,
+        ),
+        UnsetEnvironmentVariable(
+            'MESA_LOADER_DRIVER_OVERRIDE',
+            condition=rviz_passthrough,
+        ),
+        UnsetEnvironmentVariable(
+            'QT_XCB_GL_INTEGRATION',
+            condition=rviz_passthrough,
+        ),
+        SetEnvironmentVariable(
+            'LIBGL_ALWAYS_SOFTWARE',
+            '1',
+            condition=rviz_software,
+        ),
+        SetEnvironmentVariable(
+            'MESA_LOADER_DRIVER_OVERRIDE',
+            'llvmpipe',
+            condition=rviz_software,
+        ),
+        SetEnvironmentVariable(
+            'QT_XCB_GL_INTEGRATION',
+            'none',
+            condition=rviz_software,
+        ),
+        Node(
+            package='rviz2',
+            executable='rviz2',
+            arguments=['-d', rviz_config, '--ros-args', '--log-level', 'warn'],
+            condition=IfCondition(rviz),
+            parameters=[{'use_sim_time': use_sim_time}],
+            output='screen',
+        ),
     ])

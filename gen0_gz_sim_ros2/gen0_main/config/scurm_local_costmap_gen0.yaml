@@ -26,7 +26,7 @@ costmap:
         enabled: true
         footprint_clearing_enabled: true
         max_obstacle_intensity: 2.0
-        min_obstacle_intensity: 0.3
+        min_obstacle_intensity: 0.08
         observation_sources: pointcloud
         pointcloud:
           topic: /gen0_mapping/terrain_map

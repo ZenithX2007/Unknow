@@ -24,6 +24,7 @@ class ProjectedTerrainMap(Node):
         self.declare_parameter("frame_id", "odom")
         self.declare_parameter("resolution", 0.10)
         self.declare_parameter("publish_period", 1.0)
+        self.declare_parameter("publish_empty_until_data", False)
         self.declare_parameter("republish_unchanged", True)
         self.declare_parameter("accumulate_history", False)
         self.declare_parameter("max_points_per_update", 90000)
@@ -74,6 +75,9 @@ class ProjectedTerrainMap(Node):
         self.frame_id = self.get_parameter("frame_id").value
         self.resolution = float(self.get_parameter("resolution").value)
         publish_period = float(self.get_parameter("publish_period").value)
+        self.publish_empty_until_data = bool(
+            self.get_parameter("publish_empty_until_data").value
+        )
         self.republish_unchanged = bool(
             self.get_parameter("republish_unchanged").value
         )
@@ -204,6 +208,7 @@ class ProjectedTerrainMap(Node):
         self.dirty = False
         self.last_map_msg = None
         self.last_costmap_msg = None
+        self.empty_map_logged = False
 
         sensor_qos = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
@@ -496,13 +501,23 @@ class ProjectedTerrainMap(Node):
 
     def publish_maps(self):
         if not self.log_odds:
-            return
-
-        if self.dirty:
-            self.last_map_msg, self.last_costmap_msg = self.create_grid_messages()
-            self.dirty = False
-        elif not self.republish_unchanged or self.last_map_msg is None:
-            return
+            if not self.publish_empty_until_data:
+                return
+            if self.last_map_msg is None or self.last_costmap_msg is None:
+                self.last_map_msg, self.last_costmap_msg = self.create_empty_grid_messages()
+            elif not self.republish_unchanged:
+                return
+            if not self.empty_map_logged:
+                self.get_logger().info(
+                    "Publishing empty projected map until terrain data arrives."
+                )
+                self.empty_map_logged = True
+        else:
+            if self.dirty:
+                self.last_map_msg, self.last_costmap_msg = self.create_grid_messages()
+                self.dirty = False
+            elif not self.republish_unchanged or self.last_map_msg is None:
+                return
 
         stamp = self.get_clock().now().to_msg()
         self.last_map_msg.header.stamp = stamp
@@ -511,6 +526,39 @@ class ProjectedTerrainMap(Node):
         self.last_costmap_msg.info.map_load_time = stamp
         self.map_pub.publish(self.last_map_msg)
         self.costmap_pub.publish(self.last_costmap_msg)
+
+    def create_empty_grid_messages(self):
+        stamp = self.get_clock().now().to_msg()
+        origin_x = 0.0 if self.robot_xy is None else self.robot_xy[0] - 0.5 * self.resolution
+        origin_y = 0.0 if self.robot_xy is None else self.robot_xy[1] - 0.5 * self.resolution
+
+        map_msg = OccupancyGrid()
+        map_msg.header.stamp = stamp
+        map_msg.header.frame_id = self.frame_id
+        map_msg.info.map_load_time = stamp
+        map_msg.info.resolution = self.resolution
+        map_msg.info.width = 1
+        map_msg.info.height = 1
+        map_msg.info.origin.position.x = float(origin_x)
+        map_msg.info.origin.position.y = float(origin_y)
+        map_msg.info.origin.position.z = 0.0
+        map_msg.info.origin.orientation.w = 1.0
+        map_msg.data = array("b", [-1])
+
+        costmap_msg = OccupancyGrid()
+        costmap_msg.header.stamp = stamp
+        costmap_msg.header.frame_id = self.frame_id
+        costmap_msg.info.map_load_time = stamp
+        costmap_msg.info.resolution = self.resolution
+        costmap_msg.info.width = 1
+        costmap_msg.info.height = 1
+        costmap_msg.info.origin.position.x = float(origin_x)
+        costmap_msg.info.origin.position.y = float(origin_y)
+        costmap_msg.info.origin.position.z = 0.0
+        costmap_msg.info.origin.orientation.w = 1.0
+        costmap_msg.data = array("b", [-1])
+
+        return map_msg, costmap_msg
 
     def create_grid_messages(self):
         keys = np.array(list(self.log_odds.keys()), dtype=np.int32)

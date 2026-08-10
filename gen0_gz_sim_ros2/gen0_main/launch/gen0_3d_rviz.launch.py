@@ -4,8 +4,9 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.actions import SetEnvironmentVariable
+from launch.actions import UnsetEnvironmentVariable
 from launch.conditions import IfCondition
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
 
 
@@ -81,10 +82,17 @@ def generate_launch_description():
 
     rviz = LaunchConfiguration("rviz")
     rviz_config = LaunchConfiguration("rviz_config")
+    rviz_render_env = LaunchConfiguration("rviz_render_env")
     use_sim_time = LaunchConfiguration("use_sim_time")
     raw_front3d_input_topic = LaunchConfiguration("raw_front3d_input_topic")
     registered_preview_input_topic = LaunchConfiguration("registered_preview_input_topic")
     condition = IfCondition(rviz)
+    rviz_software = IfCondition(
+        PythonExpression(["'", rviz_render_env, "' != 'passthrough'"])
+    )
+    rviz_passthrough = IfCondition(
+        PythonExpression(["'", rviz_render_env, "' == 'passthrough'"])
+    )
 
     return LaunchDescription(
         [
@@ -97,6 +105,12 @@ def generate_launch_description():
                 "rviz_config",
                 default_value=default_rviz,
                 description="RViz config for 3D mapping verification.",
+            ),
+            DeclareLaunchArgument(
+                "rviz_render_env",
+                default_value="software",
+                choices=["auto", "software", "passthrough"],
+                description="RViz OpenGL environment. auto/software use llvmpipe; passthrough keeps the host GL path.",
             ),
             DeclareLaunchArgument(
                 "use_sim_time",
@@ -170,9 +184,24 @@ def generate_launch_description():
                 1.0,
                 condition,
             ),
-            SetEnvironmentVariable("LIBGL_ALWAYS_SOFTWARE", "1"),
-            SetEnvironmentVariable("MESA_LOADER_DRIVER_OVERRIDE", "llvmpipe"),
-            SetEnvironmentVariable("QT_XCB_GL_INTEGRATION", "none"),
+            UnsetEnvironmentVariable(
+                "LIBGL_ALWAYS_SOFTWARE", condition=rviz_passthrough
+            ),
+            UnsetEnvironmentVariable(
+                "MESA_LOADER_DRIVER_OVERRIDE", condition=rviz_passthrough
+            ),
+            UnsetEnvironmentVariable(
+                "QT_XCB_GL_INTEGRATION", condition=rviz_passthrough
+            ),
+            SetEnvironmentVariable(
+                "LIBGL_ALWAYS_SOFTWARE", "1", condition=rviz_software
+            ),
+            SetEnvironmentVariable(
+                "MESA_LOADER_DRIVER_OVERRIDE", "llvmpipe", condition=rviz_software
+            ),
+            SetEnvironmentVariable(
+                "QT_XCB_GL_INTEGRATION", "none", condition=rviz_software
+            ),
             Node(
                 package="rviz2",
                 executable="rviz2",

@@ -2,6 +2,8 @@
 set -Eeuo pipefail
 
 WORKSPACE="${GEN0_WORKSPACE:-$PWD}"
+LOG_DIR="${GEN0_LOG_DIR:-$WORKSPACE/runtime_logs}"
+ROS_LOG_DIR="${ROS_LOG_DIR:-$LOG_DIR/ros}"
 PROFILE="${GEN0_NAV2_PROFILE:-legacy}"
 WORLD="${GEN0_WORLD:-my_map}"
 FAST_LIO_ODOM_TOPIC="${GEN0_FAST_LIO_ODOM_TOPIC:-/gen0_mapping/fast_lio/odom}"
@@ -21,7 +23,7 @@ TF_PROBE_TIMEOUT="${GEN0_NAV2_TF_PROBE_TIMEOUT:-5}"
 TF_TARGET_FRAME="${GEN0_NAV2_TF_TARGET_FRAME:-odom}"
 TF_SOURCE_FRAME="${GEN0_NAV2_TF_SOURCE_FRAME:-base_link}"
 TERRAIN_WAIT_TIMEOUT="${GEN0_NAV2_TERRAIN_WAIT_TIMEOUT:-20}"
-PROJECTED_MAP_WAIT_TIMEOUT="${GEN0_NAV2_PROJECTED_MAP_WAIT_TIMEOUT:-20}"
+PROJECTED_MAP_WAIT_TIMEOUT="${GEN0_NAV2_PROJECTED_MAP_WAIT_TIMEOUT:-90}"
 PROJECTED_MAP_TOPIC="${GEN0_NAV2_PROJECTED_MAP_TOPIC:-/projected_map}"
 PROJECTED_MAP_BACKEND="${GEN0_NAV2_PROJECTED_MAP_BACKEND:-python}"
 PROJECTED_MAP_FIXED_GEOMETRY="${GEN0_NAV2_PROJECTED_MAP_FIXED_GEOMETRY:-true}"
@@ -33,6 +35,9 @@ PROJECTED_MAP_FIXED_WIDTH="${GEN0_NAV2_PROJECTED_MAP_FIXED_WIDTH:-}"
 PROJECTED_MAP_FIXED_HEIGHT="${GEN0_NAV2_PROJECTED_MAP_FIXED_HEIGHT:-}"
 PROJECTED_MAP_FIXED_RESOLUTION="${GEN0_NAV2_PROJECTED_MAP_FIXED_RESOLUTION:-0.10}"
 PROJECTED_MAP_BOUNDS_MARGIN="${GEN0_NAV2_PROJECTED_MAP_BOUNDS_MARGIN:-5.0}"
+NAV2_RVIZ="${GEN0_NAV2_RVIZ:-true}"
+NAV2_RVIZ_CONFIG="${GEN0_NAV2_RVIZ_CONFIG:-$WORKSPACE/gen0_gz_sim_ros2/gen0_main/config/gen0_nav2_default_view.rviz}"
+NAV2_RVIZ_RENDER_ENV="${GEN0_NAV2_RVIZ_RENDER_ENV:-software}"
 MAP_TF_WAIT_TIMEOUT="${GEN0_NAV2_MAP_TF_WAIT_TIMEOUT:-10}"
 POSE_SANITY_MAX_ABS_XY="${GEN0_NAV2_MAX_ABS_XY:-500.0}"
 POSE_SANITY_MAX_ABS_Z="${GEN0_NAV2_MAX_ABS_Z:-20.0}"
@@ -41,6 +46,9 @@ REFERENCE_ODOM_TOPIC="${GEN0_NAV2_REFERENCE_ODOM_TOPIC:-/odom}"
 MAX_REFERENCE_ODOM_ERROR="${GEN0_NAV2_MAX_REFERENCE_ODOM_ERROR:-3.0}"
 MAX_REFERENCE_YAW_ERROR="${GEN0_NAV2_MAX_REFERENCE_YAW_ERROR:-0.75}"
 REFERENCE_ODOM_TIMEOUT="${GEN0_NAV2_REFERENCE_ODOM_TIMEOUT:-2.0}"
+
+mkdir -p "$ROS_LOG_DIR"
+export ROS_LOG_DIR
 
 case "$PROFILE" in
   legacy)
@@ -57,10 +65,8 @@ case "$PROFILE" in
     DEFAULT_PARAMS_FILE="$WORKSPACE/gen0_gz_sim_ros2/gen0_main/config/nav2_gen0_scurm_params.yaml"
     DEFAULT_COSTMAP_SOURCE="scurm_terrain"
     DEFAULT_LOCALIZATION_MODE="odom_only"
-    DEFAULT_MAP_SOURCE="projected_map"
-    # The available my_map YAML is a small local map; keep the fixed projected
-    # map canvas as the long-range global map in odom-only validation.
-    DEFAULT_PROJECTED_MAP_UNKNOWN_AS_FREE="true"
+    DEFAULT_MAP_SOURCE="yaml"
+    DEFAULT_PROJECTED_MAP_UNKNOWN_AS_FREE="false"
     DEFAULT_NAV_TO_POSE_BT="$WORKSPACE/gen0_gz_sim_ros2/gen0_main/behavior_tree/ackermann_scurm_recovery.xml"
     DEFAULT_NAV_THROUGH_POSES_BT="$WORKSPACE/gen0_gz_sim_ros2/gen0_main/behavior_tree/ackermann_scurm_through_poses.xml"
     case "$WORLD" in
@@ -68,7 +74,7 @@ case "$PROFILE" in
         DEFAULT_MAP_YAML="/home/zjxue2007/gen0_maps/san_roundabout_front3d_demo.yaml"
         ;;
       my_map)
-        DEFAULT_MAP_YAML="/home/zjxue2007/maps/my_map.yaml"
+        DEFAULT_MAP_YAML="$WORKSPACE/gen0_gz_sim_ros2/gen0_main/maps/recovered_projected_20260807_102204.yaml"
         ;;
       *)
         DEFAULT_MAP_YAML=""
@@ -149,9 +155,62 @@ wait_for_topic_once() {
   local topic="$1"
   local wait_timeout="$2"
   local description="$3"
+  local probe_timeout="${GEN0_NAV2_TOPIC_PROBE_TIMEOUT:-5}"
+  local deadline=$((SECONDS + wait_timeout))
+  local remaining
+  local current_probe_timeout
 
   log "Waiting for $description on $topic (timeout=${wait_timeout}s)"
-  timeout "$wait_timeout" ros2 topic echo --once "$topic" --field header >/dev/null 2>&1
+  while ((SECONDS < deadline)); do
+    remaining=$((deadline - SECONDS))
+    current_probe_timeout="$probe_timeout"
+    if ((remaining < probe_timeout)); then
+      current_probe_timeout="$remaining"
+    fi
+
+    if timeout "$current_probe_timeout" ros2 topic echo --no-daemon --once "$topic" --field header >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 1
+  done
+
+  return 1
+}
+
+wait_for_occupancy_grid_nonempty() {
+  local topic="$1"
+  local wait_timeout="$2"
+  local description="$3"
+  local probe_timeout="${GEN0_NAV2_TOPIC_PROBE_TIMEOUT:-5}"
+  local deadline=$((SECONDS + wait_timeout))
+  local info_file
+  local width
+  local height
+  local remaining
+  local current_probe_timeout
+
+  info_file="$(mktemp /tmp/gen0_nav2_grid_info.XXXXXX)"
+  log "Waiting for non-empty $description on $topic (timeout=${wait_timeout}s)"
+  while ((SECONDS < deadline)); do
+    remaining=$((deadline - SECONDS))
+    current_probe_timeout="$probe_timeout"
+    if ((remaining < probe_timeout)); then
+      current_probe_timeout="$remaining"
+    fi
+
+    if timeout "$current_probe_timeout" ros2 topic echo --no-daemon --once "$topic" --field info >"$info_file" 2>/dev/null; then
+      width="$(awk '/^[[:space:]]*width:/ {print $2; exit}' "$info_file")"
+      height="$(awk '/^[[:space:]]*height:/ {print $2; exit}' "$info_file")"
+      if [[ "$width" =~ ^[0-9]+$ && "$height" =~ ^[0-9]+$ ]] && ((width > 1 && height > 1)); then
+        rm -f "$info_file"
+        return 0
+      fi
+    fi
+    sleep 1
+  done
+
+  rm -f "$info_file"
+  return 1
 }
 
 print_3d_slam_start_hint() {
@@ -234,8 +293,8 @@ check_projected_map_pose_bounds() {
   output="$(timeout "$probe_timeout" ros2 run tf2_ros tf2_echo "$target_frame" "$source_frame" 2>/dev/null || true)"
   translation="$(printf '%s\n' "$output" | awk -F'[][]' '/Translation:/ {print $2; exit}')"
   if [[ -z "$translation" ]]; then
-    printf 'Could not sample TF %s -> %s for projected-map bounds check.\n' "$target_frame" "$source_frame" >&2
-    return 1
+    printf 'Warning: could not sample TF %s -> %s for projected-map bounds check; skipping this guard.\n' "$target_frame" "$source_frame" >&2
+    return 0
   fi
 
   IFS=',' read -r x y z <<< "$translation"
@@ -408,8 +467,9 @@ source_ros_setup /opt/ros/humble/setup.bash
 source_ros_setup "$WORKSPACE/install/setup.bash"
 configure_projected_map_fixed_geometry
 
+log "Preflight: checking for existing Nav2 and ground-truth localization nodes"
 existing_nav2="$(
-  ros2 node list 2>/dev/null \
+  timeout 5s ros2 node list --no-daemon 2>/dev/null \
     | grep -E '(^/map_server$|^/controller_server$|^/planner_server$|^/bt_navigator$|^/lifecycle_manager_navigation$)' \
     || true
 )"
@@ -420,7 +480,7 @@ if [[ -n "$existing_nav2" ]]; then
 fi
 
 existing_ground_truth="$(
-  ros2 node list 2>/dev/null \
+  timeout 5s ros2 node list --no-daemon 2>/dev/null \
     | grep -E '^/pose_publisher$' \
     || true
 )"
@@ -431,8 +491,7 @@ if [[ -n "$existing_ground_truth" && "$ALLOW_GROUND_TRUTH_LOCALIZATION" != "true
   exit 1
 fi
 
-log "Waiting for Nav2 odometry on $NAV2_ODOM_TOPIC (timeout=${ODOM_WAIT_TIMEOUT}s)"
-if ! timeout "$ODOM_WAIT_TIMEOUT" ros2 topic echo --once "$NAV2_ODOM_TOPIC" --field header >/dev/null 2>&1; then
+if ! wait_for_topic_once "$NAV2_ODOM_TOPIC" "$ODOM_WAIT_TIMEOUT" "Nav2 odometry"; then
   printf 'Timed out waiting for %s.\n\n' "$NAV2_ODOM_TOPIC" >&2
   print_3d_slam_start_hint
   exit 1
@@ -483,8 +542,8 @@ if [[ "$COSTMAP_SOURCE" == "scurm_terrain" ]]; then
 fi
 
 if [[ "$MAP_SOURCE" == "projected_map" ]]; then
-  if ! wait_for_topic_once "$PROJECTED_MAP_TOPIC" "$PROJECTED_MAP_WAIT_TIMEOUT" "online projected occupancy map"; then
-    printf 'Timed out waiting for %s. Keep 3D SLAM and the projected map backend running before starting Nav2.\n' "$PROJECTED_MAP_TOPIC" >&2
+  if ! wait_for_occupancy_grid_nonempty "$PROJECTED_MAP_TOPIC" "$PROJECTED_MAP_WAIT_TIMEOUT" "online projected occupancy map"; then
+    printf 'Timed out waiting for non-empty %s. Keep 3D SLAM and the projected map backend running until terrain projection is populated.\n' "$PROJECTED_MAP_TOPIC" >&2
     exit 1
   fi
 fi
@@ -533,7 +592,8 @@ else
   MAX_REFERENCE_YAW_ERROR="0.0"
 fi
 
-log "Starting Gen0 Nav2: profile=$PROFILE, map_source=$MAP_SOURCE, map=$MAP_YAML, params=$PARAMS_FILE, odom_topic=$NAV2_ODOM_TOPIC, localization_mode=$LOCALIZATION_MODE, costmap_source=$COSTMAP_SOURCE, controller_frequency=$NAV2_CONTROLLER_FREQUENCY, model_dt=$NAV2_MODEL_DT, smoothing_frequency=$NAV2_SMOOTHING_FREQUENCY, projected_map_unknown_as_free=$PROJECTED_MAP_UNKNOWN_AS_FREE, projected_map_fixed=${PROJECTED_MAP_FIXED_GEOMETRY}:${PROJECTED_MAP_FIXED_WIDTH}x${PROJECTED_MAP_FIXED_HEIGHT}@${PROJECTED_MAP_FIXED_RESOLUTION}, projected_map_origin=(${PROJECTED_MAP_FIXED_ORIGIN_X},${PROJECTED_MAP_FIXED_ORIGIN_Y}), command_topic=/cmd_vel"
+log "Starting Gen0 Nav2: profile=$PROFILE, map_source=$MAP_SOURCE, map=$MAP_YAML, params=$PARAMS_FILE, odom_topic=$NAV2_ODOM_TOPIC, localization_mode=$LOCALIZATION_MODE, costmap_source=$COSTMAP_SOURCE, controller_frequency=$NAV2_CONTROLLER_FREQUENCY, model_dt=$NAV2_MODEL_DT, smoothing_frequency=$NAV2_SMOOTHING_FREQUENCY, projected_map_unknown_as_free=$PROJECTED_MAP_UNKNOWN_AS_FREE, projected_map_fixed=${PROJECTED_MAP_FIXED_GEOMETRY}:${PROJECTED_MAP_FIXED_WIDTH}x${PROJECTED_MAP_FIXED_HEIGHT}@${PROJECTED_MAP_FIXED_RESOLUTION}, projected_map_origin=(${PROJECTED_MAP_FIXED_ORIGIN_X},${PROJECTED_MAP_FIXED_ORIGIN_Y}), rviz=$NAV2_RVIZ, rviz_config=$NAV2_RVIZ_CONFIG, command_topic=/cmd_vel"
+log "RViz render env: $NAV2_RVIZ_RENDER_ENV"
 exec ros2 launch gen0_main gen0_navigation.launch.py \
   params_file:="$PARAMS_FILE" \
   use_respawn:="$USE_RESPAWN" \
@@ -557,6 +617,9 @@ exec ros2 launch gen0_main gen0_navigation.launch.py \
   max_reference_odom_error:="$MAX_REFERENCE_ODOM_ERROR" \
   max_reference_yaw_error:="$MAX_REFERENCE_YAW_ERROR" \
   reference_odom_timeout:="$REFERENCE_ODOM_TIMEOUT" \
+  rviz:="$NAV2_RVIZ" \
+  rviz_config:="$NAV2_RVIZ_CONFIG" \
+  rviz_render_env:="$NAV2_RVIZ_RENDER_ENV" \
   default_nav_to_pose_bt_xml:="$NAV_TO_POSE_BT" \
   default_nav_through_poses_bt_xml:="$NAV_THROUGH_POSES_BT" \
   map:="$MAP_YAML"

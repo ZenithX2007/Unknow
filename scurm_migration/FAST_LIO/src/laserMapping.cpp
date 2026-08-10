@@ -35,6 +35,7 @@
 #include <omp.h>
 #include <mutex>
 #include <math.h>
+#include <cmath>
 #include <thread>
 #include <fstream>
 #include <csignal>
@@ -337,6 +338,10 @@ public:
         this->declare_parameter<vector<double>>("mapping.extrinsic_R", vector<double>());
         this->declare_parameter<bool>("locate_in_prior_map", false);
         this->declare_parameter<string>("prior_map_path", "");
+        this->declare_parameter<double>("prior_map_max_abs_coord", 1000.0);
+        this->declare_parameter<double>("prior_map_min_z", -1000.0);
+        this->declare_parameter<double>("prior_map_max_z", 1000.0);
+        this->declare_parameter<int>("prior_map_max_points", 500000);
 
         this->get_parameter_or<bool>("publish.path_en", path_en, true);
         this->get_parameter_or<bool>("publish.effect_map_en", effect_pub_en, false);
@@ -380,6 +385,10 @@ public:
         this->get_parameter_or<vector<double>>("mapping.extrinsic_R", extrinR, vector<double>());
         this->get_parameter_or<bool>("locate_in_prior_map", locate_in_prior_map, false);
         this->get_parameter_or<string>("prior_map_path", prior_map_path, "");
+        this->get_parameter_or<double>("prior_map_max_abs_coord", prior_map_max_abs_coord, 1000.0);
+        this->get_parameter_or<double>("prior_map_min_z", prior_map_min_z, -1000.0);
+        this->get_parameter_or<double>("prior_map_max_z", prior_map_max_z, 1000.0);
+        this->get_parameter_or<int>("prior_map_max_points", prior_map_max_points, 500000);
 
         RCLCPP_INFO(this->get_logger(), "p_pre->lidar_type %d", p_pre->lidar_type);
 
@@ -437,7 +446,12 @@ public:
         }
         if (locate_in_prior_map)
         {
-            sub_init_pose_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>("/icp_result", 10, std::bind(&LaserMappingNode::initial_pose_cbk, this, std::placeholders::_1));
+            auto relocalization_pose_qos =
+                rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
+            sub_init_pose_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+                "/icp_result",
+                relocalization_pose_qos,
+                std::bind(&LaserMappingNode::initial_pose_cbk, this, std::placeholders::_1));
         }
         sub_imu_ = this->create_subscription<sensor_msgs::msg::Imu>(imu_topic, 10, std::bind(&LaserMappingNode::imu_cbk, this, std::placeholders::_1));
         pubLaserCloudFull_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/cloud_registered", 20);
@@ -462,16 +476,51 @@ public:
         {
             RCLCPP_INFO(this->get_logger(), "Loading prior map...");
             // load prior map
-            if (pcl::io::loadPCDFile<PointType>(prior_map_path, *prior_map) == -1) // Replace with your file name
+            pcl::PointCloud<pcl::PointXYZI>::Ptr prior_map_xyzi(new pcl::PointCloud<pcl::PointXYZI>());
+            if (pcl::io::loadPCDFile<pcl::PointXYZI>(prior_map_path, *prior_map_xyzi) == -1) // Replace with your file name
             {
                 RCLCPP_ERROR(this->get_logger(), "Failed to load PCD file\n");
                 return;
             }
+            prior_map->clear();
+            prior_map->reserve(prior_map_xyzi->size());
+            for (const auto &source_point : prior_map_xyzi->points)
+            {
+                PointType point;
+                point.x = source_point.x;
+                point.y = source_point.y;
+                point.z = source_point.z;
+                point.intensity = source_point.intensity;
+                point.normal_x = 0.0f;
+                point.normal_y = 0.0f;
+                point.normal_z = 0.0f;
+                point.curvature = 0.0f;
+                prior_map->push_back(point);
+            }
+            prior_map->width = prior_map->size();
+            prior_map->height = 1;
+            prior_map->is_dense = prior_map_xyzi->is_dense;
+            sanitize_prior_map(
+                prior_map,
+                prior_map_max_abs_coord,
+                prior_map_min_z,
+                prior_map_max_z);
             // downsample the prior map
             downSizeFilterMap.setInputCloud(prior_map);
             downSizeFilterMap.filter(*feats_down_prior_map);
+            limit_point_count(feats_down_prior_map, prior_map_max_points, "FAST-LIO prior map");
+            RCLCPP_INFO(
+                this->get_logger(),
+                "Loaded prior map with %zu points, downsampled to %zu points",
+                prior_map->size(),
+                feats_down_prior_map->size());
         }
         RCLCPP_INFO(this->get_logger(), "Node init finished.");
+    }
+
+    bool save_map_to_pcd()
+    {
+        return save_to_pcd();
     }
 
 private:
@@ -500,6 +549,94 @@ private:
     double epsi[23] = {0.001};
     bool initial_pose_received = false;
     geometry_msgs::msg::PoseWithCovarianceStamped initial_pose;
+    double prior_map_max_abs_coord = 1000.0;
+    double prior_map_min_z = -1000.0;
+    double prior_map_max_z = 1000.0;
+    int prior_map_max_points = 500000;
+
+    void sanitize_prior_map(
+        const pcl::PointCloud<PointType>::Ptr &cloud,
+        double max_abs_coord,
+        double min_z,
+        double max_z)
+    {
+        if (!cloud || cloud->empty())
+        {
+            return;
+        }
+
+        pcl::PointCloud<PointType>::Ptr filtered(new pcl::PointCloud<PointType>);
+        filtered->reserve(cloud->size());
+        for (const auto &point : cloud->points)
+        {
+            if (!std::isfinite(point.x) || !std::isfinite(point.y) || !std::isfinite(point.z))
+            {
+                continue;
+            }
+            if (max_abs_coord > 0.0 &&
+                (std::abs(point.x) > max_abs_coord ||
+                 std::abs(point.y) > max_abs_coord ||
+                 std::abs(point.z) > max_abs_coord))
+            {
+                continue;
+            }
+            if (point.z < min_z || point.z > max_z)
+            {
+                continue;
+            }
+
+            PointType kept = point;
+            kept.normal_x = 0.0f;
+            kept.normal_y = 0.0f;
+            kept.normal_z = 0.0f;
+            kept.curvature = 0.0f;
+            filtered->push_back(kept);
+        }
+
+        filtered->width = filtered->size();
+        filtered->height = 1;
+        filtered->is_dense = true;
+        const size_t removed = cloud->size() - filtered->size();
+        cloud->swap(*filtered);
+        if (removed > 0)
+        {
+            RCLCPP_WARN(
+                this->get_logger(),
+                "Filtered %zu invalid/out-of-bounds points from prior map",
+                removed);
+        }
+    }
+
+    void limit_point_count(
+        const PointCloudXYZI::Ptr &cloud,
+        int max_points,
+        const std::string &label)
+    {
+        if (!cloud || max_points <= 0 || cloud->size() <= static_cast<size_t>(max_points))
+        {
+            return;
+        }
+
+        const size_t before = cloud->size();
+        const size_t limit = static_cast<size_t>(max_points);
+        const size_t stride = (before + limit - 1) / limit;
+        PointCloudXYZI::Ptr limited(new PointCloudXYZI());
+        limited->reserve(limit);
+        for (size_t i = 0; i < before && limited->size() < limit; i += stride)
+        {
+            limited->push_back(cloud->points[i]);
+        }
+        limited->width = limited->size();
+        limited->height = 1;
+        limited->is_dense = cloud->is_dense;
+        cloud->swap(*limited);
+        RCLCPP_WARN(
+            this->get_logger(),
+            "Limited %s from %zu to %zu points",
+            label.c_str(),
+            before,
+            cloud->size());
+    }
 
     inline void dump_lio_state_to_log(FILE *fp)
     {
@@ -960,10 +1097,59 @@ private:
         pubLaserCloudMap->publish(laserCloudMap);
     }
 
-    void save_to_pcd()
+    bool save_to_pcd()
     {
+        if (map_file_path.empty())
+        {
+            RCLCPP_ERROR(this->get_logger(), "Map save path is empty.");
+            return false;
+        }
+
+        PointCloudXYZI::Ptr cloud_to_save(new PointCloudXYZI());
+        if (ikdtree.Root_Node != nullptr && ikdtree.validnum() > 0)
+        {
+            PointVector flattened_map;
+            ikdtree.flatten(ikdtree.Root_Node, flattened_map, NOT_RECORD);
+            cloud_to_save->points.assign(flattened_map.begin(), flattened_map.end());
+            cloud_to_save->width = cloud_to_save->points.size();
+            cloud_to_save->height = 1;
+            cloud_to_save->is_dense = true;
+        }
+        else if (!pcl_wait_pub->empty())
+        {
+            *cloud_to_save = *pcl_wait_pub;
+        }
+
+        if (cloud_to_save->empty())
+        {
+            RCLCPP_WARN(this->get_logger(), "No FAST-LIO map points are available to save.");
+            return false;
+        }
+
+        sanitize_prior_map(
+            cloud_to_save,
+            prior_map_max_abs_coord,
+            prior_map_min_z,
+            prior_map_max_z);
+        if (cloud_to_save->empty())
+        {
+            RCLCPP_WARN(this->get_logger(), "All FAST-LIO map points were filtered before save.");
+            return false;
+        }
+        limit_point_count(cloud_to_save, prior_map_max_points, "saved FAST-LIO map");
+
         pcl::PCDWriter pcd_writer;
-        pcd_writer.writeBinary(map_file_path, *pcl_wait_pub);
+        if (pcd_writer.writeBinary(map_file_path, *cloud_to_save) != 0)
+        {
+            RCLCPP_ERROR(this->get_logger(), "Failed to save FAST-LIO map to %s", map_file_path.c_str());
+            return false;
+        }
+        RCLCPP_INFO(
+            this->get_logger(),
+            "Saved FAST-LIO ikd-tree map with %zu points to %s",
+            cloud_to_save->size(),
+            map_file_path.c_str());
+        return true;
     }
 
     template <typename T>
@@ -1274,9 +1460,8 @@ private:
         RCLCPP_INFO(this->get_logger(), "Saving map to %s...", map_file_path.c_str());
         if (pcd_save_en)
         {
-            save_to_pcd();
-            res->success = true;
-            res->message = "Map saved.";
+            res->success = save_to_pcd();
+            res->message = res->success ? "Map saved." : "Map save failed.";
         }
         else
         {
@@ -1289,6 +1474,12 @@ private:
     {
         initial_pose = *msg;
         initial_pose_received = true;
+        RCLCPP_INFO(
+            this->get_logger(),
+            "Received relocalization initial pose from /icp_result: x=%.3f, y=%.3f, z=%.3f",
+            initial_pose.pose.pose.position.x,
+            initial_pose.pose.pose.position.y,
+            initial_pose.pose.pose.position.z);
     }
 };
 
@@ -1298,17 +1489,14 @@ int main(int argc, char **argv)
 
     signal(SIGINT, SigHandle);
 
-    rclcpp::spin(std::make_shared<LaserMappingNode>());
+    auto node = std::make_shared<LaserMappingNode>();
+    rclcpp::spin(node);
     /**************** save map ****************/
     /* 1. make sure you have enough memories
     /* 2. pcd save will largely influence the real-time performences **/
-    if (pcl_wait_pub->size() > 0 && pcd_save_en)
+    if (pcd_save_en)
     {
-        string file_name = string("scans.pcd");
-        string all_points_dir(string(string(ROOT_DIR) + "PCD/") + file_name);
-        pcl::PCDWriter pcd_writer;
-        cout << "current scan saved to /PCD/" << file_name << endl;
-        pcd_writer.writeBinary(all_points_dir, *pcl_wait_pub);
+        node->save_map_to_pcd();
     }
     fout_out.close();
     fout_pre.close();

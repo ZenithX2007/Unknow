@@ -11,6 +11,7 @@
 #include <pcl/filters/voxel_grid.h>
 #include <Eigen/Geometry>
 #include <algorithm>
+#include <cmath>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Transform.h>
@@ -38,6 +39,14 @@ public:
         this->declare_parameter("fitness_score_thre", 0.0);
         this->declare_parameter("map_voxel_leaf_size", 0.1);
         this->declare_parameter("cloud_voxel_leaf_size", 0.1);
+        this->declare_parameter("map_max_abs_coord", 1000.0);
+        this->declare_parameter("map_min_z", -1000.0);
+        this->declare_parameter("map_max_z", 1000.0);
+        this->declare_parameter("max_target_map_points", 1000000);
+        this->declare_parameter("publish_prior_map", true);
+        this->declare_parameter("prior_map_publish_voxel_leaf_size", 1.0);
+        this->declare_parameter("max_published_prior_map_points", 250000);
+        this->declare_parameter("max_published_transformed_cloud_points", 50000);
         this->declare_parameter("converged_count_thre", 20);
         this->declare_parameter("pcl_type","livox");
         this->declare_parameter("input_cloud_to_base_x", 0.0);
@@ -61,6 +70,14 @@ public:
         this->get_parameter("fitness_score_thre", fitness_score_thre);
         this->get_parameter("map_voxel_leaf_size", map_voxel_leaf_size);
         this->get_parameter("cloud_voxel_leaf_size", cloud_voxel_leaf_size);
+        this->get_parameter("map_max_abs_coord", map_max_abs_coord);
+        this->get_parameter("map_min_z", map_min_z);
+        this->get_parameter("map_max_z", map_max_z);
+        this->get_parameter("max_target_map_points", max_target_map_points);
+        this->get_parameter("publish_prior_map", publish_prior_map);
+        this->get_parameter("prior_map_publish_voxel_leaf_size", prior_map_publish_voxel_leaf_size);
+        this->get_parameter("max_published_prior_map_points", max_published_prior_map_points);
+        this->get_parameter("max_published_transformed_cloud_points", max_published_transformed_cloud_points);
         this->get_parameter("converged_count_thre", converged_count_thre);
         this->get_parameter("pcl_type", pcl_type);
         this->get_parameter("input_cloud_to_base_x", input_cloud_to_base_x);
@@ -72,7 +89,12 @@ public:
         this->get_parameter("legacy_livox_roll_180", legacy_livox_roll_180);
         this->get_parameter("update_initial_guess_on_high_error", update_initial_guess_on_high_error);
 
-        publisher_ = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>("icp_result", 10);
+        auto relocalization_pose_qos =
+            rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
+        publisher_ = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
+            "icp_result", relocalization_pose_qos);
+        relocalization_result_pub_ = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
+            "/relocalization_result", relocalization_pose_qos);
 #ifdef USE_LIVOX
         if(pcl_type == "livox")
         {
@@ -91,7 +113,9 @@ public:
         pose_sub_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
             "initialpose", 10, std::bind(&ICPNode::pose_callback, this, std::placeholders::_1));
         map_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("prior_map", 10);
+        template_cloud_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/template_cloud", 10);
         transformed_cloud_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("transformed_cloud", 10);
+        icp_cloud_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/icp_cloud", 10);
 
         // init guess
         initGuess = Eigen::Matrix4f::Identity();
@@ -118,18 +142,27 @@ public:
         }
         RCLCPP_INFO(this->get_logger(), "Loaded %d data points from target.pcd", target_cloud_->width * target_cloud_->height);
 
-        // downsample the target cloud
-        pcl::VoxelGrid<pcl::PointXYZ> sor_map;
-        sor_map.setInputCloud(target_cloud_);
-        sor_map.setLeafSize(map_voxel_leaf_size, map_voxel_leaf_size, map_voxel_leaf_size);
-        sor_map.filter(*target_cloud_);
-        RCLCPP_INFO(this->get_logger(), "Downsampled target cloud to %d data points", target_cloud_->width * target_cloud_->height);
-        // Publish the downsampled target cloud
+        filter_invalid_and_bounds(
+            target_cloud_,
+            map_max_abs_coord,
+            map_min_z,
+            map_max_z,
+            "target map");
+        voxel_downsample(target_cloud_, map_voxel_leaf_size, "target map");
+        limit_point_count(target_cloud_, max_target_map_points, "target map for ICP", true);
+        RCLCPP_INFO(this->get_logger(), "Prepared target map with %zu data points", target_cloud_->size());
 
-        pcl::toROSMsg(*target_cloud_, target_cloud_msg);
+        pcl::PointCloud<pcl::PointXYZ>::Ptr publish_cloud(new pcl::PointCloud<pcl::PointXYZ>(*target_cloud_));
+        voxel_downsample(publish_cloud, prior_map_publish_voxel_leaf_size, "published prior map");
+        limit_point_count(publish_cloud, max_published_prior_map_points, "published prior map", true);
+        pcl::toROSMsg(*publish_cloud, target_cloud_msg);
         target_cloud_msg.header.stamp = this->now();
         target_cloud_msg.header.frame_id = map_frame;
-        map_pub_->publish(target_cloud_msg);
+        if (publish_prior_map)
+        {
+            map_pub_->publish(target_cloud_msg);
+            template_cloud_pub_->publish(target_cloud_msg);
+        }
     }
 
 private:
@@ -178,22 +211,166 @@ private:
 
     void publish_target_map()
     {
+        if (!publish_prior_map || target_cloud_msg.data.empty())
+        {
+            return;
+        }
         target_cloud_msg.header.stamp = this->now();
         map_pub_->publish(target_cloud_msg);
+    }
+
+    void filter_invalid_and_bounds(
+        const pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud,
+        double max_abs_coord,
+        double min_z,
+        double max_z,
+        const std::string &label)
+    {
+        if (cloud->empty())
+        {
+            return;
+        }
+
+        pcl::PointCloud<pcl::PointXYZ>::Ptr filtered(new pcl::PointCloud<pcl::PointXYZ>);
+        filtered->reserve(cloud->size());
+        for (const auto &point : cloud->points)
+        {
+            if (!std::isfinite(point.x) || !std::isfinite(point.y) || !std::isfinite(point.z))
+            {
+                continue;
+            }
+            if (max_abs_coord > 0.0 &&
+                (std::abs(point.x) > max_abs_coord ||
+                 std::abs(point.y) > max_abs_coord ||
+                 std::abs(point.z) > max_abs_coord))
+            {
+                continue;
+            }
+            if (point.z < min_z || point.z > max_z)
+            {
+                continue;
+            }
+            filtered->push_back(point);
+        }
+        filtered->width = filtered->size();
+        filtered->height = 1;
+        filtered->is_dense = true;
+
+        const size_t removed = cloud->size() - filtered->size();
+        cloud->swap(*filtered);
+        if (removed > 0)
+        {
+            RCLCPP_WARN(
+                this->get_logger(),
+                "Filtered %zu invalid/out-of-bounds points from %s",
+                removed,
+                label.c_str());
+        }
+    }
+
+    void voxel_downsample(
+        const pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud,
+        double leaf_size,
+        const std::string &label)
+    {
+        if (leaf_size <= 0.0 || cloud->empty())
+        {
+            return;
+        }
+
+        const size_t before = cloud->size();
+        pcl::PointCloud<pcl::PointXYZ>::Ptr filtered(new pcl::PointCloud<pcl::PointXYZ>);
+        try
+        {
+            pcl::VoxelGrid<pcl::PointXYZ> voxel_grid;
+            voxel_grid.setInputCloud(cloud);
+            voxel_grid.setLeafSize(leaf_size, leaf_size, leaf_size);
+            voxel_grid.filter(*filtered);
+        }
+        catch (const std::exception &error)
+        {
+            RCLCPP_WARN(
+                this->get_logger(),
+                "Voxel downsample failed for %s with leaf %.3f: %s",
+                label.c_str(),
+                leaf_size,
+                error.what());
+            return;
+        }
+
+        if (filtered->empty())
+        {
+            RCLCPP_WARN(
+                this->get_logger(),
+                "Voxel downsample produced an empty %s cloud; keeping the original cloud",
+                label.c_str());
+            return;
+        }
+
+        cloud->swap(*filtered);
+        RCLCPP_INFO(
+            this->get_logger(),
+            "Downsampled %s from %zu to %zu points with leaf %.3f",
+            label.c_str(),
+            before,
+            cloud->size(),
+            leaf_size);
+    }
+
+    void limit_point_count(
+        const pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud,
+        int max_points,
+        const std::string &label,
+        bool log)
+    {
+        if (max_points <= 0 || cloud->size() <= static_cast<size_t>(max_points))
+        {
+            return;
+        }
+
+        const size_t before = cloud->size();
+        const size_t limit = static_cast<size_t>(max_points);
+        const size_t stride = (before + limit - 1) / limit;
+        pcl::PointCloud<pcl::PointXYZ>::Ptr limited(new pcl::PointCloud<pcl::PointXYZ>);
+        limited->reserve(limit);
+        for (size_t i = 0; i < before && limited->size() < limit; i += stride)
+        {
+            limited->push_back(cloud->points[i]);
+        }
+        limited->width = limited->size();
+        limited->height = 1;
+        limited->is_dense = cloud->is_dense;
+        cloud->swap(*limited);
+
+        if (log)
+        {
+            RCLCPP_WARN(
+                this->get_logger(),
+                "Limited %s from %zu to %zu points",
+                label.c_str(),
+                before,
+                cloud->size());
+        }
     }
 
     void publish_transformed_cloud(
         const pcl::PointCloud<pcl::PointXYZ>::Ptr &input_cloud,
         const Eigen::Matrix4f &transformation)
     {
-        pcl::PointCloud<pcl::PointXYZ> transformed_cloud;
-        pcl::transformPointCloud(*input_cloud, transformed_cloud, transformation);
+        pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+        pcl::transformPointCloud(*input_cloud, *transformed_cloud, transformation);
+        limit_point_count(
+            transformed_cloud,
+            max_published_transformed_cloud_points,
+            "published transformed cloud",
+            false);
 
         sensor_msgs::msg::PointCloud2 transformed_cloud_msg;
-        pcl::toROSMsg(transformed_cloud, transformed_cloud_msg);
+        pcl::toROSMsg(*transformed_cloud, transformed_cloud_msg);
         transformed_cloud_msg.header.stamp = this->now();
         transformed_cloud_msg.header.frame_id = map_frame;
         transformed_cloud_pub_->publish(transformed_cloud_msg);
+        icp_cloud_pub_->publish(transformed_cloud_msg);
     }
 
     void publish_pose(const Eigen::Matrix4f &transformation_result)
@@ -213,10 +390,15 @@ private:
         pose_msg.pose.pose.orientation.z = q.z();
         pose_msg.pose.pose.orientation.w = q.w();
         publisher_->publish(pose_msg);
+        relocalization_result_pub_->publish(pose_msg);
     }
 
     void run_icp(const pcl::PointCloud<pcl::PointXYZ>::Ptr &input_cloud)
     {
+        if (relocalization_pose_published)
+        {
+            return;
+        }
         if (target_cloud_->empty())
         {
             RCLCPP_WARN_THROTTLE(
@@ -266,7 +448,10 @@ private:
             publish_pose(transformation_result);
             publish_transformed_cloud(input_cloud, transformation_result);
             publish_target_map();
-            rclcpp::shutdown();
+            relocalization_pose_published = true;
+            RCLCPP_INFO(
+                this->get_logger(),
+                "Relocalization pose latched on /icp_result; keeping node alive for late subscribers.");
             return;
         }
 
@@ -357,13 +542,16 @@ private:
     }
 
     rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr publisher_;
+    rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr relocalization_result_pub_;
     rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr cloud_sub_;
 #ifdef USE_LIVOX
     rclcpp::Subscription<livox_ros_driver2::msg::CustomMsg>::SharedPtr lvx_cloud_sub_;
 #endif
     rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pose_sub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr map_pub_;
+    rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr template_cloud_pub_;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr transformed_cloud_pub_;
+    rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr icp_cloud_pub_;
     pcl::PointCloud<pcl::PointXYZ>::Ptr target_cloud_{new pcl::PointCloud<pcl::PointXYZ>};
 
     Eigen::Matrix4f initGuess;
@@ -375,12 +563,19 @@ private:
     double max_correspondence_distance, RANSAC_outlier_rejection_threshold;
     std::string map_path, map_frame;
     double fitness_score_thre;
-    double map_voxel_leaf_size, cloud_voxel_leaf_size;
+    double map_voxel_leaf_size, cloud_voxel_leaf_size, map_max_abs_coord;
+    double map_min_z, map_max_z;
+    double prior_map_publish_voxel_leaf_size;
     sensor_msgs::msg::PointCloud2 target_cloud_msg;
     int converged_count = 0;
     int converged_count_thre;
+    int max_target_map_points;
+    int max_published_prior_map_points;
+    int max_published_transformed_cloud_points;
     bool legacy_livox_roll_180;
     bool update_initial_guess_on_high_error;
+    bool publish_prior_map;
+    bool relocalization_pose_published = false;
     std::string pcl_type;
 };
 

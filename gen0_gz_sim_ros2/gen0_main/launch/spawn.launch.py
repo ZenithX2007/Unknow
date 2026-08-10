@@ -316,8 +316,14 @@ def generate_launch_description():
     )
     vehicle_file = os.path.join(pkg_share_dir, 'urdf', 'gen0_model.sdf')
 
-    with open(vehicle_file, 'r') as infp:
+    with open(vehicle_file, 'r', encoding='utf-8') as infp:
         robot_desc = infp.read()
+    # RViz receives this SDF from /robot_description without the SDF file's
+    # directory context, so relative mesh URIs are not resolvable there.
+    robot_desc = robot_desc.replace(
+        '../meshes/',
+        'package://gen0_main/meshes/',
+    )
 
     return LaunchDescription([
         world_arg,
