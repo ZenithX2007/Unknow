@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
+import json
 import math
 from pathlib import Path
 
 import numpy as np
 import rclpy
-from geometry_msgs.msg import PoseArray
+from geometry_msgs.msg import PoseArray, PoseStamped
 from rclpy.node import Node
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs_py import point_cloud2
@@ -101,6 +102,22 @@ class SimulatedWorldLidar(Node):
         self.declare_parameter("self_filter_enabled", True)
         self.declare_parameter("self_filter_min_xyz", [-2.8, -1.4, -0.4])
         self.declare_parameter("self_filter_max_xyz", [2.8, 1.4, 2.9])
+        self.declare_parameter("dynamic_actor_topics", "")
+        self.declare_parameter("dynamic_actor_radius", 0.30)
+        self.declare_parameter("dynamic_actor_height", 1.35)
+        self.declare_parameter("dynamic_actor_z_offset", 0.05)
+        self.declare_parameter("dynamic_actor_radial_samples", 16)
+        self.declare_parameter("dynamic_actor_height_samples", 12)
+        self.declare_parameter("dynamic_actor_ground_snap_enabled", True)
+        self.declare_parameter("dynamic_actor_ground_snap_radius", 2.0)
+        self.declare_parameter("dynamic_actor_ground_snap_percentile", 15.0)
+        self.declare_parameter("dynamic_actor_ground_snap_max_height", 3.5)
+        self.declare_parameter("trash_scenario_path", "")
+        self.declare_parameter("trash_obstacle_radius", 0.25)
+        self.declare_parameter("trash_obstacle_height", 0.65)
+        self.declare_parameter("trash_obstacle_z_offset", 0.02)
+        self.declare_parameter("trash_obstacle_radial_samples", 10)
+        self.declare_parameter("trash_obstacle_height_samples", 5)
 
         self.world_obj_path = self.get_parameter("world_obj_path").value
         self.output_topic = self.get_parameter("output_topic").value
@@ -178,12 +195,69 @@ class SimulatedWorldLidar(Node):
         self.self_filter_max_xyz = self.vector_parameter(
             "self_filter_max_xyz", [2.8, 1.4, 2.9]
         )
+        self.dynamic_actor_topics = self.string_list_parameter("dynamic_actor_topics")
+        self.dynamic_actor_radius = float(
+            self.get_parameter("dynamic_actor_radius").value
+        )
+        self.dynamic_actor_height = float(
+            self.get_parameter("dynamic_actor_height").value
+        )
+        self.dynamic_actor_z_offset = float(
+            self.get_parameter("dynamic_actor_z_offset").value
+        )
+        self.dynamic_actor_radial_samples = max(
+            3, int(self.get_parameter("dynamic_actor_radial_samples").value)
+        )
+        self.dynamic_actor_height_samples = max(
+            2, int(self.get_parameter("dynamic_actor_height_samples").value)
+        )
+        self.dynamic_actor_ground_snap_enabled = bool(
+            self.get_parameter("dynamic_actor_ground_snap_enabled").value
+        )
+        self.dynamic_actor_ground_snap_radius = float(
+            self.get_parameter("dynamic_actor_ground_snap_radius").value
+        )
+        self.dynamic_actor_ground_snap_percentile = float(
+            self.get_parameter("dynamic_actor_ground_snap_percentile").value
+        )
+        self.dynamic_actor_ground_snap_max_height = float(
+            self.get_parameter("dynamic_actor_ground_snap_max_height").value
+        )
+        self.trash_scenario_path = self.get_parameter("trash_scenario_path").value
+        self.trash_obstacle_radius = float(
+            self.get_parameter("trash_obstacle_radius").value
+        )
+        self.trash_obstacle_height = float(
+            self.get_parameter("trash_obstacle_height").value
+        )
+        self.trash_obstacle_z_offset = float(
+            self.get_parameter("trash_obstacle_z_offset").value
+        )
+        self.trash_obstacle_radial_samples = max(
+            3, int(self.get_parameter("trash_obstacle_radial_samples").value)
+        )
+        self.trash_obstacle_height_samples = max(
+            2, int(self.get_parameter("trash_obstacle_height_samples").value)
+        )
 
         self.vehicle_position = None
         self.vehicle_rotation = None
+        self.actor_positions = {}
         self.world_points = self.load_world_points()
+        self.trash_points = self.load_trash_points()
 
         self.create_subscription(PoseArray, self.pose_topic, self.pose_callback, 10)
+        self.actor_subscriptions = [
+            self.create_subscription(
+                PoseStamped,
+                topic,
+                lambda msg, actor_topic=topic: self.actor_pose_callback(
+                    actor_topic, msg
+                ),
+                10,
+            )
+            for topic in self.dynamic_actor_topics
+        ]
         self.publisher = self.create_publisher(PointCloud2, self.output_topic, 10)
         self.create_timer(1.0 / self.scan_rate, self.publish_scan)
 
@@ -193,7 +267,9 @@ class SimulatedWorldLidar(Node):
             f"max_points={self.max_points}, max_range={self.max_range:.1f}, "
             f"h=[{self.horizontal_min_angle:.2f}, {self.horizontal_max_angle:.2f}], "
             f"v=[{self.vertical_min_angle:.2f}, {self.vertical_max_angle:.2f}], "
-            f"add_obstacle_columns={self.add_obstacle_columns}"
+            f"add_obstacle_columns={self.add_obstacle_columns}, "
+            f"actor_topics={len(self.dynamic_actor_topics)}, "
+            f"trash_points={len(self.trash_points)}"
         )
 
     def vector_parameter(self, name, fallback):
@@ -204,6 +280,15 @@ class SimulatedWorldLidar(Node):
             )
             value = fallback
         return np.array(value, dtype=np.float32)
+
+    def string_list_parameter(self, name):
+        value = self.get_parameter(name).value
+        if isinstance(value, str):
+            return [item.strip() for item in value.split(",") if item.strip()]
+        try:
+            return [str(item).strip() for item in value if str(item).strip()]
+        except TypeError:
+            return []
 
     def load_world_points(self):
         path = Path(self.world_obj_path)
@@ -259,6 +344,103 @@ class SimulatedWorldLidar(Node):
         rng = np.random.default_rng(self.random_seed)
         rng.shuffle(points)
         return points.astype(np.float32, copy=False)
+
+    def load_trash_points(self):
+        if not self.trash_scenario_path:
+            return np.empty((0, 3), dtype=np.float32)
+
+        path = Path(self.trash_scenario_path)
+        if not path.exists():
+            self.get_logger().warn(f"Trash scenario path does not exist: {path}")
+            return np.empty((0, 3), dtype=np.float32)
+
+        try:
+            items = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            self.get_logger().warn(f"Could not read trash scenario {path}: {error}")
+            return np.empty((0, 3), dtype=np.float32)
+
+        centers = []
+        for item in items:
+            pose = item.get("pose", [])
+            if len(pose) < 3:
+                continue
+            try:
+                centers.append((float(pose[0]), float(pose[1]), float(pose[2])))
+            except (TypeError, ValueError):
+                continue
+
+        if not centers:
+            return np.empty((0, 3), dtype=np.float32)
+
+        return self.build_cylinder_points(
+            np.asarray(centers, dtype=np.float32),
+            self.trash_obstacle_radius,
+            self.trash_obstacle_height,
+            self.trash_obstacle_z_offset,
+            self.trash_obstacle_radial_samples,
+            self.trash_obstacle_height_samples,
+        )
+
+    def build_cylinder_points(
+        self,
+        centers,
+        radius,
+        height,
+        z_offset,
+        radial_samples,
+        height_samples,
+    ):
+        if centers.size == 0 or radius <= 0.0 or height <= 0.0:
+            return np.empty((0, 3), dtype=np.float32)
+
+        angles = np.linspace(0.0, 2.0 * math.pi, radial_samples, endpoint=False)
+        levels = np.linspace(z_offset, z_offset + height, height_samples)
+        ring_xy = np.column_stack((np.cos(angles), np.sin(angles))) * radius
+
+        clouds = []
+        for center in centers:
+            for level in levels:
+                z = np.full(radial_samples, center[2] + level, dtype=np.float32)
+                xy = center[:2] + ring_xy
+                clouds.append(np.column_stack((xy, z)))
+            clouds.append(
+                np.array(
+                    [[center[0], center[1], center[2] + z_offset + height]],
+                    dtype=np.float32,
+                )
+            )
+
+        return np.vstack(clouds).astype(np.float32, copy=False)
+
+    def estimate_actor_ground_height(self, center):
+        if (
+            not self.dynamic_actor_ground_snap_enabled
+            or self.world_points.size == 0
+            or self.dynamic_actor_ground_snap_radius <= 0.0
+        ):
+            return float(center[2])
+
+        dx = self.world_points[:, 0] - center[0]
+        dy = self.world_points[:, 1] - center[1]
+        radius_sq = self.dynamic_actor_ground_snap_radius ** 2
+        local_mask = (dx * dx + dy * dy) <= radius_sq
+        if not np.any(local_mask):
+            return float(center[2] - self.dynamic_actor_height * 0.5)
+
+        local_z = self.world_points[local_mask, 2]
+        if self.dynamic_actor_ground_snap_max_height > 0.0:
+            local_z = local_z[
+                local_z <= (center[2] + self.dynamic_actor_ground_snap_max_height)
+            ]
+        if local_z.size == 0:
+            local_z = self.world_points[local_mask, 2]
+
+        percentile = min(100.0, max(0.0, self.dynamic_actor_ground_snap_percentile))
+        ground_z = float(np.percentile(local_z, percentile))
+        if not np.isfinite(ground_z):
+            return float(center[2])
+        return ground_z
 
     def parse_face_indices(self, line, vertex_count):
         indices = []
@@ -387,6 +569,47 @@ class SimulatedWorldLidar(Node):
         )
         self.vehicle_rotation = quaternion_to_matrix(pose.orientation)
 
+    def actor_pose_callback(self, topic, msg):
+        self.actor_positions[topic] = np.array(
+            [msg.pose.position.x, msg.pose.position.y, msg.pose.position.z],
+            dtype=np.float32,
+        )
+
+    def dynamic_world_points(self):
+        clouds = [self.world_points]
+        dynamic_points = np.empty((0, 3), dtype=np.float32)
+
+        if self.trash_points.size:
+            clouds.append(self.trash_points)
+
+        if self.actor_positions:
+            actor_centers = []
+            for center in self.actor_positions.values():
+                snapped_center = np.array(center, dtype=np.float32, copy=True)
+                snapped_center[2] = self.estimate_actor_ground_height(snapped_center)
+                actor_centers.append(snapped_center)
+            actor_centers = np.asarray(actor_centers, dtype=np.float32)
+            actor_points = self.build_cylinder_points(
+                actor_centers,
+                self.dynamic_actor_radius,
+                self.dynamic_actor_height,
+                self.dynamic_actor_z_offset,
+                self.dynamic_actor_radial_samples,
+                self.dynamic_actor_height_samples,
+            )
+            if actor_points.size:
+                dynamic_points = actor_points
+                clouds.append(actor_points)
+
+        if len(clouds) == 1:
+            return self.world_points, np.zeros(len(self.world_points), dtype=bool)
+
+        combined_points = np.vstack(clouds)
+        dynamic_mask = np.zeros(len(combined_points), dtype=bool)
+        if dynamic_points.size:
+            dynamic_mask[-len(dynamic_points):] = True
+        return combined_points, dynamic_mask
+
     def publish_scan(self):
         if self.vehicle_position is None or self.world_points.size == 0:
             return
@@ -394,7 +617,8 @@ class SimulatedWorldLidar(Node):
         sensor_position = (
             self.vehicle_position + self.vehicle_rotation.dot(self.lidar_xyz_in_base)
         )
-        points_lidar = (self.world_points - sensor_position).dot(
+        world_points, dynamic_mask = self.dynamic_world_points()
+        points_lidar = (world_points - sensor_position).dot(
             self.vehicle_rotation
         )
 
@@ -434,6 +658,7 @@ class SimulatedWorldLidar(Node):
         points = points_lidar[keep]
         points_base = points_base[keep]
         range_sq = range_sq[keep]
+        dynamic_mask = dynamic_mask[keep]
         if points.size == 0:
             self.get_logger().warn(
                 "Simulated lidar produced zero points after filtering",
@@ -442,38 +667,55 @@ class SimulatedWorldLidar(Node):
             return
 
         if self.max_points > 0 and len(points) > self.max_points:
-            points = self.sample_scan_points(points, points_base, range_sq)
+            points = self.sample_scan_points(
+                points, points_base, range_sq, dynamic_mask
+            )
 
         header = Header()
         header.stamp = self.get_clock().now().to_msg()
         header.frame_id = self.frame_id
         self.publisher.publish(point_cloud2.create_cloud_xyz32(header, points))
 
-    def sample_scan_points(self, points, points_base, range_sq):
+    def sample_scan_points(self, points, points_base, range_sq, dynamic_mask):
+        dynamic_points = points[dynamic_mask]
+        non_dynamic_mask = ~dynamic_mask
+        non_dynamic_points = points[non_dynamic_mask]
+        non_dynamic_base = points_base[non_dynamic_mask]
+        non_dynamic_range_sq = range_sq[non_dynamic_mask]
+
+        if len(dynamic_points) >= self.max_points:
+            return self.even_sample(dynamic_points, self.max_points)
+
+        remaining = self.max_points - len(dynamic_points)
+        if remaining <= 0:
+            return dynamic_points
+
         if not self.priority_sampling_enabled or self.priority_range <= 0.0:
-            indices = np.linspace(0, len(points) - 1, self.max_points, dtype=np.int64)
-            return points[indices]
+            sampled = self.even_sample(non_dynamic_points, remaining)
+            return np.vstack((dynamic_points, sampled))
 
         priority_range_sq = self.priority_range * self.priority_range
         priority = (
-            (range_sq <= priority_range_sq)
-            & (points_base[:, 2] >= self.priority_min_base_z)
-            & (points_base[:, 2] <= self.priority_max_base_z)
+            (non_dynamic_range_sq <= priority_range_sq)
+            & (non_dynamic_base[:, 2] >= self.priority_min_base_z)
+            & (non_dynamic_base[:, 2] <= self.priority_max_base_z)
         )
 
-        priority_points = points[priority]
-        if len(priority_points) >= self.max_points:
-            return self.even_sample(priority_points, self.max_points)
+        priority_points = non_dynamic_points[priority]
+        if len(priority_points) >= remaining:
+            return np.vstack(
+                (dynamic_points, self.even_sample(priority_points, remaining))
+            )
 
-        remaining = self.max_points - len(priority_points)
-        other_points = points[~priority]
+        remaining -= len(priority_points)
+        other_points = non_dynamic_points[~priority]
         if len(other_points) <= remaining:
-            return np.vstack((priority_points, other_points))
+            return np.vstack((dynamic_points, priority_points, other_points))
 
-        other_range_sq = range_sq[~priority]
+        other_range_sq = non_dynamic_range_sq[~priority]
         near_order = np.argsort(other_range_sq)
         other_sample = self.even_sample(other_points[near_order], remaining)
-        return np.vstack((priority_points, other_sample))
+        return np.vstack((dynamic_points, priority_points, other_sample))
 
     @staticmethod
     def even_sample(points, count):

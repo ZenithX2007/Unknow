@@ -65,8 +65,8 @@ case "$PROFILE" in
     DEFAULT_PARAMS_FILE="$WORKSPACE/gen0_gz_sim_ros2/gen0_main/config/nav2_gen0_scurm_params.yaml"
     DEFAULT_COSTMAP_SOURCE="scurm_terrain"
     DEFAULT_LOCALIZATION_MODE="odom_only"
-    DEFAULT_MAP_SOURCE="yaml"
-    DEFAULT_PROJECTED_MAP_UNKNOWN_AS_FREE="false"
+    DEFAULT_MAP_SOURCE="projected_map"
+    DEFAULT_PROJECTED_MAP_UNKNOWN_AS_FREE="true"
     DEFAULT_NAV_TO_POSE_BT="$WORKSPACE/gen0_gz_sim_ros2/gen0_main/behavior_tree/ackermann_scurm_recovery.xml"
     DEFAULT_NAV_THROUGH_POSES_BT="$WORKSPACE/gen0_gz_sim_ros2/gen0_main/behavior_tree/ackermann_scurm_through_poses.xml"
     case "$WORLD" in
@@ -74,7 +74,7 @@ case "$PROFILE" in
         DEFAULT_MAP_YAML="/home/zjxue2007/gen0_maps/san_roundabout_front3d_demo.yaml"
         ;;
       my_map)
-        DEFAULT_MAP_YAML="$WORKSPACE/gen0_gz_sim_ros2/gen0_main/maps/recovered_projected_20260807_102204.yaml"
+        DEFAULT_MAP_YAML="/home/zjxue2007/maps/my_map.yaml"
         ;;
       *)
         DEFAULT_MAP_YAML=""
@@ -592,9 +592,8 @@ else
   MAX_REFERENCE_YAW_ERROR="0.0"
 fi
 
-log "Starting Gen0 Nav2: profile=$PROFILE, map_source=$MAP_SOURCE, map=$MAP_YAML, params=$PARAMS_FILE, odom_topic=$NAV2_ODOM_TOPIC, localization_mode=$LOCALIZATION_MODE, costmap_source=$COSTMAP_SOURCE, controller_frequency=$NAV2_CONTROLLER_FREQUENCY, model_dt=$NAV2_MODEL_DT, smoothing_frequency=$NAV2_SMOOTHING_FREQUENCY, projected_map_unknown_as_free=$PROJECTED_MAP_UNKNOWN_AS_FREE, projected_map_fixed=${PROJECTED_MAP_FIXED_GEOMETRY}:${PROJECTED_MAP_FIXED_WIDTH}x${PROJECTED_MAP_FIXED_HEIGHT}@${PROJECTED_MAP_FIXED_RESOLUTION}, projected_map_origin=(${PROJECTED_MAP_FIXED_ORIGIN_X},${PROJECTED_MAP_FIXED_ORIGIN_Y}), rviz=$NAV2_RVIZ, rviz_config=$NAV2_RVIZ_CONFIG, command_topic=/cmd_vel"
-log "RViz render env: $NAV2_RVIZ_RENDER_ENV"
-exec ros2 launch gen0_main gen0_navigation.launch.py \
+nav2_launch=(
+  ros2 launch gen0_main gen0_navigation.launch.py
   params_file:="$PARAMS_FILE" \
   use_respawn:="$USE_RESPAWN" \
   nav2_controller_frequency:="$NAV2_CONTROLLER_FREQUENCY" \
@@ -613,7 +612,6 @@ exec ros2 launch gen0_main gen0_navigation.launch.py \
   projected_map_fixed_height:="$PROJECTED_MAP_FIXED_HEIGHT" \
   projected_map_fixed_resolution:="$PROJECTED_MAP_FIXED_RESOLUTION" \
   odom_topic:="$NAV2_ODOM_TOPIC" \
-  reference_odom_topic:="$REFERENCE_ODOM_TOPIC" \
   max_reference_odom_error:="$MAX_REFERENCE_ODOM_ERROR" \
   max_reference_yaw_error:="$MAX_REFERENCE_YAW_ERROR" \
   reference_odom_timeout:="$REFERENCE_ODOM_TIMEOUT" \
@@ -623,3 +621,11 @@ exec ros2 launch gen0_main gen0_navigation.launch.py \
   default_nav_to_pose_bt_xml:="$NAV_TO_POSE_BT" \
   default_nav_through_poses_bt_xml:="$NAV_THROUGH_POSES_BT" \
   map:="$MAP_YAML"
+)
+if [[ -n "$REFERENCE_ODOM_TOPIC" ]]; then
+  nav2_launch+=(reference_odom_topic:="$REFERENCE_ODOM_TOPIC")
+fi
+
+log "Starting Gen0 Nav2: profile=$PROFILE, map_source=$MAP_SOURCE, map=$MAP_YAML, params=$PARAMS_FILE, odom_topic=$NAV2_ODOM_TOPIC, localization_mode=$LOCALIZATION_MODE, costmap_source=$COSTMAP_SOURCE, controller_frequency=$NAV2_CONTROLLER_FREQUENCY, model_dt=$NAV2_MODEL_DT, smoothing_frequency=$NAV2_SMOOTHING_FREQUENCY, projected_map_unknown_as_free=$PROJECTED_MAP_UNKNOWN_AS_FREE, projected_map_fixed=${PROJECTED_MAP_FIXED_GEOMETRY}:${PROJECTED_MAP_FIXED_WIDTH}x${PROJECTED_MAP_FIXED_HEIGHT}@${PROJECTED_MAP_FIXED_RESOLUTION}, projected_map_origin=(${PROJECTED_MAP_FIXED_ORIGIN_X},${PROJECTED_MAP_FIXED_ORIGIN_Y}), rviz=$NAV2_RVIZ, rviz_config=$NAV2_RVIZ_CONFIG, command_topic=/cmd_vel"
+log "RViz render env: $NAV2_RVIZ_RENDER_ENV"
+exec "${nav2_launch[@]}"

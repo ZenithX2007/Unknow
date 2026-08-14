@@ -112,8 +112,9 @@ public:
 #endif
         pose_sub_ = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
             "initialpose", 10, std::bind(&ICPNode::pose_callback, this, std::placeholders::_1));
-        map_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("prior_map", 10);
-        template_cloud_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/template_cloud", 10);
+        auto prior_map_qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
+        map_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("prior_map", prior_map_qos);
+        template_cloud_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/template_cloud", prior_map_qos);
         transformed_cloud_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("transformed_cloud", 10);
         icp_cloud_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/icp_cloud", 10);
 

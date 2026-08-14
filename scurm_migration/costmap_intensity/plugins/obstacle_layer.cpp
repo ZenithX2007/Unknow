@@ -1,6 +1,7 @@
 #include "costmap_intensity/obstacle_layer.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <memory>
 #include <string>
 #include <vector>
@@ -43,7 +44,10 @@ void ObstacleLayerIntensity::onInitialize()
   declareParameter("min_obstacle_intensity", rclcpp::ParameterValue(0.0));
   declareParameter("max_obstacle_intensity", rclcpp::ParameterValue(2.0));
   declareParameter("combination_method", rclcpp::ParameterValue(1));
+  declareParameter("clear_on_update", rclcpp::ParameterValue(false));
   declareParameter("observation_sources", rclcpp::ParameterValue(std::string("")));
+  declareParameter("robot_origin_fallback_enabled", rclcpp::ParameterValue(false));
+  declareParameter("robot_origin_fallback_distance", rclcpp::ParameterValue(1.0));
 
   auto node = node_.lock();
   if (!node) {
@@ -55,6 +59,11 @@ void ObstacleLayerIntensity::onInitialize()
   node->get_parameter(name_ + "." + "min_obstacle_intensity", min_obstacle_intensity_);
   node->get_parameter(name_ + "." + "max_obstacle_intensity", max_obstacle_intensity_);
   node->get_parameter(name_ + "." + "combination_method", combination_method_);
+  node->get_parameter(name_ + "." + "clear_on_update", clear_on_update_);
+  node->get_parameter(
+    name_ + "." + "robot_origin_fallback_enabled", robot_origin_fallback_enabled_);
+  node->get_parameter(
+    name_ + "." + "robot_origin_fallback_distance", robot_origin_fallback_distance_);
   node->get_parameter("track_unknown_space", track_unknown_space);
   node->get_parameter("transform_tolerance", transform_tolerance);
   node->get_parameter(name_ + "." + "observation_sources", topics_string);
@@ -70,6 +79,9 @@ void ObstacleLayerIntensity::onInitialize()
     "Subscribed to Topics: %s", topics_string.c_str());
 
   rolling_window_ = layered_costmap_->isRolling();
+  have_robot_pose_ = false;
+  robot_x_ = 0.0;
+  robot_y_ = 0.0;
 
   if (track_unknown_space) {
     default_value_ = NO_INFORMATION;
@@ -264,12 +276,18 @@ ObstacleLayerIntensity::dynamicParametersCallback(
         min_obstacle_intensity_ = parameter.as_double();
       } else if (param_name == name_ + "." + "max_obstacle_intensity") {
         max_obstacle_intensity_ = parameter.as_double();
+      } else if (param_name == name_ + "." + "robot_origin_fallback_distance") {
+        robot_origin_fallback_distance_ = parameter.as_double();
       }
     } else if (param_type == ParameterType::PARAMETER_BOOL) {
       if (param_name == name_ + "." + "enabled") {
         enabled_ = parameter.as_bool();
       } else if (param_name == name_ + "." + "footprint_clearing_enabled") {
         footprint_clearing_enabled_ = parameter.as_bool();
+      } else if (param_name == name_ + "." + "clear_on_update") {
+        clear_on_update_ = parameter.as_bool();
+      } else if (param_name == name_ + "." + "robot_origin_fallback_enabled") {
+        robot_origin_fallback_enabled_ = parameter.as_bool();
       }
     } else if (param_type == ParameterType::PARAMETER_INTEGER) {
       if (param_name == name_ + "." + "combination_method") {
@@ -382,6 +400,16 @@ ObstacleLayerIntensity::updateBounds(
   if (!enabled_) {
     return;
   }
+  have_robot_pose_ = true;
+  robot_x_ = robot_x;
+  robot_y_ = robot_y;
+  if (clear_on_update_) {
+    resetMap(0, 0, size_x_, size_y_);
+    touch(origin_x_, origin_y_, min_x, min_y, max_x, max_y);
+    touch(
+      origin_x_ + getSizeInMetersX(), origin_y_ + getSizeInMetersY(),
+      min_x, min_y, max_x, max_y);
+  }
   useExtraBounds(min_x, min_y, max_x, max_y);
 
   bool current = true;
@@ -406,6 +434,7 @@ ObstacleLayerIntensity::updateBounds(
     it != observations.end(); ++it)
   {
     const Observation & obs = *it;
+    const auto origin = observationOriginForCostmap(obs);
 
     const sensor_msgs::msg::PointCloud2 & cloud = *(obs.cloud_);
 
@@ -435,8 +464,8 @@ ObstacleLayerIntensity::updateBounds(
       // compute the squared distance from the hitpoint to the pointcloud's origin
       double sq_dist =
         (px -
-        obs.origin_.x) * (px - obs.origin_.x) + (py - obs.origin_.y) * (py - obs.origin_.y) +
-        (pz - obs.origin_.z) * (pz - obs.origin_.z);
+        origin.x) * (px - origin.x) + (py - origin.y) * (py - origin.y) +
+        (pz - origin.z) * (pz - origin.z);
 
       // if the point is far enough away... we won't consider it
       if (sq_dist >= sq_obstacle_max_range) {
@@ -464,6 +493,26 @@ ObstacleLayerIntensity::updateBounds(
   }
 
   updateFootprint(robot_x, robot_y, robot_yaw, min_x, min_y, max_x, max_y);
+}
+
+geometry_msgs::msg::Point
+ObstacleLayerIntensity::observationOriginForCostmap(
+  const nav2_costmap_2d::Observation & observation) const
+{
+  if (!robot_origin_fallback_enabled_ || !rolling_window_ || !have_robot_pose_) {
+    return observation.origin_;
+  }
+
+  double dx = observation.origin_.x - robot_x_;
+  double dy = observation.origin_.y - robot_y_;
+  if (std::hypot(dx, dy) <= robot_origin_fallback_distance_) {
+    return observation.origin_;
+  }
+
+  geometry_msgs::msg::Point origin = observation.origin_;
+  origin.x = robot_x_;
+  origin.y = robot_y_;
+  return origin;
 }
 
 void
@@ -581,6 +630,9 @@ ObstacleLayerIntensity::raytraceFreespace(
 {
   double ox = clearing_observation.origin_.x;
   double oy = clearing_observation.origin_.y;
+  const auto costmap_origin = observationOriginForCostmap(clearing_observation);
+  ox = costmap_origin.x;
+  oy = costmap_origin.y;
   const sensor_msgs::msg::PointCloud2 & cloud = *(clearing_observation.cloud_);
 
   // get the map coordinates of the origin of the sensor

@@ -128,6 +128,16 @@ def generate_launch_description():
     simulated_lidar_vertical_max_angle = LaunchConfiguration(
         "simulated_lidar_vertical_max_angle"
     )
+    dynamic_actor_topics = LaunchConfiguration("dynamic_actor_topics")
+    actors_scenario_path = LaunchConfiguration("actors_scenario_path")
+    actor_costmap = LaunchConfiguration("actor_costmap")
+    actor_obstacle_topic = LaunchConfiguration("actor_obstacle_topic")
+    actor_obstacle_frame = LaunchConfiguration("actor_obstacle_frame")
+    actor_world_sdf_path = LaunchConfiguration("actor_world_sdf_path")
+    actor_world_vehicle_name = LaunchConfiguration("actor_world_vehicle_name")
+    actor_world_to_output = LaunchConfiguration("actor_world_to_output")
+    actor_output_origin_xy = LaunchConfiguration("actor_output_origin_xy")
+    trash_scenario_path = LaunchConfiguration("trash_scenario_path")
     scurm_octomap_projected_map = IfCondition(
         PythonExpression(
             [
@@ -432,6 +442,58 @@ def generate_launch_description():
                 default_value="0.55",
                 description="Maximum vertical angle for simulated world-lidar points.",
             ),
+            DeclareLaunchArgument(
+                "dynamic_actor_topics",
+                default_value="",
+                description="Comma-separated actor PoseStamped topics added to the simulated lidar fallback.",
+            ),
+            DeclareLaunchArgument(
+                "actors_scenario_path",
+                default_value="",
+                description="Actor scenario SDF used as a fallback source for dynamic costmap obstacles.",
+            ),
+            DeclareLaunchArgument(
+                "actor_costmap",
+                default_value="false",
+                choices=["true", "false"],
+                description="Publish moving actor obstacles as an optional debug PointCloud2 source.",
+            ),
+            DeclareLaunchArgument(
+                "actor_obstacle_topic",
+                default_value="/gen0_mapping/actor_obstacles",
+                description="PointCloud2 topic containing current moving actor obstacles for local costmaps.",
+            ),
+            DeclareLaunchArgument(
+                "actor_obstacle_frame",
+                default_value="odom",
+                description="Frame id used by actor_obstacle_topic. Use map for relocalized prior-map runs.",
+            ),
+            DeclareLaunchArgument(
+                "actor_world_sdf_path",
+                default_value="",
+                description="World SDF used to align actor world coordinates to the costmap frame.",
+            ),
+            DeclareLaunchArgument(
+                "actor_world_vehicle_name",
+                default_value="gen0_model",
+                description="Vehicle model name whose world pose anchors actor coordinate conversion.",
+            ),
+            DeclareLaunchArgument(
+                "actor_world_to_output",
+                default_value="true",
+                choices=["true", "false"],
+                description="Convert Gazebo actor world coordinates to the relocalized/normalized output frame.",
+            ),
+            DeclareLaunchArgument(
+                "actor_output_origin_xy",
+                default_value="0.0,0.0",
+                description="XY origin of the vehicle in actor_obstacle_frame after world-to-output conversion.",
+            ),
+            DeclareLaunchArgument(
+                "trash_scenario_path",
+                default_value="",
+                description="Optional trash JSON scenario added to the simulated lidar fallback.",
+            ),
             Node(
                 package="gen0_main",
                 executable="simulated_world_lidar",
@@ -486,6 +548,8 @@ def generate_launch_description():
                         "self_filter_enabled": True,
                         "self_filter_min_xyz": [-2.8, -1.4, -0.4],
                         "self_filter_max_xyz": [2.8, 1.4, 2.9],
+                        "dynamic_actor_topics": dynamic_actor_topics,
+                        "trash_scenario_path": trash_scenario_path,
                     }
                 ],
             ),
@@ -662,14 +726,9 @@ def generate_launch_description():
                             PythonExpression(["'", relocalization, "' == 'false'"]),
                             value_type=bool,
                         ),
-                        "publish.dense_publish_en": ParameterValue(
-                            PythonExpression(["'", relocalization, "' == 'false'"]),
-                            value_type=bool,
-                        ),
-                        "publish.scan_bodyframe_pub_en": ParameterValue(
-                            PythonExpression(["'", relocalization, "' == 'false'"]),
-                            value_type=bool,
-                        ),
+                        "publish.scan_publish_en": True,
+                        "publish.dense_publish_en": True,
+                        "publish.scan_bodyframe_pub_en": True,
                         "common.send_odom_base_tf": ParameterValue(
                             fast_lio_send_odom_base_tf, value_type=bool
                         ),
@@ -775,6 +834,39 @@ def generate_launch_description():
                     ("/terrain_map", "/gen0_mapping/terrain_map"),
                     ("/terrain_map_ext", "/gen0_mapping/terrain_map_ext"),
                     ("/cloud_clearing", "/gen0_mapping/cloud_clearing"),
+                ],
+            ),
+            Node(
+                package="gen0_main",
+                executable="actor_obstacle_costmap",
+                name="gen0_actor_obstacle_costmap",
+                output="screen",
+                condition=IfCondition(actor_costmap),
+                parameters=[
+                    {
+                        "use_sim_time": use_sim_time,
+                        "actors_scenario_path": actors_scenario_path,
+                        "actor_pose_topics": dynamic_actor_topics,
+                        "output_topic": actor_obstacle_topic,
+                        "frame_id": actor_obstacle_frame,
+                        "world_sdf_path": actor_world_sdf_path,
+                        "world_vehicle_name": actor_world_vehicle_name,
+                        "transform_world_to_output": ParameterValue(
+                            actor_world_to_output, value_type=bool
+                        ),
+                        "output_origin_xy": ParameterValue(
+                            actor_output_origin_xy, value_type=str
+                        ),
+                        "publish_rate": 10.0,
+                        "live_pose_timeout": 1.0,
+                        "actor_radius": 0.45,
+                        "actor_z_min": 0.15,
+                        "actor_z_max": 1.45,
+                        "actor_mark_intensity": 0.6,
+                        "actor_clear_intensity": 0.0,
+                        "actor_radial_samples": 24,
+                        "actor_height_samples": 4,
+                    }
                 ],
             ),
             Node(

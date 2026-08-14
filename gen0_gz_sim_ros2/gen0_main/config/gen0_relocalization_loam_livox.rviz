@@ -60,7 +60,7 @@ Visualization Manager:
         {}
       Update Interval: 0
       Value: true
-    - Alpha: 0.800000011920929
+    - Alpha: 0.30000001192092896
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
         Max Value: 10
@@ -70,7 +70,7 @@ Visualization Manager:
       Channel Name: intensity
       Class: rviz_default_plugins/PointCloud2
       Color: 255; 255; 255
-      Color Transformer: FlatColor
+      Color Transformer: AxisColor
       Decay Time: 0
       Enabled: true
       Invert Rainbow: false
@@ -91,7 +91,7 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /gen0_mapping/cloud_registered
       Use Fixed Frame: true
-      Use rainbow: false
+      Use rainbow: true
       Value: true
     - Alpha: 0.30000001192092896
       Autocompute Intensity Bounds: true
@@ -103,7 +103,7 @@ Visualization Manager:
       Channel Name: intensity
       Class: rviz_default_plugins/PointCloud2
       Color: 255; 255; 255
-      Color Transformer: FlatColor
+      Color Transformer: AxisColor
       Decay Time: 0
       Enabled: false
       Invert Rainbow: false
@@ -124,7 +124,7 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /gen0_mapping/cloud_registered_body
       Use Fixed Frame: true
-      Use rainbow: false
+      Use rainbow: true
       Value: false
     - Class: rviz_common/Group
       Displays:
@@ -154,7 +154,7 @@ Visualization Manager:
           Style: Flat Squares
           Topic:
             Depth: 5
-            Durability Policy: Volatile
+            Durability Policy: Transient Local
             History Policy: Keep Last
             Reliability Policy: Reliable
             Value: /template_cloud
@@ -257,7 +257,7 @@ Visualization Manager:
           Style: Flat Squares
           Topic:
             Depth: 5
-            Durability Policy: Volatile
+            Durability Policy: Transient Local
             History Policy: Keep Last
             Reliability Policy: Reliable
             Value: /prior_map
@@ -295,7 +295,7 @@ Visualization Manager:
       Shape: Arrow
       Topic:
         Depth: 5
-        Durability Policy: Volatile
+        Durability Policy: Transient Local
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /relocalization_result

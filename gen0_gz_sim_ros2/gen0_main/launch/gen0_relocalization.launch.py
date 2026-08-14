@@ -76,6 +76,7 @@ def generate_launch_description():
     d3d12_adapter = LaunchConfiguration("d3d12_adapter")
     render_env = LaunchConfiguration("render_env")
     gui_visual_mode = LaunchConfiguration("gui_visual_mode")
+    actors_scenario = LaunchConfiguration("actors_scenario")
     prior_map_path = LaunchConfiguration("prior_map_path")
     initial_x = LaunchConfiguration("initial_x")
     initial_y = LaunchConfiguration("initial_y")
@@ -291,6 +292,7 @@ def generate_launch_description():
                             "d3d12_adapter": d3d12_adapter,
                             "render_env": render_env,
                             "gui_visual_mode": gui_visual_mode,
+                            "actors_scenario": actors_scenario,
                         }.items(),
                     ),
                 ],

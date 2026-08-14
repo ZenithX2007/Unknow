@@ -60,6 +60,9 @@ class ActorsLoader(Node):
             for actor in actors_scenario_root.findall('actor'):
                 actor_string = ET.tostring(actor, encoding='unicode')
                 new_actor_element = ET.fromstring(actor_string)
+                for plugin in new_actor_element.findall('plugin'):
+                    if plugin.get('filename') == 'ActorPose':
+                        plugin.set('filename', 'libActorPose.so')
                 world_element.append(new_actor_element)
                 self.actor_topics.append("/actor/" + actor.get('name') + "/pose")
                 

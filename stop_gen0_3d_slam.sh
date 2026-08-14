@@ -48,6 +48,8 @@ patterns=(
   "projected_terrain_map"
   "gen0_scurm_terrain_analysis_ext"
   "terrainAnalysisExt"
+  "gen0_actor_obstacle_costmap"
+  "actor_obstacle_costmap"
   "gen0_scurm_map_to_odom"
   "gen0_scurm_exchange_field"
   "exchangeField"

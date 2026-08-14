@@ -205,6 +205,9 @@ protected:
     double * max_x,
     double * max_y);
 
+  geometry_msgs::msg::Point observationOriginForCostmap(
+    const nav2_costmap_2d::Observation & observation) const;
+
   /**
    * @brief Process update costmap with raytracing the window bounds
    */
@@ -253,6 +256,12 @@ protected:
   bool rolling_window_;
   bool was_reset_;
   int combination_method_;
+  bool clear_on_update_;
+  bool robot_origin_fallback_enabled_;
+  double robot_origin_fallback_distance_;
+  bool have_robot_pose_;
+  double robot_x_;
+  double robot_y_;
 };
 
 }  // namespace costmap_intensity

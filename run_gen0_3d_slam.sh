@@ -6,7 +6,7 @@ WORKSPACE="${GEN0_WORKSPACE:-$SCRIPT_DIR}"
 WORLD="${GEN0_WORLD:-my_map}"
 ACTORS_SCENARIO="${GEN0_ACTORS_SCENARIO:-}"
 TRASH_SCENARIO="${GEN0_TRASH_SCENARIO-small_trash_dense}"
-TRASH_CLEANUP="${GEN0_TRASH_CLEANUP:-true}"
+TRASH_CLEANUP="${GEN0_TRASH_CLEANUP:-false}"
 TRASH_VEHICLE_LENGTH="${GEN0_TRASH_VEHICLE_LENGTH:-4.40}"
 TRASH_VEHICLE_WIDTH="${GEN0_TRASH_VEHICLE_WIDTH:-2.20}"
 TRASH_VEHICLE_CENTER_OFFSET_X="${GEN0_TRASH_VEHICLE_CENTER_OFFSET_X:-0.0}"
@@ -20,7 +20,7 @@ GAZEBO_GUI="${GEN0_GAZEBO_GUI:-true}"
 GROUND_TRUTH_LOCALIZATION="${GEN0_GROUND_TRUTH_LOCALIZATION:-false}"
 STATIC_ODOM_BASE="${GEN0_STATIC_ODOM_BASE:-false}"
 GAZEBO_BRIDGE_FILE="${GEN0_GAZEBO_BRIDGE_FILE:-$WORKSPACE/gen0_gz_sim_ros2/gen0_main/config/bridge_no_gz_odom_tf.yaml}"
-MAPPING_DRIVE="${GEN0_MAPPING_DRIVE:-true}"
+MAPPING_DRIVE="${GEN0_MAPPING_DRIVE:-false}"
 DRIVE_SPEED="${GEN0_DRIVE_SPEED:-0.25}"
 RVIZ="${GEN0_RVIZ:-true}"
 DEFAULT_RVIZ_CONFIG="$WORKSPACE/gen0_gz_sim_ros2/gen0_main/config/gen0_3d_mapping.rviz"
@@ -54,7 +54,7 @@ RELOCALIZATION_INPUT_CLOUD_TO_BASE_Y="${GEN0_RELOCALIZATION_INPUT_CLOUD_TO_BASE_
 RELOCALIZATION_INPUT_CLOUD_TO_BASE_Z="${GEN0_RELOCALIZATION_INPUT_CLOUD_TO_BASE_Z:-1.9}"
 RELOCALIZATION_LEGACY_LIVOX_ROLL_180="${GEN0_RELOCALIZATION_LEGACY_LIVOX_ROLL_180:-false}"
 RELOCALIZATION_WAIT_TIMEOUT="${GEN0_RELOCALIZATION_WAIT_TIMEOUT:-90}"
-GAZEBO_RENDER_ENV="${GEN0_GAZEBO_RENDER_ENV:-software}"
+GAZEBO_RENDER_ENV="${GEN0_GAZEBO_RENDER_ENV:-unset}"
 FAST_LIO_MAP_FILE_PATH="${GEN0_FAST_LIO_MAP_FILE_PATH:-/tmp/gen0_fast_lio_map.pcd}"
 FAST_LIO_PCD_SAVE="${GEN0_FAST_LIO_PCD_SAVE:-false}"
 FAST_LIO_PCD_SAVE_INTERVAL="${GEN0_FAST_LIO_PCD_SAVE_INTERVAL:--1}"
@@ -73,6 +73,15 @@ SIM_LIDAR_WORLD_VOXEL_SIZE="${GEN0_SIM_LIDAR_WORLD_VOXEL_SIZE:-0.08}"
 SIM_LIDAR_SURFACE_SAMPLING="${GEN0_SIM_LIDAR_SURFACE_SAMPLING:-true}"
 SIM_LIDAR_SURFACE_SAMPLES="${GEN0_SIM_LIDAR_SURFACE_SAMPLES:-1000000}"
 SIM_LIDAR_ADD_OBSTACLE_COLUMNS="${GEN0_SIM_LIDAR_ADD_OBSTACLE_COLUMNS:-false}"
+DYNAMIC_ACTOR_TOPICS="${GEN0_DYNAMIC_ACTOR_TOPICS:-}"
+ACTOR_COSTMAP="${GEN0_ACTOR_COSTMAP:-false}"
+ACTOR_OBSTACLE_TOPIC="${GEN0_ACTOR_OBSTACLE_TOPIC:-/gen0_mapping/actor_obstacles}"
+ACTOR_OBSTACLE_FRAME="${GEN0_ACTOR_OBSTACLE_FRAME:-}"
+ACTOR_WORLD_SDF_PATH="${GEN0_ACTOR_WORLD_SDF_PATH:-}"
+ACTOR_WORLD_VEHICLE_NAME="${GEN0_ACTOR_WORLD_VEHICLE_NAME:-gen0_model}"
+ACTOR_WORLD_TO_OUTPUT="${GEN0_ACTOR_WORLD_TO_OUTPUT:-true}"
+ACTOR_OUTPUT_ORIGIN_XY="${GEN0_ACTOR_OUTPUT_ORIGIN_XY:-0.0,0.0}"
+TRASH_SCENARIO_PATH="${GEN0_TRASH_SCENARIO_PATH:-}"
 
 if [[ -z "${GEN0_TRASH_SCENARIO+x}" && "$RELOCALIZATION" == "true" && "$MAPPING_DRIVE" != "true" ]]; then
   TRASH_SCENARIO=""
@@ -88,6 +97,28 @@ if [[ -z "$FRONT3D_SOURCE_TOPIC" ]]; then
   else
     FRONT3D_SOURCE_TOPIC="$GAZEBO_FRONT3D_TOPIC"
   fi
+fi
+
+ACTORS_SCENARIO_PATH=""
+if [[ -n "$ACTORS_SCENARIO" ]]; then
+  ACTORS_SCENARIO_PATH="$WORKSPACE/gen0_gz_sim_ros2/gen0_main/worlds/scenarios/$WORLD/$ACTORS_SCENARIO.sdf"
+fi
+
+if [[ -z "$DYNAMIC_ACTOR_TOPICS" && -n "$ACTORS_SCENARIO" ]]; then
+  for actor_index in {1..20}; do
+    actor_topic="/actor/pedestrian_${actor_index}/pose"
+    if [[ -n "$DYNAMIC_ACTOR_TOPICS" ]]; then
+      DYNAMIC_ACTOR_TOPICS+=","
+    fi
+    DYNAMIC_ACTOR_TOPICS+="$actor_topic"
+  done
+fi
+
+if [[ -z "$TRASH_SCENARIO_PATH" && -n "$TRASH_SCENARIO" ]]; then
+  TRASH_SCENARIO_PATH="$WORKSPACE/gen0_gz_sim_ros2/gen0_main/worlds/trash_scenarios/$WORLD/$TRASH_SCENARIO.json"
+fi
+if [[ -z "$ACTOR_WORLD_SDF_PATH" ]]; then
+  ACTOR_WORLD_SDF_PATH="$WORKSPACE/gen0_gz_sim_ros2/gen0_main/worlds/$WORLD/$WORLD.sdf"
 fi
 
 case "$PROJECTED_MAP_BACKEND" in
@@ -142,6 +173,13 @@ if [[ -z "$FAST_LIO_SENSOR_FRAME_ID" ]]; then
   fi
 fi
 TRASH_ODOM_TOPIC="${GEN0_TRASH_ODOM_TOPIC:-$SCURM_ODOM_TOPIC}"
+if [[ -z "$ACTOR_OBSTACLE_FRAME" ]]; then
+  if [[ "$RELOCALIZATION" == "true" ]]; then
+    ACTOR_OBSTACLE_FRAME="map"
+  else
+    ACTOR_OBSTACLE_FRAME="odom"
+  fi
+fi
 
 if [[ -z "$RVIZ_CONFIG" ]]; then
   if [[ "$RELOCALIZATION" == "true" ]]; then
@@ -170,7 +208,7 @@ check_existing_ros_nodes() {
   local existing
   existing="$(
     timeout 5s ros2 node list --no-daemon 2>/dev/null \
-      | grep -E '(^/pose_publisher$|^/gen0_simulated_world_lidar$|^/gen0_gazebo_livox_adapter$|^/gen0_stable_odom$|^/gen0_odom_registered_scan$|^/gen0_icp_transform_publisher$|^/gen0_icp_relocalization$|^/gen0_fast_lio$|^/gen0_mapping_drive$|^/gen0_trash_cleanup$|^/gen0_scurm_terrain_analysis$|^/gen0_scurm_terrain_analysis_ext$|^/gen0_scurm_map_to_odom$|^/gen0_scurm_exchange_field$|^/gen0_scurm_sensor_scan_generation$|^/gen0_scurm_octomap_server$|^/gen0_projected_terrain_map$|^/costmap/costmap$|^/lifecycle_manager_costmap$|^/raw_front3d_preview$|^/cloud_registered_preview$|^/terrain_map_preview$|^/terrain_map_ext_preview$|^/fast_lio_map_preview$|^/pointcloud_accumulator_preview$|^/rviz$|^/rviz2$|^/vehicle_movement_interface$)' \
+      | grep -E '(^/pose_publisher$|^/gen0_simulated_world_lidar$|^/gen0_gazebo_livox_adapter$|^/gen0_stable_odom$|^/gen0_odom_registered_scan$|^/gen0_icp_transform_publisher$|^/gen0_icp_relocalization$|^/gen0_fast_lio$|^/gen0_mapping_drive$|^/gen0_trash_cleanup$|^/gen0_scurm_terrain_analysis$|^/gen0_scurm_terrain_analysis_ext$|^/gen0_actor_obstacle_costmap$|^/gen0_scurm_map_to_odom$|^/gen0_scurm_exchange_field$|^/gen0_scurm_sensor_scan_generation$|^/gen0_scurm_octomap_server$|^/gen0_projected_terrain_map$|^/costmap/costmap$|^/lifecycle_manager_costmap$|^/raw_front3d_preview$|^/cloud_registered_preview$|^/terrain_map_preview$|^/terrain_map_ext_preview$|^/fast_lio_map_preview$|^/pointcloud_accumulator_preview$|^/rviz$|^/rviz2$|^/vehicle_movement_interface$)' \
       || true
   )"
   if [[ -n "$existing" ]]; then
@@ -328,6 +366,12 @@ require_file "$GAZEBO_BRIDGE_FILE"
 if [[ "$SIMULATED_LIDAR" == "true" ]]; then
   require_file "$WORLD_OBJ_PATH"
 fi
+if [[ -n "$ACTORS_SCENARIO_PATH" ]]; then
+  require_file "$ACTORS_SCENARIO_PATH"
+fi
+if [[ -n "$TRASH_SCENARIO_PATH" ]]; then
+  require_file "$TRASH_SCENARIO_PATH"
+fi
 if [[ "$RELOCALIZATION" == "true" ]]; then
   require_file "$PRIOR_MAP_PATH"
 fi
@@ -389,7 +433,9 @@ fi
 if [[ "$SIMULATED_LIDAR" == "true" ]]; then
   log "Simulated lidar scan: max_points=$SIM_LIDAR_MAX_POINTS, max_range=$SIM_LIDAR_MAX_RANGE, h=[$SIM_LIDAR_HORIZONTAL_MIN, $SIM_LIDAR_HORIZONTAL_MAX], v=[$SIM_LIDAR_VERTICAL_MIN, $SIM_LIDAR_VERTICAL_MAX]"
   log "Simulated lidar mesh: world_voxel_size=$SIM_LIDAR_WORLD_VOXEL_SIZE, surface_sampling=$SIM_LIDAR_SURFACE_SAMPLING, surface_samples=$SIM_LIDAR_SURFACE_SAMPLES, add_obstacle_columns=$SIM_LIDAR_ADD_OBSTACLE_COLUMNS"
+  log "Simulated lidar dynamic objects: actor_topics=${DYNAMIC_ACTOR_TOPICS:-none}, trash_scenario_path=${TRASH_SCENARIO_PATH:-none}"
 fi
+log "Actor costmap source: enabled=$ACTOR_COSTMAP, topic=$ACTOR_OBSTACLE_TOPIC, frame=$ACTOR_OBSTACLE_FRAME, scenario_path=${ACTORS_SCENARIO_PATH:-none}, world_sdf=$ACTOR_WORLD_SDF_PATH, world_to_output=$ACTOR_WORLD_TO_OUTPUT, output_origin_xy=$ACTOR_OUTPUT_ORIGIN_XY"
 log "GPU adapter: $GPU_ADAPTER"
 log "Logs: $LOG_DIR"
 log "ROS logs: $ROS_LOG_DIR"
@@ -447,11 +493,19 @@ fast_lio_launch=(
   terrain_analysis_ext:="$TERRAIN_ANALYSIS_EXT"
   projected_map:="$PROJECTED_MAP"
   projected_map_backend:="$PROJECTED_MAP_BACKEND"
-  projected_map_reference_odom_topic:="$PROJECTED_MAP_REFERENCE_ODOM_TOPIC"
   projected_map_max_reference_odom_error:="$PROJECTED_MAP_MAX_ODOM_ERROR"
   projected_map_max_reference_yaw_error:="$PROJECTED_MAP_MAX_YAW_ERROR"
   projected_map_reference_odom_timeout:="$PROJECTED_MAP_ODOM_TIMEOUT"
   local_costmap:="$LOCAL_COSTMAP"
+  actor_costmap:="$ACTOR_COSTMAP"
+  actor_obstacle_topic:="$ACTOR_OBSTACLE_TOPIC"
+  actor_obstacle_frame:="$ACTOR_OBSTACLE_FRAME"
+  actor_world_sdf_path:="$ACTOR_WORLD_SDF_PATH"
+  actor_world_vehicle_name:="$ACTOR_WORLD_VEHICLE_NAME"
+  actor_world_to_output:="$ACTOR_WORLD_TO_OUTPUT"
+  actor_output_origin_xy:="$ACTOR_OUTPUT_ORIGIN_XY"
+  actors_scenario_path:="$ACTORS_SCENARIO_PATH"
+  dynamic_actor_topics:="$DYNAMIC_ACTOR_TOPICS"
   front3d_source_topic:="$FRONT3D_SOURCE_TOPIC"
   simulated_lidar_output_topic:="$SIMULATED_FRONT3D_TOPIC"
   relocalization:="$RELOCALIZATION"
@@ -471,6 +525,9 @@ fast_lio_launch=(
   fast_lio_pcd_save:="$FAST_LIO_PCD_SAVE"
   fast_lio_pcd_save_interval:="$FAST_LIO_PCD_SAVE_INTERVAL"
 )
+if [[ -n "$PROJECTED_MAP_REFERENCE_ODOM_TOPIC" ]]; then
+  fast_lio_launch+=(projected_map_reference_odom_topic:="$PROJECTED_MAP_REFERENCE_ODOM_TOPIC")
+fi
 if [[ "$SIMULATED_LIDAR" == "true" ]]; then
   fast_lio_launch+=(world_obj_path:="$WORLD_OBJ_PATH")
   fast_lio_launch+=(simulated_lidar_max_points:="$SIM_LIDAR_MAX_POINTS")
@@ -483,6 +540,7 @@ if [[ "$SIMULATED_LIDAR" == "true" ]]; then
   fast_lio_launch+=(simulated_lidar_surface_sampling:="$SIM_LIDAR_SURFACE_SAMPLING")
   fast_lio_launch+=(simulated_lidar_surface_samples:="$SIM_LIDAR_SURFACE_SAMPLES")
   fast_lio_launch+=(simulated_lidar_add_obstacle_columns:="$SIM_LIDAR_ADD_OBSTACLE_COLUMNS")
+  fast_lio_launch+=(trash_scenario_path:="$TRASH_SCENARIO_PATH")
 fi
 
 start_process fast_lio_3d_slam "${fast_lio_launch[@]}"

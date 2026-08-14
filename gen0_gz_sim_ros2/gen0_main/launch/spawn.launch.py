@@ -46,10 +46,15 @@ def gazebo_environment(pkg_share_dir, partition, render_env, d3d12_adapter=''):
     env['GZ_PARTITION'] = partition
 
     workspace_root = os.path.abspath(os.path.join(pkg_share_dir, '..', '..', '..', '..'))
-    actor_pose_plugin_path = os.path.join(workspace_root, 'build', 'ActorPose')
-    if os.path.exists(os.path.join(actor_pose_plugin_path, 'libActorPose.so')):
-        prepend_env_path(env, 'IGN_GAZEBO_SYSTEM_PLUGIN_PATH', actor_pose_plugin_path)
-        prepend_env_path(env, 'GZ_SIM_SYSTEM_PLUGIN_PATH', actor_pose_plugin_path)
+    actor_pose_plugin_paths = (
+        os.path.join(workspace_root, 'gen0_gz_sim_ros2', 'gz_plugins', 'build'),
+        os.path.join(workspace_root, 'build', 'ActorPose'),
+    )
+    for actor_pose_plugin_path in actor_pose_plugin_paths:
+        if os.path.exists(os.path.join(actor_pose_plugin_path, 'libActorPose.so')):
+            prepend_env_path(env, 'IGN_GAZEBO_SYSTEM_PLUGIN_PATH', actor_pose_plugin_path)
+            prepend_env_path(env, 'GZ_SIM_SYSTEM_PLUGIN_PATH', actor_pose_plugin_path)
+            prepend_env_path(env, 'LD_LIBRARY_PATH', actor_pose_plugin_path)
 
     if render_env == 'unset':
         for name in GUI_ENV_TO_CLEAR:

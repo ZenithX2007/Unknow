@@ -69,10 +69,6 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
             if map_source == 'projected_map' and projected_map_unknown_as_free
             else 'true'
         )
-        # terrain_map is already in the global odom/map frame, not a live sensor
-        # frame. Enabling Nav2 raytrace clearing makes ObservationBuffer use the
-        # cloud frame origin (0,0) as the sensor origin, which falls outside the
-        # rolling local costmap after the robot drives away from startup.
         pointcloud_clearing = 'false' if map_source == 'projected_map' else 'true'
         overlay = f"""local_costmap:
   local_costmap:
@@ -92,13 +88,17 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
       local_obstacle_layer:
         plugin: "costmap_intensity::ObstacleLayerIntensity"
         enabled: true
+        combination_method: 0
+        clear_on_update: true
         footprint_clearing_enabled: true
         max_obstacle_intensity: 2.0
-        min_obstacle_intensity: 0.08
+        min_obstacle_intensity: 0.3
+        robot_origin_fallback_enabled: true
+        robot_origin_fallback_distance: 1.0
         observation_sources: pointcloud
         pointcloud:
           topic: /gen0_mapping/terrain_map
-          observation_persistence: 0.2
+          observation_persistence: 0.0
           expected_update_rate: 0.0
           max_obstacle_height: 2.0
           min_obstacle_height: -2.0
