@@ -61,7 +61,10 @@ FAST_LIO_PCD_SAVE_INTERVAL="${GEN0_FAST_LIO_PCD_SAVE_INTERVAL:--1}"
 SIMULATED_LIDAR="${GEN0_SIMULATED_LIDAR:-true}"
 GAZEBO_FRONT3D_TOPIC="${GEN0_GAZEBO_FRONT3D_TOPIC:-/gen0_model/front3d/lidar/points}"
 SIMULATED_FRONT3D_TOPIC="${GEN0_SIMULATED_FRONT3D_TOPIC:-/gen0_mapping/simulated_front3d/lidar/points}"
+SIMULATED_FILTERED_FRONT3D_TOPIC="${GEN0_SIMULATED_FILTERED_FRONT3D_TOPIC:-/gen0_mapping/simulated_front3d/lidar/points_no_trash}"
 FRONT3D_SOURCE_TOPIC="${GEN0_FRONT3D_SOURCE_TOPIC:-}"
+REGISTERED_SCAN_INPUT_TOPIC="${GEN0_REGISTERED_SCAN_INPUT_TOPIC:-}"
+REGISTERED_SCAN_ODOM_TOPIC="${GEN0_REGISTERED_SCAN_ODOM_TOPIC:-}"
 WORLD_OBJ_PATH="${GEN0_WORLD_OBJ_PATH:-$WORKSPACE/gen0_gz_sim_ros2/gen0_main/worlds/$WORLD/$WORLD.obj}"
 SIM_LIDAR_MAX_POINTS="${GEN0_SIM_LIDAR_MAX_POINTS:-48000}"
 SIM_LIDAR_MAX_RANGE="${GEN0_SIM_LIDAR_MAX_RANGE:-35.0}"
@@ -98,6 +101,13 @@ if [[ -z "$FRONT3D_SOURCE_TOPIC" ]]; then
     FRONT3D_SOURCE_TOPIC="$GAZEBO_FRONT3D_TOPIC"
   fi
 fi
+if [[ -z "$REGISTERED_SCAN_INPUT_TOPIC" ]]; then
+  if [[ "$SIMULATED_LIDAR" == "true" ]]; then
+    REGISTERED_SCAN_INPUT_TOPIC="$SIMULATED_FILTERED_FRONT3D_TOPIC"
+  else
+    REGISTERED_SCAN_INPUT_TOPIC="$FRONT3D_SOURCE_TOPIC"
+  fi
+fi
 
 ACTORS_SCENARIO_PATH=""
 if [[ -n "$ACTORS_SCENARIO" ]]; then
@@ -131,7 +141,7 @@ esac
 
 STABLE_SIM_ODOM="${GEN0_STABLE_SIM_ODOM:-}"
 if [[ -z "$STABLE_SIM_ODOM" ]]; then
-  if [[ "$SIMULATED_LIDAR" == "true" && "$RELOCALIZATION" != "true" ]]; then
+  if [[ "$SIMULATED_LIDAR" == "true" ]]; then
     STABLE_SIM_ODOM="true"
   else
     STABLE_SIM_ODOM="false"
@@ -150,10 +160,17 @@ if [[ -z "$SCURM_ODOM_TOPIC" ]]; then
   fi
 fi
 if [[ -z "$SCURM_REGISTERED_SCAN_TOPIC" ]]; then
-  if [[ "$STABLE_SIM_ODOM" == "true" ]]; then
+  if [[ "$SIMULATED_LIDAR" == "true" || "$STABLE_SIM_ODOM" == "true" ]]; then
     SCURM_REGISTERED_SCAN_TOPIC="$STABLE_REGISTERED_SCAN_TOPIC"
   else
     SCURM_REGISTERED_SCAN_TOPIC="/gen0_mapping/cloud_registered"
+  fi
+fi
+if [[ -z "$REGISTERED_SCAN_ODOM_TOPIC" ]]; then
+  if [[ "$STABLE_SIM_ODOM" == "true" ]]; then
+    REGISTERED_SCAN_ODOM_TOPIC="$STABLE_ODOM_TOPIC"
+  else
+    REGISTERED_SCAN_ODOM_TOPIC="$SCURM_ODOM_TOPIC"
   fi
 fi
 FAST_LIO_SEND_ODOM_BASE_TF="${GEN0_FAST_LIO_SEND_ODOM_BASE_TF:-}"
@@ -413,6 +430,7 @@ log "Mapping drive: $MAPPING_DRIVE, drive_speed=$DRIVE_SPEED, command_topic=/cmd
 log "SCURM view: terrain_analysis=$TERRAIN_ANALYSIS, terrain_analysis_ext=$TERRAIN_ANALYSIS_EXT, projected_map=$PROJECTED_MAP, local_costmap=$LOCAL_COSTMAP, relocalization=$RELOCALIZATION, rviz=$RVIZ"
 log "Projected map backend: $PROJECTED_MAP_BACKEND"
 log "Odometry chain: fast_lio_output=$FAST_LIO_ODOM_TOPIC, scurm_odom=$SCURM_ODOM_TOPIC, stable_sim_odom=$STABLE_SIM_ODOM"
+log "SCURM scan chain: input=$REGISTERED_SCAN_INPUT_TOPIC, odom=$REGISTERED_SCAN_ODOM_TOPIC, output=$SCURM_REGISTERED_SCAN_TOPIC"
 if [[ "$STABLE_SIM_ODOM" == "true" ]]; then
   log "Stable sim odom: input=$STABLE_ODOM_INPUT_TOPIC, output=$STABLE_ODOM_TOPIC, registered_scan=$STABLE_REGISTERED_SCAN_TOPIC, scurm_registered_scan=$SCURM_REGISTERED_SCAN_TOPIC"
   log "FAST-LIO TF isolation: send_odom_base_tf=$FAST_LIO_SEND_ODOM_BASE_TF, sensor_frame_id=$FAST_LIO_SENSOR_FRAME_ID"
@@ -483,6 +501,8 @@ fast_lio_launch=(
   stable_odom_input_topic:="$STABLE_ODOM_INPUT_TOPIC"
   stable_odom_output_topic:="$STABLE_ODOM_TOPIC"
   stable_registered_scan_topic:="$STABLE_REGISTERED_SCAN_TOPIC"
+  registered_scan_input_topic:="$REGISTERED_SCAN_INPUT_TOPIC"
+  registered_scan_odom_topic:="$REGISTERED_SCAN_ODOM_TOPIC"
   scurm_odom_topic:="$SCURM_ODOM_TOPIC"
   scurm_registered_scan_topic:="$SCURM_REGISTERED_SCAN_TOPIC"
   rviz:=false
@@ -508,6 +528,7 @@ fast_lio_launch=(
   dynamic_actor_topics:="$DYNAMIC_ACTOR_TOPICS"
   front3d_source_topic:="$FRONT3D_SOURCE_TOPIC"
   simulated_lidar_output_topic:="$SIMULATED_FRONT3D_TOPIC"
+  simulated_lidar_filtered_output_topic:="$SIMULATED_FILTERED_FRONT3D_TOPIC"
   relocalization:="$RELOCALIZATION"
   prior_map_path:="$PRIOR_MAP_PATH"
   relocalization_initial_x:="$RELOCALIZATION_INITIAL_X"

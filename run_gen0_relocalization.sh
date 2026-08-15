@@ -23,7 +23,6 @@ NAV2_RVIZ="${GEN0_NAV2_RVIZ:-true}"
 NAV2_RVIZ_RENDER_ENV="${GEN0_NAV2_RVIZ_RENDER_ENV:-software}"
 NAV2_USE_RESPAWN="${GEN0_NAV2_USE_RESPAWN:-false}"
 NAV2_LOCALIZATION_MODE="${GEN0_NAV2_LOCALIZATION_MODE:-relocalized}"
-NAV2_ODOM_TOPIC="${GEN0_NAV2_ODOM_TOPIC:-/gen0_mapping/fast_lio/odom}"
 NAV2_COSTMAP_SOURCE="${GEN0_NAV2_COSTMAP_SOURCE:-scurm_terrain}"
 NAV2_MAP_SOURCE="${GEN0_NAV2_MAP_SOURCE:-yaml}"
 DEFAULT_NAV2_MAP=""
@@ -56,6 +55,8 @@ PROJECTED_MAP="${GEN0_PROJECTED_MAP:-true}"
 PROJECTED_MAP_ODOM_GUARD="${GEN0_PROJECTED_MAP_ODOM_GUARD:-false}"
 LOCAL_COSTMAP="${GEN0_LOCAL_COSTMAP:-true}"
 SIMULATED_LIDAR="${GEN0_SIMULATED_LIDAR:-true}"
+STABLE_SIM_ODOM="${GEN0_STABLE_SIM_ODOM:-}"
+STABLE_ODOM_TOPIC="${GEN0_STABLE_ODOM_TOPIC:-/gen0_mapping/stable_odom}"
 FRONT3D_SOURCE_TOPIC="${GEN0_FRONT3D_SOURCE_TOPIC:-}"
 ALLOW_LIVE_LIDAR_STARTUP="${GEN0_RELOCALIZATION_ALLOW_LIVE_LIDAR_STARTUP:-false}"
 DYNAMIC_ACTOR_TOPICS="${GEN0_DYNAMIC_ACTOR_TOPICS:-}"
@@ -273,8 +274,26 @@ if [[ "$SIMULATED_LIDAR" != "true" && "$ALLOW_LIVE_LIDAR_STARTUP" != "true" ]]; 
   SIMULATED_LIDAR=true
   FRONT3D_SOURCE_TOPIC=""
 fi
+
+if [[ -z "$STABLE_SIM_ODOM" ]]; then
+  if [[ "$SIMULATED_LIDAR" == "true" ]]; then
+    STABLE_SIM_ODOM="true"
+  else
+    STABLE_SIM_ODOM="false"
+  fi
+fi
+
+if [[ -n "${GEN0_NAV2_ODOM_TOPIC:-}" ]]; then
+  NAV2_ODOM_TOPIC="$GEN0_NAV2_ODOM_TOPIC"
+elif [[ "$STABLE_SIM_ODOM" == "true" ]]; then
+  NAV2_ODOM_TOPIC="$STABLE_ODOM_TOPIC"
+else
+  NAV2_ODOM_TOPIC="/gen0_mapping/fast_lio/odom"
+fi
+
 log "3D lidar source: simulated_lidar=$SIMULATED_LIDAR, front3d_source=${FRONT3D_SOURCE_TOPIC:-auto}, actors_scenario=${ACTORS_SCENARIO:-none}, trash_scenario=${TRASH_SCENARIO:-none}"
 log "SCURM dynamic mapping: terrain_analysis=$TERRAIN_ANALYSIS, terrain_analysis_ext=$TERRAIN_ANALYSIS_EXT, projected_map=$PROJECTED_MAP, projected_map_odom_guard=$PROJECTED_MAP_ODOM_GUARD, local_costmap=$LOCAL_COSTMAP"
+log "Simulation odometry isolation: stable_sim_odom=$STABLE_SIM_ODOM, stable_odom_topic=$STABLE_ODOM_TOPIC, nav2_odom_topic=$NAV2_ODOM_TOPIC"
 log "Actor costmap: enabled=${ACTOR_COSTMAP:-auto}, frame=${ACTOR_OBSTACLE_FRAME:-auto}, topic=${ACTOR_OBSTACLE_TOPIC:-auto}, world_to_output=${ACTOR_WORLD_TO_OUTPUT:-auto}"
 log "Nav2: enabled=$NAV2, delay=${NAV2_DELAY}s, profile=$NAV2_PROFILE, rviz=$NAV2_RVIZ, costmap_source=$NAV2_COSTMAP_SOURCE, map_source=$NAV2_MAP_SOURCE, map=${NAV2_MAP:-auto}"
 log "Logs: $LOG_DIR"
@@ -298,6 +317,8 @@ start_process relocalization_3d_slam \
     GEN0_RELOCALIZATION_INPUT_CLOUD_TO_BASE_Y="$RELOCALIZATION_INPUT_CLOUD_TO_BASE_Y" \
     GEN0_RELOCALIZATION_INPUT_CLOUD_TO_BASE_Z="$RELOCALIZATION_INPUT_CLOUD_TO_BASE_Z" \
     GEN0_RELOCALIZATION_LEGACY_LIVOX_ROLL_180="$RELOCALIZATION_LEGACY_LIVOX_ROLL_180" \
+    GEN0_STABLE_SIM_ODOM="$STABLE_SIM_ODOM" \
+    GEN0_STABLE_ODOM_TOPIC="$STABLE_ODOM_TOPIC" \
     GEN0_GPU_ADAPTER="$GPU_ADAPTER" \
     GEN0_GAZEBO_GUI="$GAZEBO_GUI" \
     GEN0_GAZEBO_RENDER_ENV="$GAZEBO_RENDER_ENV" \
@@ -330,7 +351,7 @@ start_process relocalization_3d_slam \
 if [[ "$NAV2" == "true" ]]; then
   sleep "$NAV2_DELAY"
 
-  if ! wait_for_topic_once "$NAV2_ODOM_TOPIC" "${GEN0_RELOCALIZATION_ODOM_WAIT_TIMEOUT:-90}" "relocalized FAST-LIO odometry"; then
+  if ! wait_for_topic_once "$NAV2_ODOM_TOPIC" "${GEN0_RELOCALIZATION_ODOM_WAIT_TIMEOUT:-90}" "navigation odometry"; then
     log "Nav2 was not started because $NAV2_ODOM_TOPIC is not available. Check $LOG_DIR/relocalization_3d_slam.log."
   elif ! wait_for_tf map base_link "${GEN0_RELOCALIZATION_MAP_TF_WAIT_TIMEOUT:-60}"; then
     log "Nav2 was not started because TF map -> base_link is not available. Check ICP convergence in $LOG_DIR/relocalization_3d_slam.log."

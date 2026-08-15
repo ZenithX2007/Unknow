@@ -49,6 +49,11 @@ def generate_launch_description():
     scurm_registered_scan_topic = LaunchConfiguration("scurm_registered_scan_topic")
     front3d_source_topic = LaunchConfiguration("front3d_source_topic")
     simulated_lidar_output_topic = LaunchConfiguration("simulated_lidar_output_topic")
+    simulated_lidar_filtered_output_topic = LaunchConfiguration(
+        "simulated_lidar_filtered_output_topic"
+    )
+    registered_scan_input_topic = LaunchConfiguration("registered_scan_input_topic")
+    registered_scan_odom_topic = LaunchConfiguration("registered_scan_odom_topic")
     fast_lio_map_file_path = LaunchConfiguration("fast_lio_map_file_path")
     fast_lio_pcd_save = LaunchConfiguration("fast_lio_pcd_save")
     fast_lio_pcd_save_interval = LaunchConfiguration("fast_lio_pcd_save_interval")
@@ -229,6 +234,21 @@ def generate_launch_description():
                 "simulated_lidar_output_topic",
                 default_value="/gen0_mapping/simulated_front3d/lidar/points",
                 description="Output topic for the OBJ-based simulated LiDAR fallback.",
+            ),
+            DeclareLaunchArgument(
+                "simulated_lidar_filtered_output_topic",
+                default_value="/gen0_mapping/simulated_front3d/lidar/points_no_trash",
+                description="Simulated LiDAR output with generated trash points removed.",
+            ),
+            DeclareLaunchArgument(
+                "registered_scan_input_topic",
+                default_value="/gen0_mapping/simulated_front3d/lidar/points",
+                description="PointCloud2 input used by odom_registered_scan.",
+            ),
+            DeclareLaunchArgument(
+                "registered_scan_odom_topic",
+                default_value="/gen0_mapping/stable_odom",
+                description="Odometry topic used to register the SCURM input scan.",
             ),
             DeclareLaunchArgument(
                 "fast_lio_map_file_path",
@@ -505,6 +525,7 @@ def generate_launch_description():
                         "use_sim_time": use_sim_time,
                         "world_obj_path": world_obj_path,
                         "output_topic": simulated_lidar_output_topic,
+                        "filtered_output_topic": simulated_lidar_filtered_output_topic,
                         "pose_topic": "/gen0_model/links/poses",
                         "pose_index": 15,
                         "frame_id": "front_3d_lidar_link",
@@ -605,12 +626,22 @@ def generate_launch_description():
                 executable="odom_registered_scan",
                 name="gen0_odom_registered_scan",
                 output="screen",
-                condition=IfCondition(stable_sim_odom),
+                condition=IfCondition(
+                    PythonExpression(
+                        [
+                            "'",
+                            stable_sim_odom,
+                            "' == 'true' or '",
+                            simulated_lidar,
+                            "' == 'true'",
+                        ]
+                    )
+                ),
                 parameters=[
                     {
                         "use_sim_time": use_sim_time,
-                        "input_topic": front3d_source_topic,
-                        "odom_topic": stable_odom_output_topic,
+                        "input_topic": registered_scan_input_topic,
+                        "odom_topic": registered_scan_odom_topic,
                         "output_topic": stable_registered_scan_topic,
                         "output_frame": "odom",
                         "lidar_xyz_in_base": [1.9, 0.0, 1.9],

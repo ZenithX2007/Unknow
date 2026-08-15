@@ -70,6 +70,10 @@ class SimulatedWorldLidar(Node):
         self.declare_parameter(
             "output_topic", "/gen0_mapping/simulated_front3d/lidar/points"
         )
+        self.declare_parameter(
+            "filtered_output_topic",
+            "/gen0_mapping/simulated_front3d/lidar/points_no_trash",
+        )
         self.declare_parameter("pose_topic", "/gen0_model/links/poses")
         self.declare_parameter("pose_index", 15)
         self.declare_parameter("frame_id", "front_3d_lidar_link")
@@ -113,14 +117,15 @@ class SimulatedWorldLidar(Node):
         self.declare_parameter("dynamic_actor_ground_snap_percentile", 15.0)
         self.declare_parameter("dynamic_actor_ground_snap_max_height", 3.5)
         self.declare_parameter("trash_scenario_path", "")
-        self.declare_parameter("trash_obstacle_radius", 0.25)
-        self.declare_parameter("trash_obstacle_height", 0.65)
+        self.declare_parameter("trash_obstacle_radius", 0.10)
+        self.declare_parameter("trash_obstacle_height", 0.15)
         self.declare_parameter("trash_obstacle_z_offset", 0.02)
         self.declare_parameter("trash_obstacle_radial_samples", 10)
         self.declare_parameter("trash_obstacle_height_samples", 5)
 
         self.world_obj_path = self.get_parameter("world_obj_path").value
         self.output_topic = self.get_parameter("output_topic").value
+        self.filtered_output_topic = self.get_parameter("filtered_output_topic").value
         self.pose_topic = self.get_parameter("pose_topic").value
         self.pose_index = int(self.get_parameter("pose_index").value)
         self.frame_id = self.get_parameter("frame_id").value
@@ -259,10 +264,22 @@ class SimulatedWorldLidar(Node):
             for topic in self.dynamic_actor_topics
         ]
         self.publisher = self.create_publisher(PointCloud2, self.output_topic, 10)
+        self.filtered_publisher = None
+        if self.filtered_output_topic:
+            if self.filtered_output_topic == self.output_topic:
+                self.get_logger().warn(
+                    "filtered_output_topic matches output_topic; "
+                    "filtered cloud publication is disabled"
+                )
+            else:
+                self.filtered_publisher = self.create_publisher(
+                    PointCloud2, self.filtered_output_topic, 10
+                )
         self.create_timer(1.0 / self.scan_rate, self.publish_scan)
 
         self.get_logger().info(
             f"Publishing simulated world lidar {self.output_topic} from "
+            f"filtered_topic={self.filtered_output_topic or 'disabled'}, "
             f"{len(self.world_points)} environment points, pose_topic={self.pose_topic}, "
             f"max_points={self.max_points}, max_range={self.max_range:.1f}, "
             f"h=[{self.horizontal_min_angle:.2f}, {self.horizontal_max_angle:.2f}], "
@@ -577,10 +594,17 @@ class SimulatedWorldLidar(Node):
 
     def dynamic_world_points(self):
         clouds = [self.world_points]
-        dynamic_points = np.empty((0, 3), dtype=np.float32)
+        trash_masks = [
+            np.zeros(len(self.world_points), dtype=bool)
+        ]
+        dynamic_masks = [
+            np.zeros(len(self.world_points), dtype=bool)
+        ]
 
         if self.trash_points.size:
             clouds.append(self.trash_points)
+            trash_masks.append(np.ones(len(self.trash_points), dtype=bool))
+            dynamic_masks.append(np.zeros(len(self.trash_points), dtype=bool))
 
         if self.actor_positions:
             actor_centers = []
@@ -598,17 +622,16 @@ class SimulatedWorldLidar(Node):
                 self.dynamic_actor_height_samples,
             )
             if actor_points.size:
-                dynamic_points = actor_points
                 clouds.append(actor_points)
-
-        if len(clouds) == 1:
-            return self.world_points, np.zeros(len(self.world_points), dtype=bool)
+                trash_masks.append(np.zeros(len(actor_points), dtype=bool))
+                dynamic_masks.append(np.ones(len(actor_points), dtype=bool))
 
         combined_points = np.vstack(clouds)
-        dynamic_mask = np.zeros(len(combined_points), dtype=bool)
-        if dynamic_points.size:
-            dynamic_mask[-len(dynamic_points):] = True
-        return combined_points, dynamic_mask
+        return (
+            combined_points,
+            np.concatenate(trash_masks),
+            np.concatenate(dynamic_masks),
+        )
 
     def publish_scan(self):
         if self.vehicle_position is None or self.world_points.size == 0:
@@ -617,7 +640,7 @@ class SimulatedWorldLidar(Node):
         sensor_position = (
             self.vehicle_position + self.vehicle_rotation.dot(self.lidar_xyz_in_base)
         )
-        world_points, dynamic_mask = self.dynamic_world_points()
+        world_points, trash_mask, dynamic_mask = self.dynamic_world_points()
         points_lidar = (world_points - sensor_position).dot(
             self.vehicle_rotation
         )
@@ -655,9 +678,11 @@ class SimulatedWorldLidar(Node):
             )
             keep &= outside_vehicle
 
-        points = points_lidar[keep]
+        points_lidar = points_lidar[keep]
+        points = points_lidar
         points_base = points_base[keep]
         range_sq = range_sq[keep]
+        trash_mask = trash_mask[keep]
         dynamic_mask = dynamic_mask[keep]
         if points.size == 0:
             self.get_logger().warn(
@@ -666,15 +691,35 @@ class SimulatedWorldLidar(Node):
             )
             return
 
-        if self.max_points > 0 and len(points) > self.max_points:
-            points = self.sample_scan_points(
-                points, points_base, range_sq, dynamic_mask
+        points = self.limit_scan_points(
+            points, points_base, range_sq, dynamic_mask
+        )
+
+        filtered_points = None
+        if self.filtered_publisher is not None:
+            keep_without_trash = ~trash_mask
+            filtered_points = self.limit_scan_points(
+                points_lidar[keep_without_trash],
+                points_base[keep_without_trash],
+                range_sq[keep_without_trash],
+                dynamic_mask[keep_without_trash],
             )
 
         header = Header()
         header.stamp = self.get_clock().now().to_msg()
         header.frame_id = self.frame_id
         self.publisher.publish(point_cloud2.create_cloud_xyz32(header, points))
+        if filtered_points is not None:
+            self.filtered_publisher.publish(
+                point_cloud2.create_cloud_xyz32(header, filtered_points)
+            )
+
+    def limit_scan_points(self, points, points_base, range_sq, dynamic_mask):
+        if self.max_points > 0 and len(points) > self.max_points:
+            return self.sample_scan_points(
+                points, points_base, range_sq, dynamic_mask
+            )
+        return points
 
     def sample_scan_points(self, points, points_base, range_sq, dynamic_mask):
         dynamic_points = points[dynamic_mask]
