@@ -60,8 +60,8 @@ double localTerrainMapRadius = 4.0;
 
 double sensorOffsetX = 0;
 double sensorOffsetY = 0;
-double vehicleLength = 1.5;
-double vehicleWidth = 1.5;
+double vehicleLength = 4.4;
+double vehicleWidth = 2.2;
 std::string map_frame = "map";
 
 // terrain voxel parameters

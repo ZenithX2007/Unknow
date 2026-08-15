@@ -30,8 +30,8 @@
     <param name="vehicleHeight" value="1.5" /><!--轮胎底部到传感器的距离，如果地面是水平的，那就是地面到传感器中心的距离-->
     <param name="sensorOffsetX" value="0.0" /><!--传感器中心到机器人中心的距离-->
     <param name="sensorOffsetY" value="0.0" /><!--传感器中心到机器人中心的距离-->
-    <param name="vehicleLength" value="0.7" /><!--机器人的长度-->
-    <param name="vehicleWidth" value="0.7" /><!--机器人的宽度-->
+    <param name="vehicleLength" value="4.4" /><!--Gen0真实车体长度-->
+    <param name="vehicleWidth" value="2.2" /><!--Gen0真实车体宽度-->
     <param name="voxelPointUpdateThre" value="100" />
     <param name="voxelTimeUpdateThre" value="2.0" />
     <param name="minRelZ" value="-2.5" /><!--minRelZ以及maxRelZ限制了有效点云点的Z值范围，用于对天花板和地板进行处理-->

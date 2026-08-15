@@ -65,8 +65,8 @@ double maxRelZ = 0.2;
 double disRatioZ = 0.2;
 double sensorOffsetX = 0;
 double sensorOffsetY = 0;
-double vehicleLength = 1.5;
-double vehicleWidth = 1.5;
+double vehicleLength = 4.4;
+double vehicleWidth = 2.2;
 std::string map_frame = "map";
 
 
@@ -80,9 +80,9 @@ const int terrainVoxelNum = terrainVoxelWidth * terrainVoxelWidth;
 
 // planar voxel parameters
 float planarVoxelSize = 0.2;
-const int planarVoxelWidth = 51;
+const int planarVoxelWidth = 81;
 int planarVoxelHalfWidth = (planarVoxelWidth - 1) / 2;
-const int planarVoxelNum = planarVoxelWidth * planarVoxelWidth; // 51x51
+const int planarVoxelNum = planarVoxelWidth * planarVoxelWidth; // 81x81
 
 pcl::PointCloud<pcl::PointXYZI>::Ptr
     laserCloud(new pcl::PointCloud<pcl::PointXYZI>());

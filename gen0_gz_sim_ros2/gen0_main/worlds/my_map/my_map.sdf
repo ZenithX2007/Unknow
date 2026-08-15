@@ -291,7 +291,7 @@
     <script>
       <loop>true</loop>
       <auto_start>true</auto_start>
-
+      
       <trajectory id="1" type="walking" tension="1">
         <waypoint>
           <time>0.0</time>

@@ -25,8 +25,8 @@
 
     <param name="sensorOffsetX" value="0.0" /><!--传感器中心到机器人中心的距离-->
     <param name="sensorOffsetY" value="0.0" /><!--传感器中心到机器人中心的距离-->
-    <param name="vehicleLength" value="0.7" /><!--机器人的长度-->
-    <param name="vehicleWidth" value="0.7" /><!--机器人的宽度-->
+    <param name="vehicleLength" value="4.4" /><!--Gen0真实车体长度-->
+    <param name="vehicleWidth" value="2.2" /><!--Gen0真实车体宽度-->
   </node>
 
 </launch>
