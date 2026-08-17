@@ -156,8 +156,8 @@ controller_server:
         collision_cost: 40.0
         collision_margin_distance: 0.05
         near_goal_distance: 0.1
-        inflation_radius: 1.4
-        cost_scaling_factor: 4.0
+        inflation_radius: 0.5
+        cost_scaling_factor: 5.0
         inflation_layer_name: ["local_inflation_layer", "global_inflation_layer"]
       PathAlignCritic:
         enabled: true
@@ -200,8 +200,8 @@ local_costmap:
       width: 15
       height: 15
       resolution: 0.05
-      footprint: "[[0.35, 0.00], [0.25, 0.25], [0.00, 0.35], [-0.25, 0.25], [-0.35, 0.00], [-0.25, -0.25], [0.00, -0.35], [0.25, -0.25]]"
-      robot_radius: 0.35
+      footprint: "[[2.0, 1.0], [2.0, -1.0], [-2.0, -1.0], [-2.0, 1.0]]"
+      footprint_padding: 0.05
       track_unknown_space: false
       plugins: ["static_layer", "local_obstacle_layer", "actor_obstacle_layer", "local_inflation_layer"]
 
@@ -214,7 +214,7 @@ local_costmap:
       local_inflation_layer:
         plugin: nav2_costmap_2d::InflationLayer
         cost_scaling_factor: 5.0
-        inflation_radius: 0.4
+        inflation_radius: 0.5
 
       local_obstacle_layer:
         plugin: costmap_intensity::ObstacleLayerIntensity
@@ -279,8 +279,8 @@ global_costmap:
       transform_tolerance: 1.0
       resolution: 0.1
       track_unknown_space: true
-      footprint: "[[0.35, 0.00], [0.25, 0.25], [0.00, 0.35], [-0.25, 0.25], [-0.35, 0.00], [-0.25, -0.25], [0.00, -0.35], [0.25, -0.25]]"
-      robot_radius: 0.35
+      footprint: "[[2.0, 1.0], [2.0, -1.0], [-2.0, -1.0], [-2.0, 1.0]]"
+      footprint_padding: 0.05
       plugins: ["static_layer", "global_inflation_layer"]
 
       static_layer:
