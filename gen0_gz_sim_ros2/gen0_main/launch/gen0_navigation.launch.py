@@ -77,10 +77,19 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
       update_frequency: 20.0
       publish_frequency: 20.0
       global_frame: map
+      rolling_window: true
+      width: 15
+      height: 15
+      resolution: 0.05
       footprint: "[[0.35, 0.00], [0.25, 0.25], [0.00, 0.35], [-0.25, 0.25], [-0.35, 0.00], [-0.25, -0.25], [0.00, -0.35], [0.25, -0.25]]"
       robot_radius: 0.35
       track_unknown_space: false
-      plugins: ["local_obstacle_layer", "local_inflation_layer"]
+      plugins: ["static_layer", "local_obstacle_layer", "actor_obstacle_layer", "local_inflation_layer"]
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_topic: "/map"
+        map_subscribe_transient_local: true
+        subscribe_to_updates: true
       local_inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 5.0
@@ -88,12 +97,12 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
       local_obstacle_layer:
         plugin: "costmap_intensity::ObstacleLayerIntensity"
         enabled: true
-        combination_method: 0
-        clear_on_update: true
+        combination_method: 1
+        clear_on_update: false
         footprint_clearing_enabled: true
         max_obstacle_intensity: 2.0
         min_obstacle_intensity: 0.3
-        robot_origin_fallback_enabled: true
+        robot_origin_fallback_enabled: false
         robot_origin_fallback_distance: 1.0
         observation_sources: pointcloud
         pointcloud:
@@ -107,6 +116,31 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
           raytrace_max_range: 8.0
           raytrace_min_range: 0.1
           clearing: {pointcloud_clearing}
+          marking: true
+          data_type: "PointCloud2"
+
+      actor_obstacle_layer:
+        plugin: "costmap_intensity::ObstacleLayerIntensity"
+        enabled: true
+        combination_method: 1
+        clear_on_update: true
+        footprint_clearing_enabled: false
+        max_obstacle_intensity: 2.0
+        min_obstacle_intensity: 0.3
+        robot_origin_fallback_enabled: true
+        robot_origin_fallback_distance: 1.0
+        observation_sources: actors
+        actors:
+          topic: /gen0_mapping/actor_obstacles
+          observation_persistence: 0.0
+          expected_update_rate: 0.0
+          max_obstacle_height: 2.0
+          min_obstacle_height: -2.0
+          obstacle_max_range: 7.0
+          obstacle_min_range: 0.15
+          raytrace_max_range: 8.0
+          raytrace_min_range: 0.1
+          clearing: true
           marking: true
           data_type: "PointCloud2"
 
