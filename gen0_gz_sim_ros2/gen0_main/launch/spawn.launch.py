@@ -34,7 +34,16 @@ def launch_bool(context, name, default='false'):
     return value == 'true'
 
 
-def gazebo_environment(pkg_share_dir, partition, render_env, d3d12_adapter=''):
+def gazebo_environment(
+    pkg_share_dir,
+    partition,
+    render_env,
+    d3d12_adapter='',
+    actor_soft_stop='false',
+    actor_soft_stop_margin='0.25',
+    actor_soft_stop_release_margin='0.85',
+    actor_soft_stop_vehicle_name='gen0_model',
+):
     env = dict(os.environ)
     for resource_path in (
         os.path.join(pkg_share_dir, 'meshes'),
@@ -69,6 +78,10 @@ def gazebo_environment(pkg_share_dir, partition, render_env, d3d12_adapter=''):
 
     if d3d12_adapter:
         env['MESA_D3D12_DEFAULT_ADAPTER_NAME'] = d3d12_adapter
+    env['GEN0_ACTOR_SOFT_STOP'] = actor_soft_stop
+    env['GEN0_ACTOR_SOFT_STOP_MARGIN'] = actor_soft_stop_margin
+    env['GEN0_ACTOR_SOFT_STOP_RELEASE_MARGIN'] = actor_soft_stop_release_margin
+    env['GEN0_ACTOR_SOFT_STOP_VEHICLE_NAME'] = actor_soft_stop_vehicle_name
     return env
 
 
@@ -150,6 +163,14 @@ def gazebo_launch(context, *args, **kwargs):
     d3d12_adapter = LaunchConfiguration('d3d12_adapter').perform(context).strip()
     gui_visual_mode = LaunchConfiguration('gui_visual_mode').perform(context)
     render_env = LaunchConfiguration('render_env').perform(context)
+    actor_soft_stop = LaunchConfiguration('actor_soft_stop').perform(context)
+    actor_soft_stop_margin = LaunchConfiguration('actor_soft_stop_margin').perform(context)
+    actor_soft_stop_release_margin = LaunchConfiguration(
+        'actor_soft_stop_release_margin'
+    ).perform(context)
+    actor_soft_stop_vehicle_name = LaunchConfiguration(
+        'actor_soft_stop_vehicle_name'
+    ).perform(context)
     if render_env == 'auto':
         render_env = 'software' if gui else 'unset'
     partition = LaunchConfiguration('partition').perform(context)
@@ -161,7 +182,16 @@ def gazebo_launch(context, *args, **kwargs):
         light_world_file_path = os.path.join(world_dir, f'{world}_gui_light.sdf')
         if os.path.exists(light_world_file_path):
             world_file_path = light_world_file_path
-    gazebo_env = gazebo_environment(pkg_share_dir, partition, render_env, d3d12_adapter)
+    gazebo_env = gazebo_environment(
+        pkg_share_dir,
+        partition,
+        render_env,
+        d3d12_adapter,
+        actor_soft_stop,
+        actor_soft_stop_margin,
+        actor_soft_stop_release_margin,
+        actor_soft_stop_vehicle_name,
+    )
 
     if gui:
         gazebo_process = ExecuteProcess(
@@ -300,6 +330,27 @@ def generate_launch_description():
         default_value=f'gen0_{os.getpid()}',
         description='Gazebo transport partition for this launch instance.',
     )
+    actor_soft_stop_arg = DeclareLaunchArgument(
+        'actor_soft_stop',
+        default_value='false',
+        choices=['true', 'false'],
+        description='Enable visual actor soft-stop around the vehicle to prevent actor/car clipping.',
+    )
+    actor_soft_stop_margin_arg = DeclareLaunchArgument(
+        'actor_soft_stop_margin',
+        default_value='0.25',
+        description='Actor soft-stop clearance in meters outside actor radius.',
+    )
+    actor_soft_stop_release_margin_arg = DeclareLaunchArgument(
+        'actor_soft_stop_release_margin',
+        default_value='0.85',
+        description='Clearance in meters required before a soft-stopped actor resumes walking.',
+    )
+    actor_soft_stop_vehicle_name_arg = DeclareLaunchArgument(
+        'actor_soft_stop_vehicle_name',
+        default_value='gen0_model',
+        description='Gazebo vehicle model name used by actor soft-stop.',
+    )
     ground_truth_arg = DeclareLaunchArgument(
         'ground_truth_localization',
         default_value='false',
@@ -343,6 +394,10 @@ def generate_launch_description():
         render_env_arg,
         gui_visual_mode_arg,
         partition_arg,
+        actor_soft_stop_arg,
+        actor_soft_stop_margin_arg,
+        actor_soft_stop_release_margin_arg,
+        actor_soft_stop_vehicle_name_arg,
         ground_truth_arg,
         static_odom_base_arg,
         bridge_file_arg,

@@ -142,6 +142,15 @@ def generate_launch_description():
     actor_world_vehicle_name = LaunchConfiguration("actor_world_vehicle_name")
     actor_world_to_output = LaunchConfiguration("actor_world_to_output")
     actor_output_origin_xy = LaunchConfiguration("actor_output_origin_xy")
+    actor_collision_monitor = LaunchConfiguration("actor_collision_monitor")
+    actor_collision_event_topic = LaunchConfiguration("actor_collision_event_topic")
+    actor_collision_near_margin = LaunchConfiguration("actor_collision_near_margin")
+    actor_collision_vehicle_length = LaunchConfiguration(
+        "actor_collision_vehicle_length"
+    )
+    actor_collision_vehicle_width = LaunchConfiguration(
+        "actor_collision_vehicle_width"
+    )
     trash_scenario_path = LaunchConfiguration("trash_scenario_path")
     scurm_octomap_projected_map = IfCondition(
         PythonExpression(
@@ -487,6 +496,32 @@ def generate_launch_description():
                 "actor_obstacle_frame",
                 default_value="odom",
                 description="Frame id used by actor_obstacle_topic. Use map for relocalized prior-map runs.",
+            ),
+            DeclareLaunchArgument(
+                "actor_collision_monitor",
+                default_value="true",
+                choices=["true", "false"],
+                description="Run passive vehicle-vs-actor collision validation without altering actor motion.",
+            ),
+            DeclareLaunchArgument(
+                "actor_collision_event_topic",
+                default_value="/gen0_validation/actor_collision_events",
+                description="String topic publishing passive actor collision/near-miss validation events.",
+            ),
+            DeclareLaunchArgument(
+                "actor_collision_near_margin",
+                default_value="0.75",
+                description="Distance in meters outside actor radius used for near-miss validation events.",
+            ),
+            DeclareLaunchArgument(
+                "actor_collision_vehicle_length",
+                default_value="4.0",
+                description="Vehicle rectangle length in meters used by actor collision validation.",
+            ),
+            DeclareLaunchArgument(
+                "actor_collision_vehicle_width",
+                default_value="2.0",
+                description="Vehicle rectangle width in meters used by actor collision validation.",
             ),
             DeclareLaunchArgument(
                 "actor_world_sdf_path",
@@ -897,6 +932,37 @@ def generate_launch_description():
                         "actor_clear_intensity": 0.0,
                         "actor_radial_samples": 24,
                         "actor_height_samples": 4,
+                    }
+                ],
+            ),
+            Node(
+                package="gen0_main",
+                executable="actor_collision_monitor",
+                name="gen0_actor_collision_monitor",
+                output="screen",
+                condition=IfCondition(actor_collision_monitor),
+                parameters=[
+                    {
+                        "use_sim_time": use_sim_time,
+                        "actor_pose_topics": dynamic_actor_topics,
+                        "vehicle_pose_topic": "/gen0_model/links/poses",
+                        "vehicle_pose_index": 15,
+                        "event_topic": actor_collision_event_topic,
+                        "watchdog_rate": 20.0,
+                        "actor_pose_timeout": 1.0,
+                        "vehicle_pose_timeout": 1.0,
+                        "vehicle_length": ParameterValue(
+                            actor_collision_vehicle_length, value_type=float
+                        ),
+                        "vehicle_width": ParameterValue(
+                            actor_collision_vehicle_width, value_type=float
+                        ),
+                        "vehicle_padding": 0.05,
+                        "actor_radius": 0.45,
+                        "near_margin": ParameterValue(
+                            actor_collision_near_margin, value_type=float
+                        ),
+                        "collision_margin": 0.05,
                     }
                 ],
             ),

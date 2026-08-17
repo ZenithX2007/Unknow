@@ -84,6 +84,13 @@ ACTOR_WORLD_SDF_PATH="${GEN0_ACTOR_WORLD_SDF_PATH:-}"
 ACTOR_WORLD_VEHICLE_NAME="${GEN0_ACTOR_WORLD_VEHICLE_NAME:-gen0_model}"
 ACTOR_WORLD_TO_OUTPUT="${GEN0_ACTOR_WORLD_TO_OUTPUT:-true}"
 ACTOR_OUTPUT_ORIGIN_XY="${GEN0_ACTOR_OUTPUT_ORIGIN_XY:-0.0,0.0}"
+ACTOR_COLLISION_MONITOR="${GEN0_ACTOR_COLLISION_MONITOR:-true}"
+ACTOR_COLLISION_EVENT_TOPIC="${GEN0_ACTOR_COLLISION_EVENT_TOPIC:-/gen0_validation/actor_collision_events}"
+ACTOR_COLLISION_NEAR_MARGIN="${GEN0_ACTOR_COLLISION_NEAR_MARGIN:-0.75}"
+ACTOR_SOFT_STOP="${GEN0_ACTOR_SOFT_STOP:-false}"
+ACTOR_SOFT_STOP_MARGIN="${GEN0_ACTOR_SOFT_STOP_MARGIN:-0.25}"
+ACTOR_SOFT_STOP_RELEASE_MARGIN="${GEN0_ACTOR_SOFT_STOP_RELEASE_MARGIN:-0.85}"
+ACTOR_SOFT_STOP_VEHICLE_NAME="${GEN0_ACTOR_SOFT_STOP_VEHICLE_NAME:-gen0_model}"
 TRASH_SCENARIO_PATH="${GEN0_TRASH_SCENARIO_PATH:-}"
 
 if [[ -z "${GEN0_TRASH_SCENARIO+x}" && "$RELOCALIZATION" == "true" && "$MAPPING_DRIVE" != "true" ]]; then
@@ -454,6 +461,7 @@ if [[ "$SIMULATED_LIDAR" == "true" ]]; then
   log "Simulated lidar dynamic objects: actor_topics=${DYNAMIC_ACTOR_TOPICS:-none}, trash_scenario_path=${TRASH_SCENARIO_PATH:-none}"
 fi
 log "Actor costmap source: enabled=$ACTOR_COSTMAP, topic=$ACTOR_OBSTACLE_TOPIC, frame=$ACTOR_OBSTACLE_FRAME, scenario_path=${ACTORS_SCENARIO_PATH:-none}, world_sdf=$ACTOR_WORLD_SDF_PATH, world_to_output=$ACTOR_WORLD_TO_OUTPUT, output_origin_xy=$ACTOR_OUTPUT_ORIGIN_XY"
+log "Actor soft-stop: enabled=$ACTOR_SOFT_STOP, vehicle=$ACTOR_SOFT_STOP_VEHICLE_NAME, stop_margin=$ACTOR_SOFT_STOP_MARGIN, release_margin=$ACTOR_SOFT_STOP_RELEASE_MARGIN"
 log "GPU adapter: $GPU_ADAPTER"
 log "Logs: $LOG_DIR"
 log "ROS logs: $ROS_LOG_DIR"
@@ -468,6 +476,10 @@ gazebo_launch=(
   static_odom_base:="$STATIC_ODOM_BASE"
   bridge_file:="$GAZEBO_BRIDGE_FILE"
   render_env:="$GAZEBO_RENDER_ENV"
+  actor_soft_stop:="$ACTOR_SOFT_STOP"
+  actor_soft_stop_margin:="$ACTOR_SOFT_STOP_MARGIN"
+  actor_soft_stop_release_margin:="$ACTOR_SOFT_STOP_RELEASE_MARGIN"
+  actor_soft_stop_vehicle_name:="$ACTOR_SOFT_STOP_VEHICLE_NAME"
 )
 if [[ -n "$GPU_ADAPTER" ]]; then
   gazebo_launch+=(d3d12_adapter:="$GPU_ADAPTER")
@@ -524,6 +536,9 @@ fast_lio_launch=(
   actor_world_vehicle_name:="$ACTOR_WORLD_VEHICLE_NAME"
   actor_world_to_output:="$ACTOR_WORLD_TO_OUTPUT"
   actor_output_origin_xy:="$ACTOR_OUTPUT_ORIGIN_XY"
+  actor_collision_monitor:="$ACTOR_COLLISION_MONITOR"
+  actor_collision_event_topic:="$ACTOR_COLLISION_EVENT_TOPIC"
+  actor_collision_near_margin:="$ACTOR_COLLISION_NEAR_MARGIN"
   actors_scenario_path:="$ACTORS_SCENARIO_PATH"
   dynamic_actor_topics:="$DYNAMIC_ACTOR_TOPICS"
   front3d_source_topic:="$FRONT3D_SOURCE_TOPIC"

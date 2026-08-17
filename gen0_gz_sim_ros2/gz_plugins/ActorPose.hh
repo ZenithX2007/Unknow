@@ -19,6 +19,7 @@ namespace systems
   class ActorPose:
     public System,
     public ISystemConfigure,
+    public ISystemPreUpdate,
     public ISystemPostUpdate
   {
     /// \brief Constructor
@@ -32,7 +33,11 @@ namespace systems
                            const std::shared_ptr<const sdf::Element> &_sdf,
                            EntityComponentManager &_ecm,
                            EventManager &_eventMgr) final;
-    
+
+    public: void PreUpdate(
+            const UpdateInfo &_info,
+            EntityComponentManager &_ecm) final;
+
     public: void PostUpdate(
             const UpdateInfo &_info,
             const EntityComponentManager &_ecm) final;

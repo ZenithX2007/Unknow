@@ -72,6 +72,7 @@ setup(
         'pointcloud_accumulator_preview = gen0_main.pointcloud_accumulator_preview:main',
         'projected_terrain_map = gen0_main.projected_terrain_map:main',
         'actor_obstacle_costmap = gen0_main.actor_obstacle_costmap:main',
+        'actor_collision_monitor = gen0_main.actor_collision_monitor:main',
         'nav2_pose_guard = gen0_main.nav2_pose_guard:main',
         'nav2_projected_map_relay = gen0_main.nav2_projected_map_relay:main',
         'trash_cleanup_node = gen0_main.trash_cleanup_node:main',
