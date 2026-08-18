@@ -245,6 +245,29 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /gen0_mapping/fast_lio/path
       Value: false
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: true
+      Name: Trash Fusion Detections
+      Namespaces:
+        {}
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /gen0_perception/trash_markers
+      Value: true
+    - Class: rviz_default_plugins/Image
+      Enabled: true
+      Name: Trash Fusion Debug Image
+      Normalize Range: true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /gen0_perception/trash_debug_image
+      Value: true
     - Class: rviz_default_plugins/Odometry
       Color: 255; 25; 0
       Enabled: true

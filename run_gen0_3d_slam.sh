@@ -14,6 +14,12 @@ TRASH_VEHICLE_CENTER_OFFSET_Y="${GEN0_TRASH_VEHICLE_CENTER_OFFSET_Y:-0.0}"
 TRASH_COVERAGE_MARGIN="${GEN0_TRASH_COVERAGE_MARGIN:-0.0}"
 TRASH_DEBUG_ITEM="${GEN0_TRASH_DEBUG_ITEM:-}"
 TRASH_DEBUG_PERIOD="${GEN0_TRASH_DEBUG_PERIOD:-1.0}"
+TRASH_FUSION_DETECTION="${GEN0_TRASH_FUSION_DETECTION:-false}"
+TRASH_FUSION_MODEL_PATH="${GEN0_TRASH_FUSION_MODEL_PATH:-$WORKSPACE/best.pt}"
+TRASH_FUSION_OUTPUT_FRAME="${GEN0_TRASH_FUSION_OUTPUT_FRAME:-}"
+TRASH_FUSION_IMAGE_TOPIC="${GEN0_TRASH_FUSION_IMAGE_TOPIC:-/gen0_model/front_camera}"
+TRASH_FUSION_CAMERA_INFO_TOPIC="${GEN0_TRASH_FUSION_CAMERA_INFO_TOPIC:-/gen0_model/camera_info}"
+TRASH_FUSION_POINTCLOUD_TOPIC="${GEN0_TRASH_FUSION_POINTCLOUD_TOPIC:-}"
 GPU_ADAPTER="${GEN0_GPU_ADAPTER:-NVIDIA}"
 PARTITION="${GEN0_PARTITION:-gen0_scurm_demo}"
 GAZEBO_GUI="${GEN0_GAZEBO_GUI:-true}"
@@ -115,6 +121,9 @@ if [[ -z "$REGISTERED_SCAN_INPUT_TOPIC" ]]; then
     REGISTERED_SCAN_INPUT_TOPIC="$FRONT3D_SOURCE_TOPIC"
   fi
 fi
+if [[ -z "$TRASH_FUSION_POINTCLOUD_TOPIC" ]]; then
+  TRASH_FUSION_POINTCLOUD_TOPIC="$FRONT3D_SOURCE_TOPIC"
+fi
 
 ACTORS_SCENARIO_PATH=""
 if [[ -n "$ACTORS_SCENARIO" ]]; then
@@ -204,6 +213,13 @@ if [[ -z "$ACTOR_OBSTACLE_FRAME" ]]; then
     ACTOR_OBSTACLE_FRAME="odom"
   fi
 fi
+if [[ -z "$TRASH_FUSION_OUTPUT_FRAME" ]]; then
+  if [[ "$RELOCALIZATION" == "true" ]]; then
+    TRASH_FUSION_OUTPUT_FRAME="map"
+  else
+    TRASH_FUSION_OUTPUT_FRAME="odom"
+  fi
+fi
 
 if [[ -z "$RVIZ_CONFIG" ]]; then
   if [[ "$RELOCALIZATION" == "true" ]]; then
@@ -232,7 +248,7 @@ check_existing_ros_nodes() {
   local existing
   existing="$(
     timeout 5s ros2 node list --no-daemon 2>/dev/null \
-      | grep -E '(^/pose_publisher$|^/gen0_simulated_world_lidar$|^/gen0_gazebo_livox_adapter$|^/gen0_stable_odom$|^/gen0_odom_registered_scan$|^/gen0_icp_transform_publisher$|^/gen0_icp_relocalization$|^/gen0_fast_lio$|^/gen0_mapping_drive$|^/gen0_trash_cleanup$|^/gen0_scurm_terrain_analysis$|^/gen0_scurm_terrain_analysis_ext$|^/gen0_actor_obstacle_costmap$|^/gen0_scurm_map_to_odom$|^/gen0_scurm_exchange_field$|^/gen0_scurm_sensor_scan_generation$|^/gen0_scurm_octomap_server$|^/gen0_projected_terrain_map$|^/costmap/costmap$|^/lifecycle_manager_costmap$|^/raw_front3d_preview$|^/cloud_registered_preview$|^/terrain_map_preview$|^/terrain_map_ext_preview$|^/fast_lio_map_preview$|^/pointcloud_accumulator_preview$|^/rviz$|^/rviz2$|^/vehicle_movement_interface$)' \
+      | grep -E '(^/pose_publisher$|^/gen0_simulated_world_lidar$|^/gen0_gazebo_livox_adapter$|^/gen0_trash_fusion_detector$|^/gen0_stable_odom$|^/gen0_odom_registered_scan$|^/gen0_icp_transform_publisher$|^/gen0_icp_relocalization$|^/gen0_fast_lio$|^/gen0_mapping_drive$|^/gen0_trash_cleanup$|^/gen0_scurm_terrain_analysis$|^/gen0_scurm_terrain_analysis_ext$|^/gen0_actor_obstacle_costmap$|^/gen0_scurm_map_to_odom$|^/gen0_scurm_exchange_field$|^/gen0_scurm_sensor_scan_generation$|^/gen0_scurm_octomap_server$|^/gen0_projected_terrain_map$|^/costmap/costmap$|^/lifecycle_manager_costmap$|^/raw_front3d_preview$|^/cloud_registered_preview$|^/terrain_map_preview$|^/terrain_map_ext_preview$|^/fast_lio_map_preview$|^/pointcloud_accumulator_preview$|^/rviz$|^/rviz2$|^/vehicle_movement_interface$)' \
       || true
   )"
   if [[ -n "$existing" ]]; then
@@ -396,6 +412,9 @@ fi
 if [[ -n "$TRASH_SCENARIO_PATH" ]]; then
   require_file "$TRASH_SCENARIO_PATH"
 fi
+if [[ "$TRASH_FUSION_DETECTION" == "true" ]]; then
+  require_file "$TRASH_FUSION_MODEL_PATH"
+fi
 if [[ "$RELOCALIZATION" == "true" ]]; then
   require_file "$PRIOR_MAP_PATH"
 fi
@@ -462,6 +481,7 @@ if [[ "$SIMULATED_LIDAR" == "true" ]]; then
 fi
 log "Actor costmap source: enabled=$ACTOR_COSTMAP, topic=$ACTOR_OBSTACLE_TOPIC, frame=$ACTOR_OBSTACLE_FRAME, scenario_path=${ACTORS_SCENARIO_PATH:-none}, world_sdf=$ACTOR_WORLD_SDF_PATH, world_to_output=$ACTOR_WORLD_TO_OUTPUT, output_origin_xy=$ACTOR_OUTPUT_ORIGIN_XY"
 log "Actor soft-stop: enabled=$ACTOR_SOFT_STOP, vehicle=$ACTOR_SOFT_STOP_VEHICLE_NAME, stop_margin=$ACTOR_SOFT_STOP_MARGIN, release_margin=$ACTOR_SOFT_STOP_RELEASE_MARGIN"
+log "Trash fusion detection: enabled=$TRASH_FUSION_DETECTION, model=$TRASH_FUSION_MODEL_PATH, output_frame=$TRASH_FUSION_OUTPUT_FRAME, cloud=$TRASH_FUSION_POINTCLOUD_TOPIC, image=$TRASH_FUSION_IMAGE_TOPIC"
 log "GPU adapter: $GPU_ADAPTER"
 log "Logs: $LOG_DIR"
 log "ROS logs: $ROS_LOG_DIR"
@@ -541,6 +561,12 @@ fast_lio_launch=(
   actor_collision_near_margin:="$ACTOR_COLLISION_NEAR_MARGIN"
   actors_scenario_path:="$ACTORS_SCENARIO_PATH"
   dynamic_actor_topics:="$DYNAMIC_ACTOR_TOPICS"
+  trash_fusion_detection:="$TRASH_FUSION_DETECTION"
+  trash_fusion_model_path:="$TRASH_FUSION_MODEL_PATH"
+  trash_fusion_output_frame:="$TRASH_FUSION_OUTPUT_FRAME"
+  trash_fusion_pointcloud_topic:="$TRASH_FUSION_POINTCLOUD_TOPIC"
+  trash_fusion_image_topic:="$TRASH_FUSION_IMAGE_TOPIC"
+  trash_fusion_camera_info_topic:="$TRASH_FUSION_CAMERA_INFO_TOPIC"
   front3d_source_topic:="$FRONT3D_SOURCE_TOPIC"
   simulated_lidar_output_topic:="$SIMULATED_FRONT3D_TOPIC"
   simulated_lidar_filtered_output_topic:="$SIMULATED_FILTERED_FRONT3D_TOPIC"
@@ -624,6 +650,7 @@ fi
 
 log "Stack is running. Press Ctrl+C in this terminal to stop everything launched by this script."
 log "Preview topic: /gen0_mapping/rviz/fast_lio_map"
+log "Trash fusion topics: /gen0_perception/trash_markers, /gen0_perception/trash_poses, /gen0_perception/trash_detections, /gen0_perception/trash_debug_image"
 if [[ "$PROJECTED_MAP_BACKEND" == "octomap" ]]; then
   log "Projected map backend: SCURM octomap chain, topics: /projected_map and /projected_map_updates"
 else

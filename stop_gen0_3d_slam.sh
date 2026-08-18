@@ -78,6 +78,8 @@ patterns=(
   "pose_publisher"
   "gen0_simulated_world_lidar"
   "gazebo_livox_adapter"
+  "gen0_trash_fusion_detector"
+  "trash_fusion_detector"
   "gen0_icp_relocalization"
   "gen0_icp_transform_publisher"
   "icp_node"

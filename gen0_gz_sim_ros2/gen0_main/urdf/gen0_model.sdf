@@ -494,8 +494,8 @@
                     <horizontal_fov>1.047</horizontal_fov>
                    
                     <image>
-                        <width>900</width>
-                        <height>700</height>
+                        <width>1600</width>
+                        <height>1200</height>
                         <format>R8G8B8</format>
                     </image>
                     <clip>

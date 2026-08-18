@@ -47,6 +47,12 @@ if [[ "$WORLD" == "my_map" ]]; then
 fi
 TRASH_SCENARIO="${GEN0_TRASH_SCENARIO-$DEFAULT_TRASH_SCENARIO}"
 ACTORS_SCENARIO="${GEN0_ACTORS_SCENARIO-$DEFAULT_ACTORS_SCENARIO}"
+TRASH_FUSION_DETECTION="${GEN0_TRASH_FUSION_DETECTION:-true}"
+TRASH_FUSION_MODEL_PATH="${GEN0_TRASH_FUSION_MODEL_PATH:-$WORKSPACE/best.pt}"
+TRASH_FUSION_OUTPUT_FRAME="${GEN0_TRASH_FUSION_OUTPUT_FRAME:-map}"
+TRASH_FUSION_IMAGE_TOPIC="${GEN0_TRASH_FUSION_IMAGE_TOPIC:-/gen0_model/front_camera}"
+TRASH_FUSION_CAMERA_INFO_TOPIC="${GEN0_TRASH_FUSION_CAMERA_INFO_TOPIC:-/gen0_model/camera_info}"
+TRASH_FUSION_POINTCLOUD_TOPIC="${GEN0_TRASH_FUSION_POINTCLOUD_TOPIC:-}"
 PROJECTED_MAP_BACKEND="${GEN0_PROJECTED_MAP_BACKEND:-python}"
 RELOCALIZATION_WAIT_TIMEOUT="${GEN0_RELOCALIZATION_WAIT_TIMEOUT:-0}"
 TERRAIN_ANALYSIS="${GEN0_TERRAIN_ANALYSIS:-true}"
@@ -228,7 +234,7 @@ check_existing_processes() {
   local existing
   existing="$(
     timeout 5s ros2 node list --no-daemon 2>/dev/null \
-      | grep -E '(^/pose_publisher$|^/gen0_simulated_world_lidar$|^/gen0_gazebo_livox_adapter$|^/gen0_icp_transform_publisher$|^/gen0_icp_relocalization$|^/gen0_fast_lio$|^/map_server$|^/controller_server$|^/planner_server$|^/bt_navigator$|^/lifecycle_manager_navigation$|^/rviz$|^/rviz2$)' \
+      | grep -E '(^/pose_publisher$|^/gen0_simulated_world_lidar$|^/gen0_gazebo_livox_adapter$|^/gen0_trash_fusion_detector$|^/gen0_icp_transform_publisher$|^/gen0_icp_relocalization$|^/gen0_fast_lio$|^/map_server$|^/controller_server$|^/planner_server$|^/bt_navigator$|^/lifecycle_manager_navigation$|^/rviz$|^/rviz2$)' \
       || true
   )"
   if [[ -n "$existing" ]]; then
@@ -256,6 +262,9 @@ require_file /opt/ros/humble/setup.bash
 require_file "$WORKSPACE/install/setup.bash"
 require_file "$PRIOR_MAP_PATH"
 require_file "$RVIZ_CONFIG"
+if [[ "$TRASH_FUSION_DETECTION" == "true" ]]; then
+  require_file "$TRASH_FUSION_MODEL_PATH"
+fi
 if [[ "$AUTO_STOP" == "true" ]]; then
   require_file "$WORKSPACE/stop_gen0_3d_slam.sh"
   log "Stopping existing Gen0/ROS/Gazebo processes before relocalization startup"
@@ -302,6 +311,7 @@ log "3D lidar source: simulated_lidar=$SIMULATED_LIDAR, front3d_source=${FRONT3D
 log "SCURM dynamic mapping: terrain_analysis=$TERRAIN_ANALYSIS, terrain_analysis_ext=$TERRAIN_ANALYSIS_EXT, projected_map=$PROJECTED_MAP, projected_map_odom_guard=$PROJECTED_MAP_ODOM_GUARD, local_costmap=$LOCAL_COSTMAP"
 log "Simulation odometry isolation: stable_sim_odom=$STABLE_SIM_ODOM, stable_odom_topic=$STABLE_ODOM_TOPIC, nav2_odom_topic=$NAV2_ODOM_TOPIC"
 log "Actor costmap: enabled=${ACTOR_COSTMAP:-auto}, frame=${ACTOR_OBSTACLE_FRAME:-auto}, topic=${ACTOR_OBSTACLE_TOPIC:-auto}, world_to_output=${ACTOR_WORLD_TO_OUTPUT:-auto}"
+log "Trash fusion detection: enabled=$TRASH_FUSION_DETECTION, model=$TRASH_FUSION_MODEL_PATH, output_frame=$TRASH_FUSION_OUTPUT_FRAME, cloud=${TRASH_FUSION_POINTCLOUD_TOPIC:-auto}, image=$TRASH_FUSION_IMAGE_TOPIC"
 log "Nav2: enabled=$NAV2, delay=${NAV2_DELAY}s, profile=$NAV2_PROFILE, rviz=$NAV2_RVIZ, costmap_source=$NAV2_COSTMAP_SOURCE, map_source=$NAV2_MAP_SOURCE, map=${NAV2_MAP:-auto}"
 log "Logs: $LOG_DIR"
 
@@ -335,6 +345,12 @@ start_process relocalization_3d_slam \
     GEN0_MAPPING_DRIVE="$MAPPING_DRIVE" \
     GEN0_TRASH_SCENARIO="$TRASH_SCENARIO" \
     GEN0_TRASH_CLEANUP="$TRASH_CLEANUP" \
+    GEN0_TRASH_FUSION_DETECTION="$TRASH_FUSION_DETECTION" \
+    GEN0_TRASH_FUSION_MODEL_PATH="$TRASH_FUSION_MODEL_PATH" \
+    GEN0_TRASH_FUSION_OUTPUT_FRAME="$TRASH_FUSION_OUTPUT_FRAME" \
+    GEN0_TRASH_FUSION_POINTCLOUD_TOPIC="$TRASH_FUSION_POINTCLOUD_TOPIC" \
+    GEN0_TRASH_FUSION_IMAGE_TOPIC="$TRASH_FUSION_IMAGE_TOPIC" \
+    GEN0_TRASH_FUSION_CAMERA_INFO_TOPIC="$TRASH_FUSION_CAMERA_INFO_TOPIC" \
     GEN0_ACTORS_SCENARIO="$ACTORS_SCENARIO" \
     GEN0_DYNAMIC_ACTOR_TOPICS="$DYNAMIC_ACTOR_TOPICS" \
     GEN0_TRASH_SCENARIO_PATH="$TRASH_SCENARIO_PATH" \

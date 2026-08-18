@@ -31,6 +31,9 @@ def generate_launch_description():
     default_costmap_params = os.path.join(
         package_share, "config", "scurm_local_costmap_gen0.yaml"
     )
+    default_trash_fusion_params = os.path.join(
+        package_share, "config", "trash_fusion_detection.yaml"
+    )
     default_world_obj = os.path.join(
         package_share, "worlds", "san_roundabout", "san_roundabout.obj"
     )
@@ -152,6 +155,17 @@ def generate_launch_description():
         "actor_collision_vehicle_width"
     )
     trash_scenario_path = LaunchConfiguration("trash_scenario_path")
+    trash_fusion_detection = LaunchConfiguration("trash_fusion_detection")
+    trash_fusion_params_file = LaunchConfiguration("trash_fusion_params_file")
+    trash_fusion_model_path = LaunchConfiguration("trash_fusion_model_path")
+    trash_fusion_output_frame = LaunchConfiguration("trash_fusion_output_frame")
+    trash_fusion_pointcloud_topic = LaunchConfiguration(
+        "trash_fusion_pointcloud_topic"
+    )
+    trash_fusion_image_topic = LaunchConfiguration("trash_fusion_image_topic")
+    trash_fusion_camera_info_topic = LaunchConfiguration(
+        "trash_fusion_camera_info_topic"
+    )
     scurm_octomap_projected_map = IfCondition(
         PythonExpression(
             [
@@ -549,6 +563,42 @@ def generate_launch_description():
                 default_value="",
                 description="Optional trash JSON scenario added to the simulated lidar fallback.",
             ),
+            DeclareLaunchArgument(
+                "trash_fusion_detection",
+                default_value="false",
+                choices=["true", "false"],
+                description="Run YOLO + point-cloud trash fusion as a perception-only RViz/debug output.",
+            ),
+            DeclareLaunchArgument(
+                "trash_fusion_params_file",
+                default_value=default_trash_fusion_params,
+                description="Trash fusion detector parameter file.",
+            ),
+            DeclareLaunchArgument(
+                "trash_fusion_model_path",
+                default_value="/home/zjxue2007/Unknow/best.pt",
+                description="YOLO model weights used by the trash fusion detector.",
+            ),
+            DeclareLaunchArgument(
+                "trash_fusion_output_frame",
+                default_value="map",
+                description="Frame used for published trash detections and RViz markers.",
+            ),
+            DeclareLaunchArgument(
+                "trash_fusion_pointcloud_topic",
+                default_value="/gen0_mapping/simulated_front3d/lidar/points",
+                description="Full PointCloud2 topic used for trash localization.",
+            ),
+            DeclareLaunchArgument(
+                "trash_fusion_image_topic",
+                default_value="/gen0_model/front_camera",
+                description="Camera image topic used by YOLO trash detection.",
+            ),
+            DeclareLaunchArgument(
+                "trash_fusion_camera_info_topic",
+                default_value="/gen0_model/camera_info",
+                description="CameraInfo topic used for 3D-to-2D projection.",
+            ),
             Node(
                 package="gen0_main",
                 executable="simulated_world_lidar",
@@ -636,6 +686,24 @@ def generate_launch_description():
                         "self_filter_min_xyz": [-2.8, -1.4, -0.4],
                         "self_filter_max_xyz": [2.8, 1.4, 2.9],
                     }
+                ],
+            ),
+            Node(
+                package="gen0_main",
+                executable="trash_fusion_detector",
+                name="gen0_trash_fusion_detector",
+                output="screen",
+                condition=IfCondition(trash_fusion_detection),
+                parameters=[
+                    trash_fusion_params_file,
+                    {
+                        "use_sim_time": use_sim_time,
+                        "image_topic": trash_fusion_image_topic,
+                        "camera_info_topic": trash_fusion_camera_info_topic,
+                        "pointcloud_topic": trash_fusion_pointcloud_topic,
+                        "model_path": trash_fusion_model_path,
+                        "output_frame": trash_fusion_output_frame,
+                    },
                 ],
             ),
             Node(
