@@ -5,23 +5,28 @@
   free-space backup when the heading is unknown or the robot is already near a
   map boundary. Clear the costmaps and wait, then let planning fail explicitly
   if a valid path still cannot be produced.
+
+  PipelineSequence keeps ticking planning while FollowPath is running, so a new
+  NavigateToPose goal replans instead of continuing on the old smoothed path.
 -->
 <root main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
     <RecoveryNode number_of_retries="4" name="NavigateRecovery">
-      <Sequence name="PlanSmoothAndFollow">
-        <RecoveryNode number_of_retries="1" name="ComputePathToPose">
-          <Sequence name="ComputeAndSmoothPath">
-            <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
-            <SmoothPath unsmoothed_path="{path}" smoothed_path="{smoothed_path}"/>
-          </Sequence>
-          <ClearEntireCostmap name="ClearGlobalCostmap-Context" service_name="global_costmap/clear_entirely_global_costmap"/>
-        </RecoveryNode>
+      <PipelineSequence name="PlanSmoothAndFollow">
+        <RateController hz="1.0">
+          <RecoveryNode number_of_retries="1" name="ComputePathToPose">
+            <Sequence name="ComputeAndSmoothPath">
+              <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+              <SmoothPath unsmoothed_path="{path}" smoothed_path="{smoothed_path}"/>
+            </Sequence>
+            <ClearEntireCostmap name="ClearGlobalCostmap-Context" service_name="global_costmap/clear_entirely_global_costmap"/>
+          </RecoveryNode>
+        </RateController>
         <RecoveryNode number_of_retries="1" name="FollowPath">
           <FollowPath path="{smoothed_path}" controller_id="FollowPath"/>
           <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
         </RecoveryNode>
-      </Sequence>
+      </PipelineSequence>
       <ReactiveFallback name="RecoveryFallback">
         <GoalUpdated/>
         <RoundRobin name="AckermannRecoveryActions">

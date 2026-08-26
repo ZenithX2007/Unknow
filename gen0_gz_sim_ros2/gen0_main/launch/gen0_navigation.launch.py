@@ -101,12 +101,12 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
         clear_on_update: false
         footprint_clearing_enabled: true
         max_obstacle_intensity: 2.0
-        min_obstacle_intensity: 0.3
-        robot_origin_fallback_enabled: false
+        min_obstacle_intensity: 0.08
+        robot_origin_fallback_enabled: true
         robot_origin_fallback_distance: 1.0
         observation_sources: pointcloud
         pointcloud:
-          topic: /gen0_mapping/terrain_map
+          topic: /gen0_mapping/terrain_map_ext
           observation_persistence: 0.0
           expected_update_rate: 0.0
           max_obstacle_height: 2.0
@@ -345,7 +345,7 @@ def generate_launch_description():
         'costmap_source',
         default_value='laser_scan',
         choices=['laser_scan', 'scurm_terrain'],
-        description='Nav2 obstacle source: Gen0 2D LaserScan or SCURM terrain_map.',
+        description='Nav2 obstacle source: Gen0 2D LaserScan or SCURM terrain_map_ext.',
     )
     declare_map_source = DeclareLaunchArgument(
         'map_source',

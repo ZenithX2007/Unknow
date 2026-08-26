@@ -23,6 +23,7 @@ TF_PROBE_TIMEOUT="${GEN0_NAV2_TF_PROBE_TIMEOUT:-5}"
 TF_TARGET_FRAME="${GEN0_NAV2_TF_TARGET_FRAME:-odom}"
 TF_SOURCE_FRAME="${GEN0_NAV2_TF_SOURCE_FRAME:-base_link}"
 TERRAIN_WAIT_TIMEOUT="${GEN0_NAV2_TERRAIN_WAIT_TIMEOUT:-20}"
+TERRAIN_TOPIC="${GEN0_NAV2_TERRAIN_TOPIC:-/gen0_mapping/terrain_map_ext}"
 PROJECTED_MAP_WAIT_TIMEOUT="${GEN0_NAV2_PROJECTED_MAP_WAIT_TIMEOUT:-90}"
 PROJECTED_MAP_TOPIC="${GEN0_NAV2_PROJECTED_MAP_TOPIC:-/projected_map}"
 PROJECTED_MAP_BACKEND="${GEN0_NAV2_PROJECTED_MAP_BACKEND:-python}"
@@ -215,7 +216,7 @@ wait_for_occupancy_grid_nonempty() {
 
 print_3d_slam_start_hint() {
   if [[ "$PROFILE" == "scurm_gen0" && "$LOCALIZATION_MODE" == "odom_only" ]]; then
-    printf 'Start the my_map 3D SLAM/Gazebo stack first and wait for projected_map + terrain_map + stable odometry:\n\n' >&2
+    printf 'Start the my_map 3D SLAM/Gazebo stack first and wait for projected_map + terrain_map_ext + stable odometry:\n\n' >&2
     printf '  GEN0_WORKSPACE=%q \\\n' "$WORKSPACE" >&2
     printf '  GEN0_WORLD=%q \\\n' "$WORLD" >&2
     printf '  GEN0_RELOCALIZATION=false \\\n' >&2
@@ -535,8 +536,8 @@ else
 fi
 
 if [[ "$COSTMAP_SOURCE" == "scurm_terrain" ]]; then
-  if ! wait_for_topic_once /gen0_mapping/terrain_map "$TERRAIN_WAIT_TIMEOUT" "SCURM local terrain map"; then
-    printf 'Timed out waiting for /gen0_mapping/terrain_map. Keep the relocalized 3D SLAM stack running until terrain_analysis publishes.\n' >&2
+  if ! wait_for_topic_once "$TERRAIN_TOPIC" "$TERRAIN_WAIT_TIMEOUT" "SCURM local terrain map"; then
+    printf 'Timed out waiting for %s. Keep the 3D SLAM stack running until terrain_analysis_ext publishes.\n' "$TERRAIN_TOPIC" >&2
     exit 1
   fi
 fi

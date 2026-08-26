@@ -1136,11 +1136,11 @@ def generate_launch_description():
                         "free_log_odds_threshold": -0.2,
                         "mark_low_intensity_free": True,
                         "ground_clears_occupied": True,
-                        "occupied_padding_radius": 0.0,
+                        "occupied_padding_radius": 0.10,
                         "filter_speckles": True,
                         "min_occupied_component_cells": 6,
                         "min_occupied_component_span_cells": 4,
-                        "occupied_gap_bridge_cells": 0,
+                        "occupied_gap_bridge_cells": 1,
                         "reference_odom_topic": projected_map_reference_odom_topic,
                         "max_reference_odom_error": ParameterValue(
                             projected_map_max_reference_odom_error,
