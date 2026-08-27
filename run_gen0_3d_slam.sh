@@ -565,8 +565,6 @@ fast_lio_launch=(
   actor_collision_monitor:="$ACTOR_COLLISION_MONITOR"
   actor_collision_event_topic:="$ACTOR_COLLISION_EVENT_TOPIC"
   actor_collision_near_margin:="$ACTOR_COLLISION_NEAR_MARGIN"
-  actors_scenario_path:="$ACTORS_SCENARIO_PATH"
-  dynamic_actor_topics:="$DYNAMIC_ACTOR_TOPICS"
   trash_fusion_detection:="$TRASH_FUSION_DETECTION"
   trash_fusion_model_path:="$TRASH_FUSION_MODEL_PATH"
   trash_fusion_output_frame:="$TRASH_FUSION_OUTPUT_FRAME"
@@ -593,6 +591,12 @@ fast_lio_launch=(
   fast_lio_pcd_save:="$FAST_LIO_PCD_SAVE"
   fast_lio_pcd_save_interval:="$FAST_LIO_PCD_SAVE_INTERVAL"
 )
+if [[ -n "$ACTORS_SCENARIO_PATH" ]]; then
+  fast_lio_launch+=(actors_scenario_path:="$ACTORS_SCENARIO_PATH")
+fi
+if [[ -n "$DYNAMIC_ACTOR_TOPICS" ]]; then
+  fast_lio_launch+=(dynamic_actor_topics:="$DYNAMIC_ACTOR_TOPICS")
+fi
 if [[ -n "$PROJECTED_MAP_REFERENCE_ODOM_TOPIC" ]]; then
   fast_lio_launch+=(projected_map_reference_odom_topic:="$PROJECTED_MAP_REFERENCE_ODOM_TOPIC")
 fi
@@ -608,7 +612,9 @@ if [[ "$SIMULATED_LIDAR" == "true" ]]; then
   fast_lio_launch+=(simulated_lidar_surface_sampling:="$SIM_LIDAR_SURFACE_SAMPLING")
   fast_lio_launch+=(simulated_lidar_surface_samples:="$SIM_LIDAR_SURFACE_SAMPLES")
   fast_lio_launch+=(simulated_lidar_add_obstacle_columns:="$SIM_LIDAR_ADD_OBSTACLE_COLUMNS")
-  fast_lio_launch+=(trash_scenario_path:="$TRASH_SCENARIO_PATH")
+  if [[ -n "$TRASH_SCENARIO_PATH" ]]; then
+    fast_lio_launch+=(trash_scenario_path:="$TRASH_SCENARIO_PATH")
+  fi
 fi
 
 start_process fast_lio_3d_slam "${fast_lio_launch[@]}"
