@@ -88,5 +88,77 @@
     "name": "trash_can_01_03",
     "model": "trash_can_01",
     "pose": [11.282, -41.046, 2.85, 0.0, 0.0, 0.36]
+  },
+  {
+    "name": "trash_leaf_01_01",
+    "model": "trash_leaf_01",
+    "pose": [-14.02, -26.85, 2.853, 0.0, 0.0, -2.85],
+    "footprint": [0.0371, 0.0896]
+  },
+  {
+    "name": "trash_leaf_02_01",
+    "model": "trash_leaf_02",
+    "pose": [-13.025, -26.747, 2.853, 0.0, 0.0, 2.55],
+    "footprint": [0.0415, 0.0986]
+  },
+  {
+    "name": "trash_leaf_16_01",
+    "model": "trash_leaf_16",
+    "pose": [-12.494, -27.416, 2.853, 0.0, 0.0, -1.4],
+    "footprint": [0.0557, 0.095]
+  },
+  {
+    "name": "trash_leaf_01_02",
+    "model": "trash_leaf_01",
+    "pose": [-8.328, -29.415, 2.853, 0.0, 0.0, 0.7],
+    "footprint": [0.0371, 0.0896]
+  },
+  {
+    "name": "trash_leaf_02_02",
+    "model": "trash_leaf_02",
+    "pose": [-7.896, -30.444, 2.853, 0.0, 0.0, -2.1],
+    "footprint": [0.0415, 0.0986]
+  },
+  {
+    "name": "trash_leaf_16_02",
+    "model": "trash_leaf_16",
+    "pose": [-6.955, -30.624, 2.853, 0.0, 0.0, 2.9],
+    "footprint": [0.0557, 0.095]
+  },
+  {
+    "name": "trash_leaf_01_03",
+    "model": "trash_leaf_01",
+    "pose": [-1.795, -34.269, 2.853, 0.0, 0.0, 1.95],
+    "footprint": [0.0371, 0.0896]
+  },
+  {
+    "name": "trash_leaf_02_03",
+    "model": "trash_leaf_02",
+    "pose": [-0.715, -34.218, 2.853, 0.0, 0.0, -0.55],
+    "footprint": [0.0415, 0.0986]
+  },
+  {
+    "name": "trash_leaf_16_03",
+    "model": "trash_leaf_16",
+    "pose": [-0.098, -34.938, 2.853, 0.0, 0.0, -2.75],
+    "footprint": [0.0557, 0.095]
+  },
+  {
+    "name": "trash_leaf_01_04",
+    "model": "trash_leaf_01",
+    "pose": [6.388, -38.318, 2.853, 0.0, 0.0, -1.1],
+    "footprint": [0.0371, 0.0896]
+  },
+  {
+    "name": "trash_leaf_02_04",
+    "model": "trash_leaf_02",
+    "pose": [6.882, -39.244, 2.853, 0.0, 0.0, 1.25],
+    "footprint": [0.0415, 0.0986]
+  },
+  {
+    "name": "trash_leaf_16_04",
+    "model": "trash_leaf_16",
+    "pose": [7.777, -39.502, 2.853, 0.0, 0.0, -3.0],
+    "footprint": [0.0557, 0.095]
   }
 ]

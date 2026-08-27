@@ -1,0 +1,115 @@
+<?xml version='1.0' encoding='utf-8'?>
+<ns0:COLLADA xmlns:ns0="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <ns0:asset>
+    <ns0:contributor>
+      <ns0:author>Blender User</ns0:author>
+      <ns0:authoring_tool>Blender 3.0.1</ns0:authoring_tool>
+    </ns0:contributor>
+    <ns0:created>2026-08-27T17:51:16</ns0:created>
+    <ns0:modified>2026-08-27T17:51:16</ns0:modified>
+    <ns0:unit name="meter" meter="1" />
+    <ns0:up_axis>Z_UP</ns0:up_axis>
+  </ns0:asset>
+  <ns0:library_effects>
+    <ns0:effect id="leaf_01_material-effect">
+      <ns0:profile_COMMON>
+        <ns0:newparam sid="albedo_png-surface">
+          <ns0:surface type="2D">
+            <ns0:init_from>albedo_png</ns0:init_from>
+          </ns0:surface>
+        </ns0:newparam>
+        <ns0:newparam sid="albedo_png-sampler">
+          <ns0:sampler2D>
+            <ns0:source>albedo_png-surface</ns0:source>
+          </ns0:sampler2D>
+        </ns0:newparam>
+        <ns0:technique sid="common">
+          <ns0:lambert>
+            <ns0:emission>
+              <ns0:color sid="emission">0 0 0 1</ns0:color>
+            </ns0:emission>
+            <ns0:diffuse>
+              <ns0:texture texture="albedo_png-sampler" texcoord="UVMap" />
+            </ns0:diffuse>
+            <ns0:transparent opaque="A_ONE"><ns0:texture texture="albedo_png-sampler" texcoord="UVMap" /></ns0:transparent><ns0:transparency><ns0:float>1</ns0:float></ns0:transparency><ns0:index_of_refraction>
+              <ns0:float sid="ior">1.45</ns0:float>
+            </ns0:index_of_refraction>
+          </ns0:lambert>
+        </ns0:technique>
+      </ns0:profile_COMMON>
+    </ns0:effect>
+  </ns0:library_effects>
+  <ns0:library_images>
+    <ns0:image id="albedo_png" name="albedo_png">
+      <ns0:init_from>albedo.png</ns0:init_from>
+    </ns0:image>
+  </ns0:library_images>
+  <ns0:library_materials>
+    <ns0:material id="leaf_01_material-material" name="leaf_01_material">
+      <ns0:instance_effect url="#leaf_01_material-effect" />
+    </ns0:material>
+  </ns0:library_materials>
+  <ns0:library_geometries>
+    <ns0:geometry id="leaf_01_mesh-mesh" name="leaf_01_mesh">
+      <ns0:mesh>
+        <ns0:source id="leaf_01_mesh-mesh-positions">
+          <ns0:float_array id="leaf_01_mesh-mesh-positions-array" count="12">-0.01855444 -0.04479998 0 0.01855444 -0.04479998 0 0.01855444 0.04479998 0 -0.01855444 0.04479998 0</ns0:float_array>
+          <ns0:technique_common>
+            <ns0:accessor source="#leaf_01_mesh-mesh-positions-array" count="4" stride="3">
+              <ns0:param name="X" type="float" />
+              <ns0:param name="Y" type="float" />
+              <ns0:param name="Z" type="float" />
+            </ns0:accessor>
+          </ns0:technique_common>
+        </ns0:source>
+        <ns0:source id="leaf_01_mesh-mesh-normals">
+          <ns0:float_array id="leaf_01_mesh-mesh-normals-array" count="3">0 0 1</ns0:float_array>
+          <ns0:technique_common>
+            <ns0:accessor source="#leaf_01_mesh-mesh-normals-array" count="1" stride="3">
+              <ns0:param name="X" type="float" />
+              <ns0:param name="Y" type="float" />
+              <ns0:param name="Z" type="float" />
+            </ns0:accessor>
+          </ns0:technique_common>
+        </ns0:source>
+        <ns0:source id="leaf_01_mesh-mesh-map-0">
+          <ns0:float_array id="leaf_01_mesh-mesh-map-0-array" count="12">1 0 0 1 0 0 1 0 1 1 0 1</ns0:float_array>
+          <ns0:technique_common>
+            <ns0:accessor source="#leaf_01_mesh-mesh-map-0-array" count="6" stride="2">
+              <ns0:param name="S" type="float" />
+              <ns0:param name="T" type="float" />
+            </ns0:accessor>
+          </ns0:technique_common>
+        </ns0:source>
+        <ns0:vertices id="leaf_01_mesh-mesh-vertices">
+          <ns0:input semantic="POSITION" source="#leaf_01_mesh-mesh-positions" />
+        </ns0:vertices>
+        <ns0:triangles material="leaf_01_material-material" count="2">
+          <ns0:input semantic="VERTEX" source="#leaf_01_mesh-mesh-vertices" offset="0" />
+          <ns0:input semantic="NORMAL" source="#leaf_01_mesh-mesh-normals" offset="1" />
+          <ns0:input semantic="TEXCOORD" source="#leaf_01_mesh-mesh-map-0" offset="2" set="0" />
+          <ns0:p>1 0 0 3 0 1 0 0 2 1 0 3 2 0 4 3 0 5</ns0:p>
+        </ns0:triangles>
+      </ns0:mesh>
+    </ns0:geometry>
+  </ns0:library_geometries>
+  <ns0:library_visual_scenes>
+    <ns0:visual_scene id="Scene" name="Scene">
+      <ns0:node id="leaf_01" name="leaf_01" type="NODE">
+        <ns0:matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</ns0:matrix>
+        <ns0:instance_geometry url="#leaf_01_mesh-mesh" name="leaf_01">
+          <ns0:bind_material>
+            <ns0:technique_common>
+              <ns0:instance_material symbol="leaf_01_material-material" target="#leaf_01_material-material">
+                <ns0:bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0" />
+              </ns0:instance_material>
+            </ns0:technique_common>
+          </ns0:bind_material>
+        </ns0:instance_geometry>
+      </ns0:node>
+    </ns0:visual_scene>
+  </ns0:library_visual_scenes>
+  <ns0:scene>
+    <ns0:instance_visual_scene url="#Scene" />
+  </ns0:scene>
+</ns0:COLLADA>
