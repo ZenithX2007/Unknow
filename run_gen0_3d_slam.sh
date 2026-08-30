@@ -12,6 +12,9 @@ TRASH_VEHICLE_WIDTH="${GEN0_TRASH_VEHICLE_WIDTH:-2.20}"
 TRASH_VEHICLE_CENTER_OFFSET_X="${GEN0_TRASH_VEHICLE_CENTER_OFFSET_X:-0.0}"
 TRASH_VEHICLE_CENTER_OFFSET_Y="${GEN0_TRASH_VEHICLE_CENTER_OFFSET_Y:-0.0}"
 TRASH_COVERAGE_MARGIN="${GEN0_TRASH_COVERAGE_MARGIN:-0.0}"
+TRASH_USE_MESH_VISUAL_CENTER="${GEN0_TRASH_USE_MESH_VISUAL_CENTER:-true}"
+TRASH_VEHICLE_POSE_TOPIC="${GEN0_TRASH_VEHICLE_POSE_TOPIC-/gen0_model/links/poses}"
+TRASH_VEHICLE_POSE_INDEX="${GEN0_TRASH_VEHICLE_POSE_INDEX:-15}"
 TRASH_DEBUG_ITEM="${GEN0_TRASH_DEBUG_ITEM:-}"
 TRASH_DEBUG_PERIOD="${GEN0_TRASH_DEBUG_PERIOD:-1.0}"
 TRASH_FUSION_DETECTION="${GEN0_TRASH_FUSION_DETECTION:-false}"
@@ -347,11 +350,14 @@ start_trash_cleanup_if_enabled() {
       trash_scenario:="$TRASH_SCENARIO" \
       partition:="$PARTITION" \
       odom_topic:="$TRASH_ODOM_TOPIC" \
+      vehicle_pose_topic:="$TRASH_VEHICLE_POSE_TOPIC" \
+      vehicle_pose_index:="$TRASH_VEHICLE_POSE_INDEX" \
       vehicle_length:="$TRASH_VEHICLE_LENGTH" \
       vehicle_width:="$TRASH_VEHICLE_WIDTH" \
       vehicle_center_offset_x:="$TRASH_VEHICLE_CENTER_OFFSET_X" \
       vehicle_center_offset_y:="$TRASH_VEHICLE_CENTER_OFFSET_Y" \
       coverage_margin:="$TRASH_COVERAGE_MARGIN" \
+      use_mesh_visual_center:="$TRASH_USE_MESH_VISUAL_CENTER" \
       debug_period:="$TRASH_DEBUG_PERIOD"
     )
     if [[ -n "$TRASH_DEBUG_ITEM" ]]; then
@@ -444,7 +450,7 @@ export IGN_PARTITION="$PARTITION"
 export GZ_PARTITION="$PARTITION"
 
 log "Workspace: $WORKSPACE"
-log "World: $WORLD, actors_scenario: $ACTORS_SCENARIO, trash_scenario=$TRASH_SCENARIO, trash_cleanup=$TRASH_CLEANUP, trash_vehicle=${TRASH_VEHICLE_LENGTH}x${TRASH_VEHICLE_WIDTH}, trash_center_offset=(${TRASH_VEHICLE_CENTER_OFFSET_X},${TRASH_VEHICLE_CENTER_OFFSET_Y}), coverage_margin=$TRASH_COVERAGE_MARGIN, gazebo_gui=$GAZEBO_GUI, partition=$PARTITION"
+log "World: $WORLD, actors_scenario: $ACTORS_SCENARIO, trash_scenario=$TRASH_SCENARIO, trash_cleanup=$TRASH_CLEANUP, trash_vehicle=${TRASH_VEHICLE_LENGTH}x${TRASH_VEHICLE_WIDTH}, trash_center_offset=(${TRASH_VEHICLE_CENTER_OFFSET_X},${TRASH_VEHICLE_CENTER_OFFSET_Y}), coverage_margin=$TRASH_COVERAGE_MARGIN, mesh_visual_center=$TRASH_USE_MESH_VISUAL_CENTER, trash_vehicle_pose=${TRASH_VEHICLE_POSE_TOPIC:-<odom>}[$TRASH_VEHICLE_POSE_INDEX], gazebo_gui=$GAZEBO_GUI, partition=$PARTITION"
 log "Simulated lidar: $SIMULATED_LIDAR, world_obj_path: $WORLD_OBJ_PATH"
 log "Front 3D source topic: $FRONT3D_SOURCE_TOPIC, simulated_topic=$SIMULATED_FRONT3D_TOPIC, gazebo_topic=$GAZEBO_FRONT3D_TOPIC"
 log "TF localization: ground_truth_localization=$GROUND_TRUTH_LOCALIZATION, static_odom_base=$STATIC_ODOM_BASE"
@@ -559,8 +565,6 @@ fast_lio_launch=(
   actor_collision_monitor:="$ACTOR_COLLISION_MONITOR"
   actor_collision_event_topic:="$ACTOR_COLLISION_EVENT_TOPIC"
   actor_collision_near_margin:="$ACTOR_COLLISION_NEAR_MARGIN"
-  actors_scenario_path:="$ACTORS_SCENARIO_PATH"
-  dynamic_actor_topics:="$DYNAMIC_ACTOR_TOPICS"
   trash_fusion_detection:="$TRASH_FUSION_DETECTION"
   trash_fusion_model_path:="$TRASH_FUSION_MODEL_PATH"
   trash_fusion_output_frame:="$TRASH_FUSION_OUTPUT_FRAME"
@@ -587,6 +591,12 @@ fast_lio_launch=(
   fast_lio_pcd_save:="$FAST_LIO_PCD_SAVE"
   fast_lio_pcd_save_interval:="$FAST_LIO_PCD_SAVE_INTERVAL"
 )
+if [[ -n "$ACTORS_SCENARIO_PATH" ]]; then
+  fast_lio_launch+=(actors_scenario_path:="$ACTORS_SCENARIO_PATH")
+fi
+if [[ -n "$DYNAMIC_ACTOR_TOPICS" ]]; then
+  fast_lio_launch+=(dynamic_actor_topics:="$DYNAMIC_ACTOR_TOPICS")
+fi
 if [[ -n "$PROJECTED_MAP_REFERENCE_ODOM_TOPIC" ]]; then
   fast_lio_launch+=(projected_map_reference_odom_topic:="$PROJECTED_MAP_REFERENCE_ODOM_TOPIC")
 fi
@@ -602,7 +612,9 @@ if [[ "$SIMULATED_LIDAR" == "true" ]]; then
   fast_lio_launch+=(simulated_lidar_surface_sampling:="$SIM_LIDAR_SURFACE_SAMPLING")
   fast_lio_launch+=(simulated_lidar_surface_samples:="$SIM_LIDAR_SURFACE_SAMPLES")
   fast_lio_launch+=(simulated_lidar_add_obstacle_columns:="$SIM_LIDAR_ADD_OBSTACLE_COLUMNS")
-  fast_lio_launch+=(trash_scenario_path:="$TRASH_SCENARIO_PATH")
+  if [[ -n "$TRASH_SCENARIO_PATH" ]]; then
+    fast_lio_launch+=(trash_scenario_path:="$TRASH_SCENARIO_PATH")
+  fi
 fi
 
 start_process fast_lio_3d_slam "${fast_lio_launch[@]}"
