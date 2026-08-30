@@ -6,6 +6,8 @@ if [[ "${1:-}" == "--quiet" ]]; then
   QUIET=true
 fi
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 log() {
   if [[ "$QUIET" != "true" ]]; then
     printf '%s\n' "$*"
@@ -33,24 +35,8 @@ kill_pattern() {
 }
 
 patterns=(
-  "ros2 launch gen0_main gen0_navigation.launch.py"
+  "run_gen0_full_stack.sh"
   "ros2 launch epsilon_planning gen0_navigation_epsilon.launch.py"
-  "run_gen0_nav2.sh"
-  "map_server"
-  "controller_server"
-  "smoother_server"
-  "planner_server"
-  "behavior_server"
-  "bt_navigator"
-  "waypoint_follower"
-  "velocity_smoother"
-  "lifecycle_manager_navigation"
-  "cmdvel_to_vehicle"
-  "nav2_pose_guard"
-  "identity_map_to_odom"
-  "nav2_projected_map_relay"
-  "rviz2 .*gen0_nav2_default_view"
-  "gen0_nav2_default_view.rviz"
 )
 
 for pattern in "${patterns[@]}"; do
@@ -58,6 +44,10 @@ for pattern in "${patterns[@]}"; do
 done
 
 sleep 2
+
+"$SCRIPT_DIR/stop_gen0_epsilon.sh" --quiet || true
+"$SCRIPT_DIR/stop_gen0_nav2.sh" --quiet || true
+"$SCRIPT_DIR/stop_gen0_3d_slam.sh" --quiet || true
 
 for pattern in "${patterns[@]}"; do
   kill_pattern "$pattern" "$pattern"

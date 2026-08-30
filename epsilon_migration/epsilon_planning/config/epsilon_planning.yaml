@@ -1,0 +1,80 @@
+epsilon_integrated_planner_node:
+  ros__parameters:
+    ego_id: 0
+    map_frame: map
+    work_rate: 20.0
+    dynamic_scene_timeout: 0.5
+    desired_velocity: 1.5
+    preferred_lateral_behavior: 0
+    is_under_control: true
+
+    override_ego_with_odom: true
+    odom_pose_is_rear_axle: false
+    use_previous_trajectory_initial_state: true
+    trajectory_seed_max_position_error: 0.75
+    trajectory_seed_max_yaw_error: 0.5
+    control_lookahead: 0.1
+
+    wheel_base: 2.8
+    max_steer: 0.4
+    max_linear_velocity: 3.0
+    min_linear_velocity: -1.0
+    vehicle_width: 1.9
+    vehicle_length: 4.88
+    front_suspension: 0.93
+    rear_suspension: 1.10
+    d_cr: 1.34
+    max_longitudinal_acc: 1.0
+    max_lateral_acc: 1.2
+
+    arena_info_topic: ""
+    arena_info_static_topic: /epsilon/arena_info_static
+    arena_info_dynamic_topic: /epsilon/arena_info_dynamic
+    odom_topic: /odom
+    control_signal_topic: /epsilon/control_signal
+    cmd_vel_topic: /epsilon/cmd_vel_raw
+    status_topic: /epsilon/status
+    enable_external_predictions: true
+    predicted_trajectories_topic: /epsilon/predicted_trajectories
+    external_prediction_max_age: 0.8
+    external_prediction_min_probability: 0.0
+    predicted_position_is_rear_axle: false
+
+epsilon_scene_bridge_node:
+  ros__parameters:
+    map_frame: map
+    path_topic: /plan_smoothed
+    costmap_topic: /projected_costmap
+    object_pose_topic: /gen0_perception/trash_poses
+    actor_pose_topics: ""
+    odom_topic: /odom
+    arena_info_static_topic: /epsilon/arena_info_static
+    arena_info_dynamic_topic: /epsilon/arena_info_dynamic
+    publish_period: 1.0
+    dynamic_publish_period: 0.1
+    path_timeout: 30.0
+
+    ego_id: 0
+    min_lane_point_spacing: 0.3
+    centerline_is_road_center: false
+    virtual_lane_count: 1
+    lane_width: 3.2
+    allow_opposite_lane_change: false
+
+    occupied_threshold: 65
+    treat_unknown_as_obstacle: false
+    max_obstacle_cells: 2500
+    grid_obstacle_radius: 0.12
+    object_obstacle_radius: 0.35
+
+    odom_pose_is_rear_axle: false
+    shift_path_to_rear_axle: true
+    wheel_base: 2.8
+    max_steer: 0.4
+    vehicle_width: 1.9
+    vehicle_length: 4.88
+    front_suspension: 0.93
+    rear_suspension: 1.10
+    d_cr: 1.34
+    max_longitudinal_acc: 1.0
+    max_lateral_acc: 1.2

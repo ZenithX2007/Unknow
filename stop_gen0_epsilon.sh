@@ -33,24 +33,12 @@ kill_pattern() {
 }
 
 patterns=(
-  "ros2 launch gen0_main gen0_navigation.launch.py"
-  "ros2 launch epsilon_planning gen0_navigation_epsilon.launch.py"
-  "run_gen0_nav2.sh"
-  "map_server"
-  "controller_server"
-  "smoother_server"
-  "planner_server"
-  "behavior_server"
-  "bt_navigator"
-  "waypoint_follower"
-  "velocity_smoother"
-  "lifecycle_manager_navigation"
-  "cmdvel_to_vehicle"
-  "nav2_pose_guard"
-  "identity_map_to_odom"
-  "nav2_projected_map_relay"
-  "rviz2 .*gen0_nav2_default_view"
-  "gen0_nav2_default_view.rviz"
+  "ros2 launch epsilon_planning epsilon_planning.launch.py"
+  "run_gen0_epsilon.sh"
+  "epsilon_scene_bridge_node"
+  "epsilon_integrated_planner_node"
+  "epsilon_cmd_vel_mux_node"
+  "qcnet_prediction_node"
 )
 
 for pattern in "${patterns[@]}"; do
