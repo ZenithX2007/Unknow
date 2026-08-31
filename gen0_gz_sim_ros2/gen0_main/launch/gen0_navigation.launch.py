@@ -704,6 +704,7 @@ def generate_launch_description():
         Node(
             package='rviz2',
             executable='rviz2',
+            name='gen0_nav2_rviz',
             arguments=['-d', rviz_config, '--ros-args', '--log-level', 'warn'],
             condition=IfCondition(rviz),
             parameters=[{'use_sim_time': use_sim_time}],

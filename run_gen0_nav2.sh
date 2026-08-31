@@ -4,7 +4,7 @@ set -Eeuo pipefail
 WORKSPACE="${GEN0_WORKSPACE:-$PWD}"
 LOG_DIR="${GEN0_LOG_DIR:-$WORKSPACE/runtime_logs}"
 ROS_LOG_DIR="${ROS_LOG_DIR:-$LOG_DIR/ros}"
-PROFILE="${GEN0_NAV2_PROFILE:-legacy}"
+PROFILE="${GEN0_NAV2_PROFILE:-scurm_gen0}"
 WORLD="${GEN0_WORLD:-my_map}"
 FAST_LIO_ODOM_TOPIC="${GEN0_FAST_LIO_ODOM_TOPIC:-/gen0_mapping/fast_lio/odom}"
 NAV2_ODOM_TOPIC_REQUESTED="${GEN0_NAV2_ODOM_TOPIC:-}"
@@ -37,7 +37,7 @@ PROJECTED_MAP_FIXED_RESOLUTION="${GEN0_NAV2_PROJECTED_MAP_FIXED_RESOLUTION:-0.10
 PROJECTED_MAP_BOUNDS_MARGIN="${GEN0_NAV2_PROJECTED_MAP_BOUNDS_MARGIN:-5.0}"
 NAV2_RVIZ="${GEN0_NAV2_RVIZ:-true}"
 NAV2_RVIZ_CONFIG="${GEN0_NAV2_RVIZ_CONFIG:-$WORKSPACE/gen0_gz_sim_ros2/gen0_main/config/gen0_nav2_default_view.rviz}"
-NAV2_RVIZ_RENDER_ENV="${GEN0_NAV2_RVIZ_RENDER_ENV:-software}"
+NAV2_RVIZ_RENDER_ENV="${GEN0_NAV2_RVIZ_RENDER_ENV:-passthrough}"
 MAP_TF_WAIT_TIMEOUT="${GEN0_NAV2_MAP_TF_WAIT_TIMEOUT:-10}"
 POSE_SANITY_MAX_ABS_XY="${GEN0_NAV2_MAX_ABS_XY:-500.0}"
 POSE_SANITY_MAX_ABS_Z="${GEN0_NAV2_MAX_ABS_Z:-20.0}"
@@ -216,12 +216,6 @@ wait_for_occupancy_grid_nonempty() {
 print_3d_slam_start_hint() {
   if [[ "$PROFILE" == "scurm_gen0" && "$LOCALIZATION_MODE" == "odom_only" ]]; then
     printf 'Start the my_map 3D SLAM/Gazebo stack first and wait for projected_map + terrain_map + stable odometry:\n\n' >&2
-    printf '  GEN0_WORKSPACE=%q \\\n' "$WORKSPACE" >&2
-    printf '  GEN0_WORLD=%q \\\n' "$WORLD" >&2
-    printf '  GEN0_RELOCALIZATION=false \\\n' >&2
-    printf '  GEN0_MAPPING_DRIVE=false \\\n' >&2
-    printf '  GEN0_TRASH_SCENARIO=small_trash_dense \\\n' >&2
-    printf '  GEN0_TRASH_CLEANUP=false \\\n' >&2
     printf '  ./run_gen0_3d_slam.sh\n\n' >&2
     printf 'Then start Nav2 from a second terminal.\n' >&2
   else
