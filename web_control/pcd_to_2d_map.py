@@ -12,7 +12,7 @@ OUT_DIR = PCD_PATH.parent
 OUT_PREFIX = "prior_map_2d"
 RESOLUTION = 0.1
 OCCUPIED_THRESHOLD = 1
-MIN_Z = -1.2
+MIN_Z = -0.2
 MAX_Z = 20.0
 
 
