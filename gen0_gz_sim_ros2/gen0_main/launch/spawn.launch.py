@@ -55,9 +55,11 @@ def gazebo_environment(
     env['GZ_PARTITION'] = partition
 
     workspace_root = os.path.abspath(os.path.join(pkg_share_dir, '..', '..', '..', '..'))
+    # Add the legacy workspace build first because prepend_env_path places the
+    # last entry first. The source-tree build is the actively maintained copy.
     actor_pose_plugin_paths = (
-        os.path.join(workspace_root, 'gen0_gz_sim_ros2', 'gz_plugins', 'build'),
         os.path.join(workspace_root, 'build', 'ActorPose'),
+        os.path.join(workspace_root, 'gen0_gz_sim_ros2', 'gz_plugins', 'build'),
     )
     for actor_pose_plugin_path in actor_pose_plugin_paths:
         if os.path.exists(os.path.join(actor_pose_plugin_path, 'libActorPose.so')):

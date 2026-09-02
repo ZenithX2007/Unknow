@@ -17,6 +17,10 @@ def generate_launch_description():
     costmap_topic = LaunchConfiguration("costmap_topic")
     object_pose_topic = LaunchConfiguration("object_pose_topic")
     actor_pose_topics = LaunchConfiguration("actor_pose_topics")
+    centerline_is_road_center = LaunchConfiguration("centerline_is_road_center")
+    virtual_lane_count = LaunchConfiguration("virtual_lane_count")
+    lane_width = LaunchConfiguration("lane_width")
+    allow_opposite_lane_change = LaunchConfiguration("allow_opposite_lane_change")
     use_scenario_actor_publisher = LaunchConfiguration("use_scenario_actor_publisher")
     actor_scenario_path = LaunchConfiguration("actor_scenario_path")
     scenario_actor_pose_topic_prefix = LaunchConfiguration("scenario_actor_pose_topic_prefix")
@@ -105,6 +109,28 @@ def generate_launch_description():
                 "actor_pose_topics",
                 default_value="",
                 description="Comma-separated PoseStamped topics converted by the scene bridge into dynamic vehicles.",
+            ),
+            DeclareLaunchArgument(
+                "centerline_is_road_center",
+                default_value="true",
+                choices=["true", "false"],
+                description="Build the reference lane around the road centerline instead of keeping a single lane edge.",
+            ),
+            DeclareLaunchArgument(
+                "virtual_lane_count",
+                default_value="3",
+                description="Number of virtual lanes synthesized from the reference path.",
+            ),
+            DeclareLaunchArgument(
+                "lane_width",
+                default_value="3.2",
+                description="Total road width used to synthesize the virtual lane band.",
+            ),
+            DeclareLaunchArgument(
+                "allow_opposite_lane_change",
+                default_value="false",
+                choices=["true", "false"],
+                description="Allow cross-band lane transitions when building the virtual lane net.",
             ),
             DeclareLaunchArgument(
                 "use_scenario_actor_publisher",
@@ -200,7 +226,7 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument(
                 "path_timeout",
-                default_value="30.0",
+                default_value="120.0",
                 description="Maximum wall-time age in seconds for the latest Nav2 path before EPSILON treats LaneNet as stale.",
             ),
             DeclareLaunchArgument(
@@ -242,7 +268,7 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument(
                 "epsilon_status_timeout",
-                default_value="0.6",
+                default_value="1.5",
                 description="Maximum age of a successful EPSILON status for automatic command selection.",
             ),
             DeclareLaunchArgument(
@@ -285,6 +311,10 @@ def generate_launch_description():
                         "costmap_topic": costmap_topic,
                         "object_pose_topic": object_pose_topic,
                         "actor_pose_topics": actor_pose_topics,
+                        "centerline_is_road_center": centerline_is_road_center,
+                        "virtual_lane_count": virtual_lane_count,
+                        "lane_width": lane_width,
+                        "allow_opposite_lane_change": allow_opposite_lane_change,
                         "odom_topic": odom_topic,
                         "dynamic_publish_period": dynamic_publish_period,
                         "path_timeout": path_timeout,

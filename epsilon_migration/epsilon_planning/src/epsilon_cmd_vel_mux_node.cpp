@@ -24,8 +24,9 @@ public:
     declare_parameter<std::string>("selected_source_topic", "/epsilon/selected_control_source");
     declare_parameter<std::string>("epsilon_status_topic", "/epsilon/status");
     declare_parameter<double>("input_timeout", 0.4);
-    declare_parameter<double>("epsilon_status_timeout", 0.6);
+    declare_parameter<double>("epsilon_status_timeout", 1.5);
     declare_parameter<double>("publish_period", 0.05);
+    declare_parameter<double>("selection_hold_time", 1.0);
     declare_parameter<bool>("fallback_to_nav2", true);
 
     epsilon_cmd_vel_topic_ = get_parameter("epsilon_cmd_vel_topic").as_string();
@@ -38,6 +39,7 @@ public:
     input_timeout_ = get_parameter("input_timeout").as_double();
     epsilon_status_timeout_ = get_parameter("epsilon_status_timeout").as_double();
     publish_period_ = get_parameter("publish_period").as_double();
+    selection_hold_time_ = get_parameter("selection_hold_time").as_double();
     fallback_to_nav2_ = get_parameter("fallback_to_nav2").as_bool();
 
     if (!IsValidSource(control_source_)) {
@@ -150,26 +152,59 @@ private:
       std::chrono::duration<double>(now - *latest_epsilon_status_time_).count() <=
       epsilon_status_timeout_);
 
+    const auto twist_for_source = [this, epsilon_fresh, nav2_fresh](
+        const std::string & source) -> geometry_msgs::msg::Twist {
+        if (source == "epsilon" && epsilon_fresh) {
+          return *latest_epsilon_;
+        }
+        if (source == "nav2" && nav2_fresh) {
+          return *latest_nav2_;
+        }
+        return geometry_msgs::msg::Twist();
+      };
+    const auto source_available = [epsilon_fresh, nav2_fresh, epsilon_status_fresh](
+        const std::string & source) {
+        if (source == "epsilon") {
+          return epsilon_fresh && epsilon_status_fresh;
+        }
+        if (source == "nav2") {
+          return nav2_fresh;
+        }
+        return source == "stop";
+      };
+
     std::string selected_source = "stop";
     if (control_source_ == "auto") {
       if (epsilon_status_fresh && epsilon_fresh) {
         selected_source = "epsilon";
-        selected = *latest_epsilon_;
       } else if (nav2_fresh) {
         selected_source = "nav2";
-        selected = *latest_nav2_;
       }
     } else if (control_source_ == "epsilon") {
       if (epsilon_fresh) {
         selected_source = "epsilon";
-        selected = *latest_epsilon_;
       } else if (fallback_to_nav2_ && nav2_fresh) {
         selected_source = "nav2";
-        selected = *latest_nav2_;
       }
     } else if (control_source_ == "nav2" && nav2_fresh) {
       selected_source = "nav2";
-      selected = *latest_nav2_;
+    }
+
+    selected = twist_for_source(selected_source);
+
+    if (
+      control_source_ == "auto" && selected_source != "stop" &&
+      !last_selected_source_.empty() && last_selected_source_ != selected_source &&
+      last_selected_source_ != "stop" && source_available(last_selected_source_))
+    {
+      if (last_source_switch_time_.has_value()) {
+        const auto since_switch = std::chrono::duration<double>(
+          now - *last_source_switch_time_).count();
+        if (since_switch < std::max(0.0, selection_hold_time_)) {
+          selected_source = last_selected_source_;
+          selected = twist_for_source(selected_source);
+        }
+      }
     }
 
     if (selected_source != last_selected_source_) {
@@ -177,6 +212,7 @@ private:
         get_logger(), "selected command source: %s -> %s",
         last_selected_source_.c_str(), selected_source.c_str());
       last_selected_source_ = selected_source;
+      last_source_switch_time_ = now;
     }
 
     if (selected_source != "stop" && !IsFiniteTwist(selected)) {
@@ -227,8 +263,9 @@ private:
   std::string selected_source_topic_;
   std::string epsilon_status_topic_;
   double input_timeout_{0.4};
-  double epsilon_status_timeout_{0.6};
+  double epsilon_status_timeout_{1.5};
   double publish_period_{0.05};
+  double selection_hold_time_{1.0};
   bool fallback_to_nav2_{true};
 
   std::optional<geometry_msgs::msg::Twist> latest_epsilon_;
@@ -236,6 +273,7 @@ private:
   std::chrono::steady_clock::time_point latest_epsilon_time_;
   std::chrono::steady_clock::time_point latest_nav2_time_;
   std::optional<std::chrono::steady_clock::time_point> latest_epsilon_status_time_;
+  std::optional<std::chrono::steady_clock::time_point> last_source_switch_time_;
   bool epsilon_ready_{false};
   bool warned_stale_{false};
   std::string last_selected_source_{""};

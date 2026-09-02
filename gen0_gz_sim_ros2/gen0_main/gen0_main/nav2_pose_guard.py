@@ -8,6 +8,8 @@ from nav_msgs.msg import OccupancyGrid, Odometry
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy, qos_profile_sensor_data
 from rclpy.time import Time
+from sensor_msgs.msg import PointCloud2
+from sensor_msgs_py import point_cloud2
 from tf2_ros import Buffer, TransformException, TransformListener
 
 
@@ -34,6 +36,15 @@ class Nav2PoseGuard(Node):
         self.declare_parameter('curvature_warn_min_delta', 0.03)
         self.declare_parameter('curvature_warn_min_abs_wz', 0.08)
         self.declare_parameter('max_pose_jump', 3.0)
+        self.declare_parameter('actor_obstacle_topic', '/gen0_mapping/actor_obstacles')
+        self.declare_parameter('actor_obstacle_timeout', 0.6)
+        self.declare_parameter('actor_vehicle_length', 4.0)
+        self.declare_parameter('actor_vehicle_width', 2.0)
+        self.declare_parameter('actor_radius', 0.45)
+        self.declare_parameter('actor_safety_margin', 0.35)
+        self.declare_parameter('actor_forward_buffer', 0.8)
+        self.declare_parameter('actor_reverse_buffer', 0.35)
+        self.declare_parameter('actor_forward_lateral_clearance', 0.75)
 
         self.input_cmd_vel_topic = self.get_parameter('input_cmd_vel_topic').value
         self.output_cmd_vel_topic = self.get_parameter('output_cmd_vel_topic').value
@@ -72,6 +83,30 @@ class Nav2PoseGuard(Node):
             self.get_parameter('curvature_warn_min_abs_wz').value
         )
         self.max_pose_jump = float(self.get_parameter('max_pose_jump').value)
+        self.actor_obstacle_topic = self.get_parameter('actor_obstacle_topic').value
+        self.actor_obstacle_timeout = float(
+            self.get_parameter('actor_obstacle_timeout').value
+        )
+        self.actor_vehicle_length = max(
+            0.1, float(self.get_parameter('actor_vehicle_length').value)
+        )
+        self.actor_vehicle_width = max(
+            0.1, float(self.get_parameter('actor_vehicle_width').value)
+        )
+        self.actor_radius = max(0.05, float(self.get_parameter('actor_radius').value))
+        self.actor_safety_margin = max(
+            0.0, float(self.get_parameter('actor_safety_margin').value)
+        )
+        self.actor_forward_buffer = max(
+            0.0, float(self.get_parameter('actor_forward_buffer').value)
+        )
+        self.actor_reverse_buffer = max(
+            0.0, float(self.get_parameter('actor_reverse_buffer').value)
+        )
+        self.actor_forward_lateral_clearance = max(
+            0.05,
+            float(self.get_parameter('actor_forward_lateral_clearance').value),
+        )
 
         self.map_bounds = None
         self.last_odom = None
@@ -84,6 +119,9 @@ class Nav2PoseGuard(Node):
         self.blocked_reason = None
         self.last_warn_monotonic = 0.0
         self.last_curvature_warn_monotonic = 0.0
+        self.actor_points_map = []
+        self.actor_points_monotonic = 0.0
+        self.actor_cloud_frame = None
 
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
@@ -98,6 +136,12 @@ class Nav2PoseGuard(Node):
         self.create_subscription(Twist, self.input_cmd_vel_topic, self.cmd_callback, 10)
         self.create_subscription(OccupancyGrid, self.map_topic, self.map_callback, map_qos)
         self.create_subscription(Odometry, self.odom_topic, self.odom_callback, qos_profile_sensor_data)
+        self.create_subscription(
+            PointCloud2,
+            self.actor_obstacle_topic,
+            self.actor_obstacle_callback,
+            qos_profile_sensor_data,
+        )
         if self.reference_odom_enabled:
             self.create_subscription(
                 Odometry,
@@ -112,6 +156,14 @@ class Nav2PoseGuard(Node):
             f'{self.input_cmd_vel_topic} to {self.output_cmd_vel_topic}; '
             f'pose must stay inside {self.map_topic} bounds in '
             f'{self.map_frame}->{self.base_frame}.'
+        )
+        self.get_logger().info(
+            'Actor collision guard enabled: '
+            f'{self.actor_obstacle_topic}, footprint='
+            f'{self.actor_vehicle_length:.2f}x{self.actor_vehicle_width:.2f}m, '
+            f'margin={self.actor_safety_margin:.2f}m, '
+            f'forward_buffer={self.actor_forward_buffer:.2f}m, '
+            f'forward_lateral_clearance={self.actor_forward_lateral_clearance:.2f}m.'
         )
         if self.min_turning_radius > 0.0:
             self.get_logger().info(
@@ -153,9 +205,68 @@ class Nav2PoseGuard(Node):
         self.last_reference_odom = msg
         self.last_reference_odom_monotonic = time.monotonic()
 
+    def actor_obstacle_callback(self, msg):
+        if not msg.header.frame_id:
+            return
+
+        transform = None
+        if msg.header.frame_id != self.map_frame:
+            try:
+                transform = self.tf_buffer.lookup_transform(
+                    self.map_frame,
+                    msg.header.frame_id,
+                    Time.from_msg(msg.header.stamp),
+                )
+            except TransformException as exc:
+                self.get_logger().warn(
+                    f'Ignoring actor obstacles: missing TF '
+                    f'{self.map_frame}->{msg.header.frame_id}: {exc}'
+                )
+                return
+
+        points = []
+        try:
+            for point in point_cloud2.read_points(
+                msg,
+                field_names=('x', 'y', 'intensity'),
+                skip_nans=True,
+            ):
+                if len(point) < 3 or float(point[2]) < 0.3:
+                    continue
+                x = float(point[0])
+                y = float(point[1])
+                if transform is not None:
+                    x, y = self.transform_xy(x, y, transform)
+                points.append((x, y))
+        except (TypeError, ValueError, RuntimeError) as exc:
+            self.get_logger().warn(f'Could not read actor obstacle cloud: {exc}')
+            return
+
+        self.actor_points_map = points
+        self.actor_points_monotonic = time.monotonic()
+        self.actor_cloud_frame = msg.header.frame_id
+
+    @staticmethod
+    def transform_xy(x, y, transform):
+        rotation = transform.transform.rotation
+        siny_cosp = 2.0 * (rotation.w * rotation.z + rotation.x * rotation.y)
+        cosy_cosp = 1.0 - 2.0 * (rotation.y * rotation.y + rotation.z * rotation.z)
+        yaw = math.atan2(siny_cosp, cosy_cosp)
+        cos_yaw = math.cos(yaw)
+        sin_yaw = math.sin(yaw)
+        translation = transform.transform.translation
+        return (
+            cos_yaw * x - sin_yaw * y + translation.x,
+            sin_yaw * x + cos_yaw * y + translation.y,
+        )
+
     def cmd_callback(self, msg):
         valid, reason = self.pose_is_valid()
         if valid:
+            actor_blocked, actor_reason = self.actor_collision_guard(msg)
+            if actor_blocked:
+                self.publish_zero(actor_reason)
+                return
             self.cmd_pub.publish(self.limit_ackermann_curvature(msg))
             return
 
@@ -170,6 +281,71 @@ class Nav2PoseGuard(Node):
             return
 
         self.publish_zero(reason)
+
+    def actor_collision_guard(self, msg):
+        if not self.actor_points_map:
+            return False, ''
+        if (
+            self.actor_obstacle_timeout > 0.0
+            and time.monotonic() - self.actor_points_monotonic
+            > self.actor_obstacle_timeout
+        ):
+            return False, ''
+
+        try:
+            transform = self.tf_buffer.lookup_transform(
+                self.map_frame,
+                self.base_frame,
+                Time(),
+            )
+        except TransformException:
+            return False, ''
+
+        vehicle_x = transform.transform.translation.x
+        vehicle_y = transform.transform.translation.y
+        vehicle_yaw = self.yaw_from_transform(transform)
+
+        # This is the final emergency gate, not the local planner. Let MPPI
+        # turn around a detected actor or back away from it. A hard stop is
+        # needed only for a forward command aimed at an actor in the narrow
+        # center corridor; otherwise this gate prevents the planned detour.
+        linear_x = float(msg.linear.x)
+        angular_z = float(msg.angular.z)
+        if not math.isfinite(linear_x) or not math.isfinite(angular_z):
+            return True, 'non-finite command while actor collision guard is active'
+        if linear_x <= 0.02 or abs(angular_z) >= 0.05:
+            return False, ''
+
+        cos_yaw = math.cos(vehicle_yaw)
+        sin_yaw = math.sin(vehicle_yaw)
+        half_length = self.actor_vehicle_length * 0.5
+        half_width = self.actor_vehicle_width * 0.5
+        margin = self.actor_safety_margin + self.actor_radius
+        min_x = -margin
+        max_x = half_length + margin + self.actor_forward_buffer
+        lateral_limit = min(
+            half_width + margin,
+            self.actor_forward_lateral_clearance,
+        )
+        for actor_x, actor_y in self.actor_points_map:
+            rel_x = actor_x - vehicle_x
+            rel_y = actor_y - vehicle_y
+            local_x = cos_yaw * rel_x + sin_yaw * rel_y
+            local_y = -sin_yaw * rel_x + cos_yaw * rel_y
+            if min_x <= local_x <= max_x and abs(local_y) <= lateral_limit:
+                return True, (
+                    f'forward actor corridor occupied: '
+                    f'local=({local_x:.2f},{local_y:.2f}) '
+                    f'cloud={self.actor_cloud_frame or "unknown"}'
+                )
+        return False, ''
+
+    @staticmethod
+    def yaw_from_transform(transform):
+        rotation = transform.transform.rotation
+        siny_cosp = 2.0 * (rotation.w * rotation.z + rotation.x * rotation.y)
+        cosy_cosp = 1.0 - 2.0 * (rotation.y * rotation.y + rotation.z * rotation.z)
+        return math.atan2(siny_cosp, cosy_cosp)
 
     def pose_is_valid(self):
         if self.map_bounds is None:

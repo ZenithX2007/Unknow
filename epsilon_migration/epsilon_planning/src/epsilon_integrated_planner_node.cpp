@@ -316,7 +316,7 @@ private:
     declare_parameter<std::string>("eudm_config_path", "");
     declare_parameter<std::string>("ssc_config_path", "");
     declare_parameter<double>("work_rate", 20.0);
-    declare_parameter<double>("dynamic_scene_timeout", 0.5);
+    declare_parameter<double>("dynamic_scene_timeout", 1.5);
     declare_parameter<double>("desired_velocity", 1.5);
     declare_parameter<int>("preferred_lateral_behavior", 0);
     declare_parameter<bool>("is_under_control", true);
@@ -346,7 +346,7 @@ private:
     declare_parameter<std::string>("status_topic", "/epsilon/status");
     declare_parameter<bool>("enable_external_predictions", true);
     declare_parameter<std::string>("predicted_trajectories_topic", "/epsilon/predicted_trajectories");
-    declare_parameter<double>("external_prediction_max_age", 0.8);
+    declare_parameter<double>("external_prediction_max_age", 2.0);
     declare_parameter<double>("external_prediction_min_probability", 0.0);
     declare_parameter<bool>("predicted_position_is_rear_axle", false);
   }
@@ -485,7 +485,6 @@ private:
     if (!msg->header.frame_id.empty()) {
       map_frame_ = msg->header.frame_id;
     }
-    PublishStatus("static scene updated");
   }
 
   void ArenaInfoDynamicCallback(const vehicle_msgs::msg::ArenaInfoDynamic::SharedPtr msg)
@@ -573,12 +572,14 @@ private:
       !last_trajectory_->IsValid() || !last_behavior_.has_value() ||
       !latest_scene_wall_time_.has_value())
     {
+      PublishSafeStop("degraded waiting for valid planning state");
       return;
     }
 
     const auto age = std::chrono::duration<double>(
       std::chrono::steady_clock::now() - *latest_scene_wall_time_).count();
     if (dynamic_scene_timeout_ > 0.0 && age > dynamic_scene_timeout_) {
+      PublishSafeStop("degraded dynamic scene is stale");
       return;
     }
 
@@ -623,10 +624,12 @@ private:
     if (!has_static_scene_) {
       RCLCPP_WARN_THROTTLE(
         get_logger(), *get_clock(), 2000, "waiting for ArenaInfoStatic or ArenaInfo");
+      PublishSafeStop("degraded waiting for ArenaInfoStatic or ArenaInfo");
       return;
     }
     if (lane_net_.lane_set.empty()) {
       RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 2000, "lane net is empty");
+      PublishSafeStop("degraded lane net is empty");
       return;
     }
 
@@ -634,11 +637,12 @@ private:
     if (vehicle_set.vehicles.count(ego_id_) == 0) {
       RCLCPP_WARN_THROTTLE(
         get_logger(), *get_clock(), 2000, "ego vehicle id %d is missing", ego_id_);
+      PublishSafeStop("degraded ego vehicle is missing");
       return;
     }
 
     if (data_renderer_->Render(stamp, lane_net_, vehicle_set, obstacle_set_) != kSuccess) {
-      PublishStatus("data renderer failed");
+      PublishSafeStop("degraded data renderer failed");
       return;
     }
 
@@ -647,7 +651,7 @@ private:
     const auto eudm_stamp = QuantizedStamp(stamp);
     auto task = MakeTask();
     if (eudm_manager_.Run(eudm_stamp, map_for_eudm, task) != kSuccess) {
-      PublishStatus("eudm failed");
+      PublishSafeStop("degraded eudm failed");
       return;
     }
 
@@ -662,13 +666,13 @@ private:
     MaybeSeedSscInitialState(stamp);
 
     if (ssc_planner_.RunOnce() != kSuccess) {
-      PublishStatus("ssc failed");
+      PublishSafeStop("degraded ssc failed");
       return;
     }
 
     auto trajectory = ssc_planner_.trajectory();
     if (trajectory == nullptr || !trajectory->IsValid()) {
-      PublishStatus("ssc returned invalid trajectory");
+      PublishSafeStop("degraded ssc returned invalid trajectory");
       return;
     }
 
@@ -688,7 +692,7 @@ private:
     const auto sample_time =
       std::clamp(stamp + control_lookahead_, last_trajectory_->begin(), last_trajectory_->end());
     if (last_trajectory_->GetState(sample_time, &desired_state) != kSuccess) {
-      PublishStatus("trajectory sampling failed");
+      PublishSafeStop("degraded trajectory sampling failed");
       return;
     }
     PublishControl(desired_state, behavior);
@@ -826,6 +830,36 @@ private:
     PublishStatus(status.str());
   }
 
+  void PublishSafeStop(const std::string & text)
+  {
+    const auto stamp = now();
+    vehicle_msgs::msg::ControlSignal control_msg;
+    control_msg.header.stamp = stamp;
+    control_msg.header.frame_id = map_frame_;
+    control_msg.acc = 0.0;
+    control_msg.steer_rate = 0.0;
+    control_msg.is_openloop.data = true;
+
+    common::State stop_state;
+    if (latest_ego_state_.has_value()) {
+      stop_state = *latest_ego_state_;
+    }
+    stop_state.velocity = 0.0;
+    stop_state.acceleration = 0.0;
+    stop_state.curvature = 0.0;
+    stop_state.steer = 0.0;
+    FillStateMsg(stop_state, stamp, map_frame_, &control_msg.state);
+    control_signal_pub_->publish(control_msg);
+
+    geometry_msgs::msg::Twist twist_msg;
+    cmd_vel_pub_->publish(twist_msg);
+
+    // A stop caused by missing/invalid planning data is not a healthy EPSILON
+    // command.  Marking it as ok makes the command mux select this zero Twist
+    // instead of falling back to a usable Nav2 command.
+    PublishStatus(text);
+  }
+
   void PublishStatus(const std::string & text)
   {
     std_msgs::msg::String msg;
@@ -839,7 +873,7 @@ private:
   std::string eudm_config_path_;
   std::string ssc_config_path_;
   double work_rate_{20.0};
-  double dynamic_scene_timeout_{0.5};
+  double dynamic_scene_timeout_{1.5};
   double desired_velocity_{1.5};
   int preferred_lateral_behavior_{0};
   bool is_under_control_{true};
@@ -862,7 +896,7 @@ private:
   std::string status_topic_;
   bool enable_external_predictions_{true};
   std::string predicted_trajectories_topic_{"/epsilon/predicted_trajectories"};
-  double external_prediction_max_age_{0.8};
+  double external_prediction_max_age_{2.0};
   double external_prediction_min_probability_{0.0};
   bool predicted_position_is_rear_axle_{false};
   int last_external_prediction_count_{0};

@@ -196,6 +196,8 @@ class ignition::gazebo::systems::ActorPosePrivate
   public: Entity actorEntity{kNullEntity};
 
   public: Entity vehicleEntity{kNullEntity};
+
+  public: Entity collisionProxyEntity{kNullEntity};
   
   public: msgs::Pose poseMsg;
 
@@ -230,13 +232,9 @@ class ignition::gazebo::systems::ActorPosePrivate
 
   public: bool manualTrajectoryWarned{false};
 
-  public: bool manualTimeInitialized{false};
-
-  public: double manualTime{0.0};
-
   public: bool blocked{false};
 
-  public: std::string animationName;
+  public: math::Pose3d blockedPose;
 
   public: bool scriptLoop{true};
 
@@ -296,6 +294,14 @@ void ActorPose::Configure(const Entity &_entity,
   this->dataPtr->vehicleEntity = _ecm.EntityByComponents(
       components::Name(this->dataPtr->vehicleName), components::Model());
 
+  const auto *actorName = _ecm.Component<components::Name>(_entity);
+  if (actorName)
+  {
+    this->dataPtr->collisionProxyEntity = _ecm.EntityByComponents(
+        components::Name(actorName->Data() + "_collision_proxy"),
+        components::Model());
+  }
+
   if (const auto *actorComponent =
       _ecm.Component<components::Actor>(this->dataPtr->actorEntity))
   {
@@ -310,7 +316,6 @@ void ActorPose::Configure(const Entity &_entity,
       if (!trajectory || trajectory->WaypointCount() == 0)
         continue;
 
-      this->dataPtr->animationName = trajectory->Type();
       this->dataPtr->waypoints.clear();
       this->dataPtr->waypoints.reserve(trajectory->WaypointCount());
       for (uint64_t wpIndex = 0; wpIndex < trajectory->WaypointCount();
@@ -355,8 +360,41 @@ void ActorPose::PreUpdate(const UpdateInfo &_info,
 {
   IGN_PROFILE("ActorPose::PreUpdate");
 
-  if (!this->dataPtr->softStop || _info.paused)
+  if (_info.paused)
     return;
+
+  if (this->dataPtr->collisionProxyEntity == kNullEntity)
+  {
+    const auto *actorName = _ecm.Component<components::Name>(
+        this->dataPtr->actorEntity);
+    if (actorName)
+    {
+      this->dataPtr->collisionProxyEntity = _ecm.EntityByComponents(
+          components::Name(actorName->Data() + "_collision_proxy"),
+          components::Model());
+    }
+  }
+
+  // Keep the hidden collision body aligned even when the optional soft-stop
+  // behavior is disabled.
+  if (!this->dataPtr->softStop)
+  {
+    if (this->dataPtr->collisionProxyEntity != kNullEntity)
+    {
+      const auto *actorWorldPose = _ecm.Component<components::WorldPose>(
+          this->dataPtr->actorEntity);
+      const auto *actorLocalPose = _ecm.Component<components::Pose>(
+          this->dataPtr->actorEntity);
+      if (actorWorldPose || actorLocalPose)
+      {
+        const math::Pose3d actorPose = actorWorldPose ?
+            actorWorldPose->Data() : actorLocalPose->Data();
+        _ecm.SetComponentData<components::Pose>(
+            this->dataPtr->collisionProxyEntity, actorPose);
+      }
+    }
+    return;
+  }
 
   if (!this->dataPtr->manualTrajectoryLoaded)
   {
@@ -391,16 +429,10 @@ void ActorPose::PreUpdate(const UpdateInfo &_info,
   const math::Pose3d vehiclePose =
       vehicleWorldPose ? vehicleWorldPose->Data() : vehicleLocalPose->Data();
 
-  if (!this->dataPtr->manualTimeInitialized)
-  {
-    this->dataPtr->manualTime =
-        std::chrono::duration<double>(_info.simTime).count();
-    this->dataPtr->manualTimeInitialized = true;
-  }
-
   const double dt = std::max(
       0.0, std::chrono::duration<double>(_info.dt).count());
-  const double currentTime = this->dataPtr->manualTime;
+  const double currentTime =
+      std::chrono::duration<double>(_info.simTime).count();
   const double candidateTime = currentTime + dt;
   math::Pose3d currentPose = InterpolatePose(
       this->dataPtr->waypoints, currentTime - this->dataPtr->scriptDelayStart,
@@ -419,57 +451,65 @@ void ActorPose::PreUpdate(const UpdateInfo &_info,
       this->dataPtr->vehicleWidth, this->dataPtr->vehiclePadding,
       this->dataPtr->actorRadius);
 
-  bool blockThisStep = false;
-  if (this->dataPtr->blocked)
+  if (!this->dataPtr->blocked)
   {
-    if (currentClearance <= this->dataPtr->releaseMargin)
-      blockThisStep = true;
-    else
-      blockThisStep = candidateClearance <= this->dataPtr->stopMargin;
-  }
-  else
-  {
-    blockThisStep = currentClearance <= 0.0 ||
-        candidateClearance <= this->dataPtr->stopMargin;
-  }
+    // Leave the actor under Gazebo's native script unless its next step would
+    // enter the vehicle safety envelope.
+    if (currentClearance > 0.0 &&
+        candidateClearance > this->dataPtr->stopMargin)
+      return;
 
-  math::Pose3d outputPose = candidatePose;
-  if (blockThisStep)
-  {
-    outputPose = currentPose;
+    this->dataPtr->blockedPose = currentPose;
     if (currentClearance <= this->dataPtr->stopMargin)
     {
-      outputPose = ClampActorOutsideVehicle(
+      this->dataPtr->blockedPose = ClampActorOutsideVehicle(
           currentPose, vehiclePose, this->dataPtr->vehicleLength,
           this->dataPtr->vehicleWidth, this->dataPtr->vehiclePadding,
           this->dataPtr->actorRadius, this->dataPtr->stopMargin);
     }
+    this->dataPtr->blocked = true;
+    const auto *name =
+        _ecm.Component<components::Name>(this->dataPtr->actorEntity);
+    ignmsg << "Actor soft-stop holding "
+           << (name ? name->Data() : std::string("actor"))
+           << ", clearance=" << currentClearance << std::endl;
   }
   else
   {
-    this->dataPtr->manualTime = candidateTime;
+    const double blockedClearance = ActorVehicleClearance(
+        this->dataPtr->blockedPose, vehiclePose, this->dataPtr->vehicleLength,
+        this->dataPtr->vehicleWidth, this->dataPtr->vehiclePadding,
+        this->dataPtr->actorRadius);
+    if (blockedClearance > this->dataPtr->releaseMargin &&
+        candidateClearance > this->dataPtr->stopMargin)
+    {
+      // Remove the manual override so Gazebo can resume its SDF trajectory.
+      _ecm.RemoveComponent<components::TrajectoryPose>(
+          this->dataPtr->actorEntity);
+      this->dataPtr->blocked = false;
+      const auto *name =
+          _ecm.Component<components::Name>(this->dataPtr->actorEntity);
+      ignmsg << "Actor soft-stop released "
+             << (name ? name->Data() : std::string("actor"))
+             << ", clearance=" << blockedClearance << std::endl;
+      return;
+    }
   }
 
-  if (blockThisStep != this->dataPtr->blocked)
+  if (this->dataPtr->blocked)
   {
-    const auto *name =
-        _ecm.Component<components::Name>(this->dataPtr->actorEntity);
-    ignmsg << "Actor soft-stop "
-           << (blockThisStep ? "holding " : "released ")
-           << (name ? name->Data() : std::string("actor"))
-           << ", clearance="
-           << (blockThisStep ? currentClearance : candidateClearance)
-           << std::endl;
-    this->dataPtr->blocked = blockThisStep;
+    Actor actor(this->dataPtr->actorEntity);
+    actor.SetTrajectoryPose(_ecm, this->dataPtr->blockedPose);
   }
 
-  Actor actor(this->dataPtr->actorEntity);
-  if (!this->dataPtr->animationName.empty())
-    actor.SetAnimationName(_ecm, this->dataPtr->animationName);
-  actor.SetAnimationTime(_ecm,
-      std::chrono::duration_cast<std::chrono::steady_clock::duration>(
-          std::chrono::duration<double>(this->dataPtr->manualTime)));
-  actor.SetTrajectoryPose(_ecm, outputPose);
+  if (this->dataPtr->collisionProxyEntity != kNullEntity)
+  {
+    math::Pose3d proxyPose = currentPose;
+    if (this->dataPtr->blocked)
+      proxyPose = this->dataPtr->blockedPose;
+    _ecm.SetComponentData<components::Pose>(
+        this->dataPtr->collisionProxyEntity, proxyPose);
+  }
 }
 
 //////////////////////////////////////////////////

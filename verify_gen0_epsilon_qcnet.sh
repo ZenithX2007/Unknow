@@ -317,6 +317,15 @@ check_publish_path_bt_plugin_exports() {
     | grep -E 'GLOBAL.*DEFAULT.*BT_RegisterNodesFromPlugin' >/dev/null
 }
 
+check_epsilon_nav2_overlay_isolated() {
+  grep -q '/tmp/gen0_epsilon_nav2_costmap_overlay.yaml' \
+    "$WORKSPACE/epsilon_migration/epsilon_planning/launch/gen0_navigation_epsilon.launch.py"
+}
+
+check_controller_inflation_radius() {
+  ros2 param dump /controller_server 2>/dev/null | grep -q 'inflation_radius: 1.2'
+}
+
 static_checks() {
   log "Static checks: workspace=$WORKSPACE qcnet_root=$QCNET_ROOT ckpt=$QCNET_CKPT_PATH backend=$QCNET_BACKEND device=$QCNET_DEVICE"
   check "ROS 2 Humble setup exists" test -f /opt/ros/humble/setup.bash
@@ -341,6 +350,7 @@ static_checks() {
   check "QCNet checkpoint exists" test -f "$QCNET_CKPT_PATH"
   check "EPSILON launch arguments parse" check_epsilon_launch_args_parse
   check "EPSILON Nav2 launch arguments parse" check_epsilon_nav2_launch_args_parse
+  check "EPSILON Nav2 overlay is isolated" check_epsilon_nav2_overlay_isolated
   check "PublishPath BT plugin exports registration symbol" check_publish_path_bt_plugin_exports
   check "QCNet checkpoint loads" check_qcnet_checkpoint_loads
 }
@@ -366,6 +376,7 @@ runtime_checks() {
 
   check "Odom topic type is nav_msgs/msg/Odometry" topic_has_type "$ODOM_TOPIC" nav_msgs/msg/Odometry
   check "Projected costmap topic type is nav_msgs/msg/OccupancyGrid" topic_has_type "$COSTMAP_TOPIC" nav_msgs/msg/OccupancyGrid
+  check "Controller server inflation radius is 1.2" check_controller_inflation_radius
   if [[ "$EXPECT_PATH" == "true" ]]; then
     check "Nav2 smoothed path topic type is nav_msgs/msg/Path" topic_has_type "$PATH_TOPIC" nav_msgs/msg/Path
   else

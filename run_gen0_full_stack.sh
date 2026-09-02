@@ -45,11 +45,19 @@ else
 fi
 
 NAV2_RAW_CMD_VEL_TOPIC="${GEN0_NAV2_RAW_CMD_VEL_TOPIC:-/control/nav2_cmd_vel_raw}"
-GUARDED_CMD_VEL_TOPIC="${GEN0_EPSILON_MUX_OUTPUT_CMD_VEL_TOPIC:-/control/cmd_vel_raw}"
+if [[ "$START_EPSILON" != "true" && -z "${GEN0_EPSILON_MUX_OUTPUT_CMD_VEL_TOPIC:-}" ]]; then
+  # Without EPSILON there is no mux, so Nav2 must feed the pose guard directly.
+  GUARDED_CMD_VEL_TOPIC="$NAV2_RAW_CMD_VEL_TOPIC"
+else
+  GUARDED_CMD_VEL_TOPIC="${GEN0_EPSILON_MUX_OUTPUT_CMD_VEL_TOPIC:-/control/cmd_vel_raw}"
+fi
 FINAL_CMD_VEL_TOPIC="${GEN0_FINAL_CMD_VEL_TOPIC:-/cmd_vel}"
-NAV2_REFERENCE_ODOM_TOPIC="${GEN0_NAV2_REFERENCE_ODOM_TOPIC:-/odom}"
-NAV2_MAX_REFERENCE_ODOM_ERROR="${GEN0_NAV2_MAX_REFERENCE_ODOM_ERROR:-3.0}"
-NAV2_MAX_REFERENCE_YAW_ERROR="${GEN0_NAV2_MAX_REFERENCE_YAW_ERROR:-0.75}"
+# Full-stack Nav2 already consumes the normalized stable odometry topic.  Do
+# not compare it with raw /odom by default: stable_odom intentionally resets
+# the simulation origin, so the two streams differ by the Gazebo spawn pose.
+NAV2_REFERENCE_ODOM_TOPIC="${GEN0_NAV2_REFERENCE_ODOM_TOPIC:-}"
+NAV2_MAX_REFERENCE_ODOM_ERROR="${GEN0_NAV2_MAX_REFERENCE_ODOM_ERROR:-0.0}"
+NAV2_MAX_REFERENCE_YAW_ERROR="${GEN0_NAV2_MAX_REFERENCE_YAW_ERROR:-0.0}"
 NAV2_REFERENCE_ODOM_TIMEOUT="${GEN0_NAV2_REFERENCE_ODOM_TIMEOUT:-2.0}"
 
 EPSILON_CMD_VEL_TOPIC="${GEN0_EPSILON_CMD_VEL_TOPIC:-/epsilon/cmd_vel_raw}"
@@ -81,10 +89,25 @@ ACTOR_OUTPUT_ORIGIN_XY="${GEN0_ACTOR_OUTPUT_ORIGIN_XY:-0.0,0.0}"
 SCENARIO_ACTOR_TOPIC_PREFIX="${GEN0_EPSILON_SCENARIO_ACTOR_TOPIC_PREFIX:-/epsilon/scenario_actor}"
 SCENARIO_ACTOR_PUBLISH_RATE="${GEN0_EPSILON_SCENARIO_ACTOR_PUBLISH_RATE:-10.0}"
 BASE_DYNAMIC_ACTOR_TOPICS="${GEN0_FULL_STACK_BASE_DYNAMIC_ACTOR_TOPICS:-${GEN0_DYNAMIC_ACTOR_TOPICS:-}}"
+BASE_ACTOR_COSTMAP_POSE_TOPICS="${GEN0_FULL_STACK_ACTOR_COSTMAP_POSE_TOPICS:-${GEN0_ACTOR_COSTMAP_POSE_TOPICS:-}}"
 EPSILON_DYNAMIC_ACTOR_TOPICS="${GEN0_DYNAMIC_ACTOR_TOPICS:-}"
 EPSILON_ACTOR_POSE_TOPICS="${GEN0_EPSILON_ACTOR_POSE_TOPICS:-}"
 if [[ "$ACTOR_SOURCE" == "scenario" && -z "${GEN0_FULL_STACK_BASE_DYNAMIC_ACTOR_TOPICS+x}" ]]; then
-  BASE_DYNAMIC_ACTOR_TOPICS="/gen0_disabled_actor_pose/pose"
+  # Do not duplicate actors into the high-volume simulated lidar. Nav2 receives
+  # their live poses through the lightweight actor costmap below.
+  BASE_DYNAMIC_ACTOR_TOPICS=""
+fi
+if [[ "$ACTOR_SOURCE" == "scenario" && -z "${GEN0_FULL_STACK_ACTOR_COSTMAP_POSE_TOPICS+x}" ]]; then
+  BASE_ACTOR_COSTMAP_POSE_TOPICS=""
+  for actor_index in {1..20}; do
+    actor_topic="/actor/pedestrian_${actor_index}/pose"
+    if [[ -n "$BASE_ACTOR_COSTMAP_POSE_TOPICS" ]]; then
+      BASE_ACTOR_COSTMAP_POSE_TOPICS+=","
+    fi
+    BASE_ACTOR_COSTMAP_POSE_TOPICS+="$actor_topic"
+  done
+fi
+if [[ "$ACTOR_SOURCE" == "scenario" ]]; then
   EPSILON_DYNAMIC_ACTOR_TOPICS=""
   EPSILON_ACTOR_POSE_TOPICS=""
 fi
@@ -269,7 +292,7 @@ for package_name in epsilon_planning qcnet_prediction gen0_nav2_path_exporter; d
   fi
 done
 
-if [[ "$NAV2_RAW_CMD_VEL_TOPIC" == "$GUARDED_CMD_VEL_TOPIC" ]]; then
+if [[ "$START_EPSILON" == "true" && "$NAV2_RAW_CMD_VEL_TOPIC" == "$GUARDED_CMD_VEL_TOPIC" ]]; then
   printf 'GEN0_NAV2_RAW_CMD_VEL_TOPIC and GEN0_EPSILON_MUX_OUTPUT_CMD_VEL_TOPIC must differ.\n' >&2
   exit 1
 fi
@@ -316,6 +339,7 @@ if [[ "$START_BASE_STACK" == "true" ]]; then
       GEN0_WORLD="$WORLD" \
       GEN0_ACTORS_SCENARIO="$ACTORS_SCENARIO" \
       GEN0_DYNAMIC_ACTOR_TOPICS="$BASE_DYNAMIC_ACTOR_TOPICS" \
+      GEN0_ACTOR_COSTMAP_POSE_TOPICS="$BASE_ACTOR_COSTMAP_POSE_TOPICS" \
       GEN0_ACTOR_WORLD_SDF_PATH="$ACTOR_WORLD_SDF_PATH" \
       GEN0_ACTOR_WORLD_VEHICLE_NAME="$ACTOR_WORLD_VEHICLE_NAME" \
       GEN0_ACTOR_WORLD_TO_OUTPUT="$ACTOR_WORLD_TO_OUTPUT" \
@@ -395,6 +419,7 @@ if [[ "$START_NAV2" == "true" ]]; then
       nav2_cmd_vel_topic:="$NAV2_RAW_CMD_VEL_TOPIC" \
       guarded_cmd_vel_topic:="$GUARDED_CMD_VEL_TOPIC" \
       final_cmd_vel_topic:="$FINAL_CMD_VEL_TOPIC" \
+      actor_obstacle_topic:="/gen0_mapping/actor_obstacles" \
       publish_identity_map_to_odom:=false \
       costmap_source:="$NAV2_COSTMAP_SOURCE" \
       map_source:="$NAV2_MAP_SOURCE" \

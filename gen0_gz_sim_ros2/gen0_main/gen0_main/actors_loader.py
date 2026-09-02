@@ -50,6 +50,13 @@ class ActorsLoader(Node):
         for actor in actors:
             world_element.remove(actor)
 
+        # The Gazebo actor type is animated but has no physical collision
+        # geometry. Add hidden kinematic proxies so vehicles cannot pass
+        # through pedestrians while the actor animation remains unchanged.
+        for model in list(world_element.findall('model')):
+            if model.get('name', '').endswith('_collision_proxy'):
+                world_element.remove(model)
+
         # Load the actors scenario file
         actors_scenario_path = self.package_directory + '/worlds/scenarios/' + self.world + '/' + self.actors_scenario + '.sdf'
         if os.path.exists(actors_scenario_path):
@@ -64,10 +71,49 @@ class ActorsLoader(Node):
                     if plugin.get('filename') == 'ActorPose':
                         plugin.set('filename', 'libActorPose.so')
                 world_element.append(new_actor_element)
+                proxy = self.create_collision_proxy(new_actor_element)
+                if proxy is not None:
+                    world_element.append(proxy)
                 self.actor_topics.append("/actor/" + actor.get('name') + "/pose")
                 
         # Write the modified world file back
         world_tree.write(world_file_path)
+
+    @staticmethod
+    def create_collision_proxy(actor):
+        name = (actor.get('name') or '').strip()
+        if not name:
+            return None
+
+        first_pose = actor.find('./script/trajectory/waypoint/pose')
+        if first_pose is None or not first_pose.text:
+            return None
+        values = first_pose.text.split()
+        if len(values) < 3:
+            return None
+
+        model = ET.Element('model', {'name': f'{name}_collision_proxy'})
+        ET.SubElement(model, 'pose').text = ' '.join(values[:6])
+        ET.SubElement(model, 'static').text = 'false'
+        ET.SubElement(model, 'self_collide').text = 'false'
+        ET.SubElement(model, 'allow_auto_disable').text = 'false'
+
+        link = ET.SubElement(model, 'link', {'name': 'collision'})
+        ET.SubElement(link, 'gravity').text = 'false'
+        ET.SubElement(link, 'kinematic').text = 'true'
+        inertial = ET.SubElement(link, 'inertial')
+        ET.SubElement(inertial, 'mass').text = '1.0'
+        inertia = ET.SubElement(inertial, 'inertia')
+        ET.SubElement(inertia, 'ixx').text = '0.1'
+        ET.SubElement(inertia, 'iyy').text = '0.1'
+        ET.SubElement(inertia, 'izz').text = '0.1'
+
+        collision = ET.SubElement(link, 'collision', {'name': 'body'})
+        geometry = ET.SubElement(collision, 'geometry')
+        cylinder = ET.SubElement(geometry, 'cylinder')
+        ET.SubElement(cylinder, 'radius').text = '0.45'
+        ET.SubElement(cylinder, 'length').text = '1.6'
+        return model
 
     def subscribe_to_actors(self):
         self.get_logger().info("Available actor topics: " + str(self.actor_topics))

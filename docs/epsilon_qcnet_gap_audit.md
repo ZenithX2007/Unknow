@@ -81,12 +81,23 @@ Runtime check after Gazebo/SLAM, Nav2, a Nav2 goal, and EPSILON/QCNet are runnin
 One-terminal supervised startup:
 
 ```bash
+cd /home/zjxue2007/Unknow
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+./stop_gen0_full_stack.sh
+
 GEN0_WORLD=my_map \
 GEN0_ACTORS_SCENARIO=walking_actors3 \
-GEN0_QCNET_BACKEND=auto \
+GEN0_GAZEBO_GUI=true \
+GEN0_RVIZ=true \
+GEN0_NAV2_RVIZ=true \
+GEN0_QCNET_BACKEND=qcnet \
+GEN0_QCNET_DEVICE=cuda \
 ./run_gen0_full_stack.sh
 ```
 
+This is the preferred integrated launch path for the new stack:
+relocalization base -> EPSILON/QCNet -> Nav2 sidecar.
 Send a Nav2 goal in RViz after the window opens. Then run the runtime verification from a second terminal.
 
 If you are only validating the planner plumbing without actors:

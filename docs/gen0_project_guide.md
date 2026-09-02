@@ -18,9 +18,41 @@ Nav2 -> /control/nav2_cmd_vel_raw -> epsilon_cmd_vel_mux_node
      -> ros_gz_bridge -> Gazebo Ackermann steering
 ```
 
+For Nav2-only diagnosis with EPSILON disabled, the mux is not started and the
+command path is shortened to:
+
+```text
+Nav2 -> /control/nav2_cmd_vel_raw -> nav2_pose_guard -> /cmd_vel
+     -> ros_gz_bridge -> Gazebo Ackermann steering
+```
+
 Important logs are under `/home/zjxue2007/Unknow/runtime_logs/`, especially
 `relocalization_stack.log`, `relocalization_3d_slam.log`, `gazebo.log`, and
 `fast_lio_3d_slam.log`.
+
+## Current Verified State (2026-09-02)
+
+- The normal entry point remains `run_gen0_full_stack.sh`; no startup entry
+  point was changed.
+- The `my_map` Gazebo vehicle spawn pose is restored to the original pose:
+  `x=-20.6991, y=-22.4324, z=2.85, yaw=-0.5406`. The temporary 9 m forward
+  spawn experiment was removed.
+- The default pedestrian soft-stop hysteresis is now
+  `GEN0_ACTOR_SOFT_STOP_MARGIN=1.5` and
+  `GEN0_ACTOR_SOFT_STOP_RELEASE_MARGIN=1.9`. An actor is paused only while
+  its predicted trajectory enters the vehicle safety envelope; the release
+  threshold is larger to prevent rapid stop/restart oscillation.
+- Moving actor poses are supplied to `/gen0_mapping/actor_obstacles` for Nav2.
+  They are intentionally excluded from the simulated lidar input so that
+  `odom_registered_scan` and terrain mapping do not accumulate a horizontal
+  trail when an actor crosses the road.
+- The Nav2 local inflation radius in the EPSILON profile is `0.6 m`, reduced
+  from `1.2 m` to avoid unnecessarily closing narrow passages. The final
+  `nav2_pose_guard` remains an emergency collision gate; normal pedestrian
+  clearance and detours are handled by the actor costmap and Nav2 controller.
+- The last parameter/documentation change was committed and pushed to
+  `origin/gen0_humble` as commit `39ebd5b`. Other current worktree changes are
+  intentionally not included in that commit.
 
 ## Normal Base Startup
 
@@ -117,6 +149,31 @@ EPSILON command above with `PYTHONNOUSERSITE=1`. The base-only startup with
 For a temporary non-QCNet integration test only, use
 `GEN0_QCNET_BACKEND=constant_velocity`; this does not validate the QCNet model
 or GPU inference path.
+
+### Nav2-only Control Verification
+
+On 2026-09-02, Nav2-only startup was verified with
+`GEN0_START_EPSILON=false` and `GEN0_START_NAV2=true`. Do not set
+`GEN0_EPSILON_MUX_OUTPUT_CMD_VEL_TOPIC` to the Nav2 topic. When EPSILON is
+disabled, `run_gen0_full_stack.sh` connects the Nav2 raw topic directly to the
+pose guard.
+
+The verification showed that Nav2 generated non-zero commands, the pose guard
+reported `Pose guard cleared; forwarding Nav2 velocity commands.`, and
+`/cmd_vel` had one publisher and one subscriber. The publisher was
+`nav2_pose_guard`; the subscriber was the Gazebo `ros_gz_bridge`.
+
+Seeing `Unknown topic /control/nav2_cmd_vel_raw` after the stack has stopped is
+expected because the Nav2 publisher has exited. Similarly, `ros2 topic info
+/map` may show zero publishers after shutdown even if `ros2 topic echo /map
+--once` receives a transient-local latched map message.
+
+The corresponding runtime log is `runtime_logs/nav2_epsilon.log`. If Nav2
+reports `Failed to make progress` while the pose guard is forwarding commands,
+the remaining issue is downstream vehicle motion or controller tuning. The
+profile also reports that its `0.6 m` inflation radius is smaller than the
+approximately `1.05 m` inscribed radius of the configured `4 m x 2 m`
+footprint; this warning remains relevant for tuning.
 
 ## Pedestrian Loading
 

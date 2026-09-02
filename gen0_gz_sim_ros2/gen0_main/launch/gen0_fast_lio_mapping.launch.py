@@ -137,6 +137,7 @@ def generate_launch_description():
         "simulated_lidar_vertical_max_angle"
     )
     dynamic_actor_topics = LaunchConfiguration("dynamic_actor_topics")
+    actor_pose_topics = LaunchConfiguration("actor_pose_topics")
     actors_scenario_path = LaunchConfiguration("actors_scenario_path")
     actor_costmap = LaunchConfiguration("actor_costmap")
     actor_obstacle_topic = LaunchConfiguration("actor_obstacle_topic")
@@ -489,6 +490,11 @@ def generate_launch_description():
                 "dynamic_actor_topics",
                 default_value="",
                 description="Comma-separated actor PoseStamped topics added to the simulated lidar fallback.",
+            ),
+            DeclareLaunchArgument(
+                "actor_pose_topics",
+                default_value="",
+                description="Comma-separated live actor PoseStamped topics used by the actor costmap and collision monitor.",
             ),
             DeclareLaunchArgument(
                 "actors_scenario_path",
@@ -980,7 +986,7 @@ def generate_launch_description():
                     {
                         "use_sim_time": use_sim_time,
                         "actors_scenario_path": actors_scenario_path,
-                        "actor_pose_topics": dynamic_actor_topics,
+                        "actor_pose_topics": actor_pose_topics,
                         "output_topic": actor_obstacle_topic,
                         "frame_id": actor_obstacle_frame,
                         "world_sdf_path": actor_world_sdf_path,
@@ -991,15 +997,15 @@ def generate_launch_description():
                         "output_origin_xy": ParameterValue(
                             actor_output_origin_xy, value_type=str
                         ),
-                        "publish_rate": 10.0,
+                        "publish_rate": 5.0,
                         "live_pose_timeout": 1.0,
                         "actor_radius": 0.45,
                         "actor_z_min": 0.15,
                         "actor_z_max": 1.45,
                         "actor_mark_intensity": 0.6,
                         "actor_clear_intensity": 0.0,
-                        "actor_radial_samples": 24,
-                        "actor_height_samples": 4,
+                        "actor_radial_samples": 12,
+                        "actor_height_samples": 2,
                     }
                 ],
             ),
@@ -1012,7 +1018,7 @@ def generate_launch_description():
                 parameters=[
                     {
                         "use_sim_time": use_sim_time,
-                        "actor_pose_topics": dynamic_actor_topics,
+                        "actor_pose_topics": actor_pose_topics,
                         "vehicle_pose_topic": "/gen0_model/links/poses",
                         "vehicle_pose_index": 15,
                         "event_topic": actor_collision_event_topic,
@@ -1123,7 +1129,7 @@ def generate_launch_description():
                         "odom_topic": scurm_odom_topic,
                         "map_topic": "/projected_map",
                         "costmap_topic": "/projected_costmap",
-                        "frame_id": "odom",
+                        "frame_id": "map",
                         "resolution": 0.10,
                         "publish_period": 1.0,
                         "accumulate_history": True,
@@ -1164,7 +1170,7 @@ def generate_launch_description():
                         "robot_clear_width": 0.0,
                         "robot_clear_margin": 0.0,
                         "publish_empty_until_data": True,
-                        "inflation_radius": 0.5,
+                        "inflation_radius": 1.2,
                         "inflation_cost_scaling": 5.0,
                     }
                 ],

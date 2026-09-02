@@ -3,7 +3,7 @@ epsilon_integrated_planner_node:
     ego_id: 0
     map_frame: map
     work_rate: 20.0
-    dynamic_scene_timeout: 0.5
+    dynamic_scene_timeout: 1.5
     desired_velocity: 1.5
     preferred_lateral_behavior: 0
     is_under_control: true
@@ -36,7 +36,7 @@ epsilon_integrated_planner_node:
     status_topic: /epsilon/status
     enable_external_predictions: true
     predicted_trajectories_topic: /epsilon/predicted_trajectories
-    external_prediction_max_age: 0.8
+    external_prediction_max_age: 2.0
     external_prediction_min_probability: 0.0
     predicted_position_is_rear_axle: false
 
@@ -52,12 +52,12 @@ epsilon_scene_bridge_node:
     arena_info_dynamic_topic: /epsilon/arena_info_dynamic
     publish_period: 1.0
     dynamic_publish_period: 0.1
-    path_timeout: 30.0
+    path_timeout: 120.0
 
     ego_id: 0
     min_lane_point_spacing: 0.3
-    centerline_is_road_center: false
-    virtual_lane_count: 1
+    centerline_is_road_center: true
+    virtual_lane_count: 3
     lane_width: 3.2
     allow_opposite_lane_change: false
 
@@ -66,6 +66,11 @@ epsilon_scene_bridge_node:
     max_obstacle_cells: 2500
     grid_obstacle_radius: 0.12
     object_obstacle_radius: 0.35
+    filter_dynamic_actors_by_lane: true
+    actor_lane_max_distance: 4.0
+    align_path_to_ego: true
+    path_ego_max_heading_error: 1.35
+    path_ego_max_snap_distance: 8.0
 
     odom_pose_is_rear_axle: false
     shift_path_to_rear_axle: true

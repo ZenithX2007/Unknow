@@ -8,8 +8,8 @@ costmap:
       robot_base_frame: base_link
       transform_tolerance: 0.5
       rolling_window: true
-      width: 15
-      height: 15
+      width: 30
+      height: 30
       resolution: 0.05
       footprint: "[[2.0, 1.0], [2.0, -1.0], [-2.0, -1.0], [-2.0, 1.0]]"
       footprint_padding: 0.05
@@ -31,7 +31,7 @@ costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 5.0
-        inflation_radius: 0.5
+        inflation_radius: 1.2
 
       local_obstacle_layer:
         plugin: "costmap_intensity::ObstacleLayerIntensity"
@@ -75,9 +75,9 @@ costmap:
           expected_update_rate: 0.0
           max_obstacle_height: 2.0
           min_obstacle_height: -2.0
-          obstacle_max_range: 7.0
+          obstacle_max_range: 14.0
           obstacle_min_range: 0.15
-          raytrace_max_range: 8.0
+          raytrace_max_range: 15.0
           raytrace_min_range: 0.1
           clearing: true
           marking: true

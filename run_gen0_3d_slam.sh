@@ -86,6 +86,7 @@ SIM_LIDAR_SURFACE_SAMPLING="${GEN0_SIM_LIDAR_SURFACE_SAMPLING:-true}"
 SIM_LIDAR_SURFACE_SAMPLES="${GEN0_SIM_LIDAR_SURFACE_SAMPLES:-1000000}"
 SIM_LIDAR_ADD_OBSTACLE_COLUMNS="${GEN0_SIM_LIDAR_ADD_OBSTACLE_COLUMNS:-false}"
 DYNAMIC_ACTOR_TOPICS="${GEN0_DYNAMIC_ACTOR_TOPICS:-}"
+ACTOR_COSTMAP_POSE_TOPICS="${GEN0_ACTOR_COSTMAP_POSE_TOPICS:-}"
 ACTOR_COSTMAP="${GEN0_ACTOR_COSTMAP:-true}"
 ACTOR_OBSTACLE_TOPIC="${GEN0_ACTOR_OBSTACLE_TOPIC:-/gen0_mapping/actor_obstacles}"
 ACTOR_OBSTACLE_FRAME="${GEN0_ACTOR_OBSTACLE_FRAME:-odom}"
@@ -133,13 +134,13 @@ if [[ -n "$ACTORS_SCENARIO" ]]; then
   ACTORS_SCENARIO_PATH="$WORKSPACE/gen0_gz_sim_ros2/gen0_main/worlds/scenarios/$WORLD/$ACTORS_SCENARIO.sdf"
 fi
 
-if [[ -z "$DYNAMIC_ACTOR_TOPICS" && -n "$ACTORS_SCENARIO" ]]; then
+if [[ -z "$ACTOR_COSTMAP_POSE_TOPICS" && -n "$ACTORS_SCENARIO" ]]; then
   for actor_index in {1..20}; do
     actor_topic="/actor/pedestrian_${actor_index}/pose"
-    if [[ -n "$DYNAMIC_ACTOR_TOPICS" ]]; then
-      DYNAMIC_ACTOR_TOPICS+=","
+    if [[ -n "$ACTOR_COSTMAP_POSE_TOPICS" ]]; then
+      ACTOR_COSTMAP_POSE_TOPICS+=","
     fi
-    DYNAMIC_ACTOR_TOPICS+="$actor_topic"
+    ACTOR_COSTMAP_POSE_TOPICS+="$actor_topic"
   done
 fi
 
@@ -556,6 +557,7 @@ fast_lio_launch=(
   projected_map_reference_odom_timeout:="$PROJECTED_MAP_ODOM_TIMEOUT"
   local_costmap:="$LOCAL_COSTMAP"
   actor_costmap:="$ACTOR_COSTMAP"
+  actor_pose_topics:="$ACTOR_COSTMAP_POSE_TOPICS"
   actor_obstacle_topic:="$ACTOR_OBSTACLE_TOPIC"
   actor_obstacle_frame:="$ACTOR_OBSTACLE_FRAME"
   actor_world_sdf_path:="$ACTOR_WORLD_SDF_PATH"

@@ -3,6 +3,7 @@
 #include <cmath>
 #include <chrono>
 #include <functional>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <unordered_map>
@@ -33,6 +34,56 @@ double YawFromQuaternion(const geometry_msgs::msg::Quaternion & q)
 double Distance2D(const geometry_msgs::msg::Point & a, const geometry_msgs::msg::Point & b)
 {
   return std::hypot(a.x - b.x, a.y - b.y);
+}
+
+double NormalizeAngle(double angle)
+{
+  return std::atan2(std::sin(angle), std::cos(angle));
+}
+
+double AngleDifference(double a, double b)
+{
+  return std::fabs(NormalizeAngle(a - b));
+}
+
+struct SegmentProjection2D
+{
+  geometry_msgs::msg::Point point;
+  double distance{std::numeric_limits<double>::infinity()};
+  double t{0.0};
+};
+
+SegmentProjection2D ProjectPointToSegment2D(
+  const geometry_msgs::msg::Point & point,
+  const geometry_msgs::msg::Point & start,
+  const geometry_msgs::msg::Point & end)
+{
+  SegmentProjection2D projection;
+  const auto vx = end.x - start.x;
+  const auto vy = end.y - start.y;
+  const auto wx = point.x - start.x;
+  const auto wy = point.y - start.y;
+  const auto length_sq = vx * vx + vy * vy;
+  if (length_sq <= 1e-12) {
+    projection.point = start;
+    projection.distance = Distance2D(point, start);
+    return projection;
+  }
+
+  projection.t = std::clamp((wx * vx + wy * vy) / length_sq, 0.0, 1.0);
+  projection.point.x = start.x + projection.t * vx;
+  projection.point.y = start.y + projection.t * vy;
+  projection.point.z = 0.0;
+  projection.distance = Distance2D(point, projection.point);
+  return projection;
+}
+
+double PointToSegmentDistance2D(
+  const geometry_msgs::msg::Point & point,
+  const geometry_msgs::msg::Point & start,
+  const geometry_msgs::msg::Point & end)
+{
+  return ProjectPointToSegment2D(point, start, end).distance;
 }
 
 geometry_msgs::msg::Point OffsetPoint(
@@ -136,11 +187,11 @@ private:
     declare_parameter<std::string>("arena_info_dynamic_topic", "/epsilon/arena_info_dynamic");
     declare_parameter<double>("publish_period", 1.0);
     declare_parameter<double>("dynamic_publish_period", 0.1);
-    declare_parameter<double>("path_timeout", 1.5);
+    declare_parameter<double>("path_timeout", 120.0);
     declare_parameter<int>("ego_id", 0);
     declare_parameter<double>("min_lane_point_spacing", 0.3);
-    declare_parameter<bool>("centerline_is_road_center", false);
-    declare_parameter<int>("virtual_lane_count", 1);
+    declare_parameter<bool>("centerline_is_road_center", true);
+    declare_parameter<int>("virtual_lane_count", 3);
     declare_parameter<double>("lane_width", 3.2);
     declare_parameter<bool>("allow_opposite_lane_change", false);
     declare_parameter<int>("occupied_threshold", 65);
@@ -148,6 +199,11 @@ private:
     declare_parameter<int>("max_obstacle_cells", 2500);
     declare_parameter<double>("grid_obstacle_radius", 0.12);
     declare_parameter<double>("object_obstacle_radius", 0.35);
+    declare_parameter<bool>("filter_dynamic_actors_by_lane", true);
+    declare_parameter<double>("actor_lane_max_distance", 4.0);
+    declare_parameter<bool>("align_path_to_ego", true);
+    declare_parameter<double>("path_ego_max_heading_error", 1.35);
+    declare_parameter<double>("path_ego_max_snap_distance", 8.0);
     declare_parameter<bool>("odom_pose_is_rear_axle", false);
     declare_parameter<bool>("shift_path_to_rear_axle", true);
     declare_parameter<double>("wheel_base", 2.8);
@@ -185,6 +241,11 @@ private:
     max_obstacle_cells_ = get_parameter("max_obstacle_cells").as_int();
     grid_obstacle_radius_ = get_parameter("grid_obstacle_radius").as_double();
     object_obstacle_radius_ = get_parameter("object_obstacle_radius").as_double();
+    filter_dynamic_actors_by_lane_ = get_parameter("filter_dynamic_actors_by_lane").as_bool();
+    actor_lane_max_distance_ = get_parameter("actor_lane_max_distance").as_double();
+    align_path_to_ego_ = get_parameter("align_path_to_ego").as_bool();
+    path_ego_max_heading_error_ = get_parameter("path_ego_max_heading_error").as_double();
+    path_ego_max_snap_distance_ = get_parameter("path_ego_max_snap_distance").as_double();
     odom_pose_is_rear_axle_ = get_parameter("odom_pose_is_rear_axle").as_bool();
     shift_path_to_rear_axle_ = get_parameter("shift_path_to_rear_axle").as_bool();
     wheel_base_ = get_parameter("wheel_base").as_double();
@@ -204,10 +265,10 @@ private:
     const auto map_qos = rclcpp::QoS(1).transient_local().reliable();
 
     path_sub_ = create_subscription<nav_msgs::msg::Path>(
-      path_topic_, 10,
+      path_topic_, rclcpp::QoS(10).reliable(),
       std::bind(&EpsilonSceneBridgeNode::PathCallback, this, std::placeholders::_1));
     costmap_sub_ = create_subscription<nav_msgs::msg::OccupancyGrid>(
-      costmap_topic_, map_qos,
+      costmap_topic_, rclcpp::QoS(1).transient_local().reliable(),
       std::bind(&EpsilonSceneBridgeNode::CostmapCallback, this, std::placeholders::_1));
     object_pose_sub_ = create_subscription<geometry_msgs::msg::PoseArray>(
       object_pose_topic_, sensor_qos,
@@ -243,7 +304,6 @@ private:
 
   void PathCallback(const nav_msgs::msg::Path::SharedPtr msg)
   {
-    latest_path_received_wall_time_ = std::chrono::steady_clock::now();
     std::vector<geometry_msgs::msg::Point> points;
     for (const auto & pose : msg->poses) {
       geometry_msgs::msg::Point point = pose.pose.position;
@@ -254,12 +314,24 @@ private:
       points.push_back(point);
     }
     if (points.size() < 2) {
-      latest_path_points_.reset();
       PublishStaticScene();
-      RCLCPP_WARN_THROTTLE(
-        get_logger(), *get_clock(), 2000, "reference path needs at least two usable points");
+      if (latest_path_points_.has_value()) {
+        RCLCPP_WARN_THROTTLE(
+          get_logger(), *get_clock(), 2000,
+          "ignoring degenerate reference path on %s: raw_poses=%zu usable_points=%zu; "
+          "keeping previous lane",
+          path_topic_.c_str(), msg->poses.size(), points.size());
+      } else {
+        RCLCPP_WARN_THROTTLE(
+          get_logger(), *get_clock(), 2000,
+          "reference path on %s needs at least two usable points: raw_poses=%zu usable_points=%zu",
+          path_topic_.c_str(), msg->poses.size(), points.size());
+      }
       return;
     }
+
+    latest_path_received_wall_time_ = std::chrono::steady_clock::now();
+    path_stale_warned_ = false;
 
     // Nav2 paths are expressed at base_link while EPSILON's state is defined
     // at the rear axle. Keep the native EPSILON convention and shift only the
@@ -283,18 +355,27 @@ private:
       }
       points = std::move(rear_axle_points);
     }
+    points = AlignPathToEgo(points);
     latest_path_points_ = points;
     if (!msg->header.frame_id.empty()) {
       map_frame_ = msg->header.frame_id;
     }
     PublishStaticScene();
+    RCLCPP_INFO_THROTTLE(
+      get_logger(), *get_clock(), 5000,
+      "accepted reference path on %s: raw_poses=%zu usable_points=%zu frame=%s",
+      path_topic_.c_str(), msg->poses.size(), points.size(), map_frame_.c_str());
   }
 
   void CostmapCallback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg)
   {
     latest_costmap_ = *msg;
-    if (!msg->header.frame_id.empty()) {
-      map_frame_ = msg->header.frame_id;
+    if (HasFrameMismatch(msg->header.frame_id)) {
+      RCLCPP_WARN_THROTTLE(
+        get_logger(), *get_clock(), 5000,
+        "costmap frame '%s' does not match EPSILON scene frame '%s'; keeping the "
+        "reference path frame and ignoring mismatched costmap obstacles until frames match",
+        msg->header.frame_id.c_str(), map_frame_.c_str());
     }
     PublishStaticScene();
   }
@@ -302,8 +383,12 @@ private:
   void ObjectPoseCallback(const geometry_msgs::msg::PoseArray::SharedPtr msg)
   {
     latest_object_poses_ = *msg;
-    if (!msg->header.frame_id.empty()) {
-      map_frame_ = msg->header.frame_id;
+    if (HasFrameMismatch(msg->header.frame_id)) {
+      RCLCPP_WARN_THROTTLE(
+        get_logger(), *get_clock(), 5000,
+        "object pose frame '%s' does not match EPSILON scene frame '%s'; keeping the "
+        "reference path frame and ignoring mismatched object obstacles until frames match",
+        msg->header.frame_id.c_str(), map_frame_.c_str());
     }
     PublishStaticScene();
   }
@@ -357,6 +442,137 @@ private:
     has_odom_ = true;
   }
 
+  struct RearAxlePose
+  {
+    geometry_msgs::msg::Point position;
+    double yaw{0.0};
+  };
+
+  RearAxlePose RearAxlePoseFromOdom(const nav_msgs::msg::Odometry & odom) const
+  {
+    RearAxlePose pose;
+    pose.yaw = YawFromQuaternion(odom.pose.pose.orientation);
+    pose.position = odom.pose.pose.position;
+    pose.position.z = 0.0;
+    if (!odom_pose_is_rear_axle_) {
+      pose.position.x -= d_cr_ * std::cos(pose.yaw);
+      pose.position.y -= d_cr_ * std::sin(pose.yaw);
+    }
+    return pose;
+  }
+
+  std::vector<geometry_msgs::msg::Point> AlignPathToEgo(
+    const std::vector<geometry_msgs::msg::Point> & points)
+  {
+    if (!align_path_to_ego_ || points.size() < 2 || !latest_odom_.has_value()) {
+      return points;
+    }
+
+    const auto ego = RearAxlePoseFromOdom(*latest_odom_);
+    const auto max_heading_error =
+      std::clamp(path_ego_max_heading_error_, 0.0, std::acos(-1.0));
+    const auto max_snap_distance = std::max(0.0, path_ego_max_snap_distance_);
+
+    bool found = false;
+    std::size_t best_segment = 0;
+    SegmentProjection2D best_projection;
+    double best_yaw_error = std::numeric_limits<double>::infinity();
+    double best_longitudinal = 0.0;
+    double best_score = std::numeric_limits<double>::infinity();
+
+    bool nearest_valid = false;
+    std::size_t nearest_segment = 0;
+    SegmentProjection2D nearest_projection;
+    double nearest_yaw_error = std::numeric_limits<double>::infinity();
+
+    const auto ego_heading_x = std::cos(ego.yaw);
+    const auto ego_heading_y = std::sin(ego.yaw);
+    for (std::size_t i = 0; i + 1 < points.size(); ++i) {
+      const auto & start = points[i];
+      const auto & end = points[i + 1];
+      const auto segment_length = Distance2D(start, end);
+      if (segment_length < 1e-6) {
+        continue;
+      }
+
+      const auto projection = ProjectPointToSegment2D(ego.position, start, end);
+      const auto segment_heading = std::atan2(end.y - start.y, end.x - start.x);
+      const auto yaw_error = AngleDifference(segment_heading, ego.yaw);
+      if (!nearest_valid || projection.distance < nearest_projection.distance) {
+        nearest_valid = true;
+        nearest_segment = i;
+        nearest_projection = projection;
+        nearest_yaw_error = yaw_error;
+      }
+
+      if (projection.distance > max_snap_distance || yaw_error > max_heading_error) {
+        continue;
+      }
+
+      const auto dx = projection.point.x - ego.position.x;
+      const auto dy = projection.point.y - ego.position.y;
+      const auto longitudinal = dx * ego_heading_x + dy * ego_heading_y;
+      if (longitudinal < -std::max(0.25, min_lane_point_spacing_)) {
+        continue;
+      }
+      const auto behind_penalty = longitudinal < 0.0 ? std::fabs(longitudinal) * 2.0 : 0.0;
+      const auto score = projection.distance + yaw_error * 0.5 + behind_penalty;
+      if (!found || score < best_score) {
+        found = true;
+        best_segment = i;
+        best_projection = projection;
+        best_yaw_error = yaw_error;
+        best_longitudinal = longitudinal;
+        best_score = score;
+      }
+    }
+
+    if (!found) {
+      if (nearest_valid) {
+        RCLCPP_WARN_THROTTLE(
+          get_logger(), *get_clock(), 5000,
+          "reference path is not aligned with ego heading near the vehicle: "
+          "nearest_segment=%zu distance=%.2fm yaw_error=%.2frad "
+          "limits distance<=%.2fm yaw_error<=%.2frad; keeping original path",
+          nearest_segment, nearest_projection.distance, nearest_yaw_error,
+          max_snap_distance, max_heading_error);
+      }
+      return points;
+    }
+
+    std::vector<geometry_msgs::msg::Point> aligned_points;
+    aligned_points.reserve(points.size() - best_segment + 3);
+    aligned_points.push_back(ego.position);
+
+    const auto projection_from_ego = Distance2D(ego.position, best_projection.point);
+    if (projection_from_ego >= std::max(0.05, min_lane_point_spacing_ * 0.5)) {
+      aligned_points.push_back(best_projection.point);
+    }
+    for (std::size_t i = best_segment + 1; i < points.size(); ++i) {
+      if (!aligned_points.empty() &&
+        Distance2D(aligned_points.back(), points[i]) < min_lane_point_spacing_)
+      {
+        continue;
+      }
+      aligned_points.push_back(points[i]);
+    }
+
+    if (aligned_points.size() < 2) {
+      RCLCPP_WARN_THROTTLE(
+        get_logger(), *get_clock(), 5000,
+        "reference path alignment produced a degenerate lane; keeping original path");
+      return points;
+    }
+
+    RCLCPP_INFO_THROTTLE(
+      get_logger(), *get_clock(), 5000,
+      "aligned reference path to ego heading: segment=%zu distance=%.2fm yaw_error=%.2frad "
+      "longitudinal=%.2fm trimmed_prefix=%zu kept_points=%zu",
+      best_segment, best_projection.distance, best_yaw_error, best_longitudinal,
+      best_segment, aligned_points.size());
+    return aligned_points;
+  }
+
   void PublishDynamicSceneTimer()
   {
     if (!latest_odom_.has_value()) {
@@ -381,12 +597,24 @@ private:
     dynamic_msg.header.frame_id = map_frame_;
     dynamic_msg.vehicle_set.header = dynamic_msg.header;
     dynamic_msg.vehicle_set.vehicles.push_back(MakeEgoVehicle(odom));
+    int filtered_actors = 0;
     for (const auto & [actor_name, actor_pose] : latest_actor_poses_) {
       if (actor_name.empty()) {
         continue;
       }
-      dynamic_msg.vehicle_set.vehicles.push_back(
-        MakeActorVehicle(actor_name, actor_pose, odom.header, dynamic_msg.header.frame_id));
+      auto actor_vehicle = MakeActorVehicle(
+        actor_name, actor_pose, odom.header, dynamic_msg.header.frame_id);
+      if (!ShouldPublishActor(actor_vehicle.state.vec_position)) {
+        ++filtered_actors;
+        continue;
+      }
+      dynamic_msg.vehicle_set.vehicles.push_back(std::move(actor_vehicle));
+    }
+    if (filtered_actors > 0) {
+      RCLCPP_WARN_THROTTLE(
+        get_logger(), *get_clock(), 5000,
+        "filtered %d/%zu dynamic actors farther than %.2fm from the current LaneNet",
+        filtered_actors, latest_actor_poses_.size(), actor_lane_max_distance_);
     }
     dynamic_pub_->publish(dynamic_msg);
   }
@@ -471,7 +699,15 @@ private:
       const auto age = std::chrono::duration<double>(
         std::chrono::steady_clock::now() - *latest_path_received_wall_time_).count();
       if (age > path_timeout_) {
-        latest_path_points_.reset();
+        if (!path_stale_warned_) {
+          RCLCPP_WARN(
+            get_logger(),
+            "reference path on %s is stale for %.1fs; keeping the last lane until a new path arrives",
+            path_topic_.c_str(), age);
+          path_stale_warned_ = true;
+        }
+      } else {
+        path_stale_warned_ = false;
       }
     }
 
@@ -524,28 +760,31 @@ private:
       return lane_net;
     }
 
-    const auto half_width = lane_width_ * 0.5;
-    std::vector<geometry_msgs::msg::Point> right_lane_points;
-    std::vector<geometry_msgs::msg::Point> left_lane_points;
-    right_lane_points.reserve(path_points.size());
-    left_lane_points.reserve(path_points.size());
-    for (std::size_t i = 0; i < path_points.size(); ++i) {
-      right_lane_points.push_back(OffsetPoint(path_points, i, -half_width));
-      left_lane_points.push_back(OffsetPoint(path_points, i, half_width));
+    const auto lane_count = std::max(2, virtual_lane_count_);
+    const auto lane_spacing = lane_count > 1 ?
+      lane_width_ / static_cast<double>(lane_count - 1) : 0.0;
+    const auto half_span = lane_width_ * 0.5;
+    const bool allow_adjacent_lane_change = lane_count > 2 ? true : allow_opposite_lane_change_;
+
+    for (int lane_index = 0; lane_index < lane_count; ++lane_index) {
+      const auto offset = -half_span + lane_spacing * static_cast<double>(lane_index);
+      std::vector<geometry_msgs::msg::Point> lane_points;
+      lane_points.reserve(path_points.size());
+      for (std::size_t i = 0; i < path_points.size(); ++i) {
+        lane_points.push_back(OffsetPoint(path_points, i, offset));
+      }
+
+      auto lane = MakeLane(header, lane_index, lane_points);
+      if (lane_index > 0) {
+        lane.r_lane_id = lane_index - 1;
+        lane.r_change_avbl = allow_adjacent_lane_change;
+      }
+      if (lane_index + 1 < lane_count) {
+        lane.l_lane_id = lane_index + 1;
+        lane.l_change_avbl = allow_adjacent_lane_change;
+      }
+      lane_net.lanes.push_back(std::move(lane));
     }
-
-    auto ego_direction_lane = MakeLane(header, 0, right_lane_points);
-    auto opposite_lane_points = left_lane_points;
-    std::reverse(opposite_lane_points.begin(), opposite_lane_points.end());
-    auto opposite_lane = MakeLane(header, 1, opposite_lane_points);
-
-    ego_direction_lane.l_lane_id = 1;
-    ego_direction_lane.l_change_avbl = allow_opposite_lane_change_;
-    opposite_lane.r_lane_id = 0;
-    opposite_lane.r_change_avbl = allow_opposite_lane_change_;
-
-    lane_net.lanes.push_back(ego_direction_lane);
-    lane_net.lanes.push_back(opposite_lane);
     return lane_net;
   }
 
@@ -556,12 +795,57 @@ private:
     int obstacle_id = 0;
 
     if (latest_costmap_.has_value()) {
-      AppendCostmapObstacles(*latest_costmap_, &obstacle_id, &obstacle_set);
+      if (!HasFrameMismatch(latest_costmap_->header.frame_id)) {
+        AppendCostmapObstacles(*latest_costmap_, &obstacle_id, &obstacle_set);
+      }
     }
     if (latest_object_poses_.has_value()) {
-      AppendPoseObstacles(*latest_object_poses_, &obstacle_id, &obstacle_set);
+      if (!HasFrameMismatch(latest_object_poses_->header.frame_id)) {
+        AppendPoseObstacles(*latest_object_poses_, &obstacle_id, &obstacle_set);
+      }
     }
     return obstacle_set;
+  }
+
+  bool HasFrameMismatch(const std::string & frame_id) const
+  {
+    return !frame_id.empty() && !map_frame_.empty() && frame_id != map_frame_;
+  }
+
+  bool ShouldPublishActor(const geometry_msgs::msg::Point & actor_position) const
+  {
+    if (!filter_dynamic_actors_by_lane_ || !latest_path_points_.has_value() ||
+      latest_path_points_->size() < 2)
+    {
+      return true;
+    }
+    return NearestVirtualLaneDistance(actor_position) <= actor_lane_max_distance_;
+  }
+
+  double NearestVirtualLaneDistance(const geometry_msgs::msg::Point & point) const
+  {
+    if (!latest_path_points_.has_value() || latest_path_points_->size() < 2) {
+      return 0.0;
+    }
+
+    const auto & path_points = *latest_path_points_;
+    const auto lane_count = centerline_is_road_center_ && virtual_lane_count_ > 1 ?
+      std::max(2, virtual_lane_count_) : 1;
+    const auto lane_spacing = lane_count > 1 ?
+      lane_width_ / static_cast<double>(lane_count - 1) : 0.0;
+    const auto half_span = lane_count > 1 ? lane_width_ * 0.5 : 0.0;
+
+    auto best_distance = std::numeric_limits<double>::infinity();
+    for (int lane_index = 0; lane_index < lane_count; ++lane_index) {
+      const auto offset = lane_count > 1 ?
+        -half_span + lane_spacing * static_cast<double>(lane_index) : 0.0;
+      for (std::size_t i = 1; i < path_points.size(); ++i) {
+        const auto start = OffsetPoint(path_points, i - 1, offset);
+        const auto end = OffsetPoint(path_points, i, offset);
+        best_distance = std::min(best_distance, PointToSegmentDistance2D(point, start, end));
+      }
+    }
+    return best_distance;
   }
 
   void AppendCostmapObstacles(
@@ -716,11 +1000,11 @@ private:
   std::string arena_info_dynamic_topic_;
   double publish_period_{1.0};
   double dynamic_publish_period_{0.1};
-  double path_timeout_{1.5};
+  double path_timeout_{120.0};
   int ego_id_{0};
   double min_lane_point_spacing_{0.3};
-  bool centerline_is_road_center_{false};
-  int virtual_lane_count_{1};
+  bool centerline_is_road_center_{true};
+  int virtual_lane_count_{3};
   double lane_width_{3.2};
   bool allow_opposite_lane_change_{false};
   int occupied_threshold_{65};
@@ -728,6 +1012,11 @@ private:
   int max_obstacle_cells_{2500};
   double grid_obstacle_radius_{0.12};
   double object_obstacle_radius_{0.35};
+  bool filter_dynamic_actors_by_lane_{true};
+  double actor_lane_max_distance_{4.0};
+  bool align_path_to_ego_{true};
+  double path_ego_max_heading_error_{1.35};
+  double path_ego_max_snap_distance_{8.0};
   bool odom_pose_is_rear_axle_{false};
   bool shift_path_to_rear_axle_{true};
   double wheel_base_{2.8};
@@ -743,6 +1032,7 @@ private:
   std::optional<std::vector<geometry_msgs::msg::Point>> latest_path_points_;
   std::optional<std::chrono::steady_clock::time_point> latest_path_received_wall_time_;
   bool static_scene_active_{false};
+  bool path_stale_warned_{false};
   std::optional<nav_msgs::msg::OccupancyGrid> latest_costmap_;
   std::optional<geometry_msgs::msg::PoseArray> latest_object_poses_;
   std::unordered_map<std::string, geometry_msgs::msg::PoseStamped> latest_actor_poses_;

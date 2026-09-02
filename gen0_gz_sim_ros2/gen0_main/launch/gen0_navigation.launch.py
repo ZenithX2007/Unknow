@@ -69,7 +69,10 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
             if map_source == 'projected_map' and projected_map_unknown_as_free
             else 'true'
         )
-        pointcloud_clearing = 'false' if map_source == 'projected_map' else 'true'
+        # terrain_map is already registered in the global map/odom frame.  Its
+        # cloud origin is therefore not a live sensor origin; raytrace clearing
+        # would incorrectly use (0, 0) and fall outside the rolling window.
+        pointcloud_clearing = 'false'
         overlay = f"""local_costmap:
   local_costmap:
     ros__parameters:
@@ -78,8 +81,8 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
       publish_frequency: 20.0
       global_frame: map
       rolling_window: true
-      width: 15
-      height: 15
+      width: 30
+      height: 30
       resolution: 0.05
       footprint: "[[2.0, 1.0], [2.0, -1.0], [-2.0, -1.0], [-2.0, 1.0]]"
       footprint_padding: 0.05
@@ -93,7 +96,7 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
       local_inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 5.0
-        inflation_radius: 0.5
+        inflation_radius: 1.2
       local_obstacle_layer:
         plugin: "costmap_intensity::ObstacleLayerIntensity"
         enabled: true
@@ -136,9 +139,9 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
           expected_update_rate: 0.0
           max_obstacle_height: 2.0
           min_obstacle_height: -2.0
-          obstacle_max_range: 7.0
+          obstacle_max_range: 14.0
           obstacle_min_range: 0.15
-          raytrace_max_range: 8.0
+          raytrace_max_range: 15.0
           raytrace_min_range: 0.1
           clearing: true
           marking: true
@@ -157,7 +160,7 @@ global_costmap:
       global_inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 10.0
-        inflation_radius: 0.5
+        inflation_radius: 1.2
 """
     else:
         overlay = """local_costmap:

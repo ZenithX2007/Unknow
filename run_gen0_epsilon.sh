@@ -17,7 +17,7 @@ PREDICTED_TRAJECTORIES_TOPIC="${GEN0_EPSILON_PREDICTED_TRAJECTORIES_TOPIC:-/epsi
 USE_SIM_TIME="${GEN0_EPSILON_USE_SIM_TIME:-true}"
 PREDICTION_RATE="${GEN0_EPSILON_PREDICTION_RATE:-5.0}"
 DYNAMIC_PUBLISH_PERIOD="${GEN0_EPSILON_DYNAMIC_PUBLISH_PERIOD:-0.1}"
-PATH_TIMEOUT="${GEN0_EPSILON_PATH_TIMEOUT:-30.0}"
+PATH_TIMEOUT="${GEN0_EPSILON_PATH_TIMEOUT:-120.0}"
 USE_CMD_VEL_MUX="${GEN0_EPSILON_USE_CMD_VEL_MUX:-false}"
 CONTROL_SOURCE="${GEN0_EPSILON_CONTROL_SOURCE:-auto}"
 NAV2_CMD_VEL_TOPIC="${GEN0_NAV2_RAW_CMD_VEL_TOPIC:-/control/nav2_cmd_vel_raw}"
@@ -25,7 +25,7 @@ MUX_OUTPUT_CMD_VEL_TOPIC="${GEN0_EPSILON_MUX_OUTPUT_CMD_VEL_TOPIC:-/control/cmd_
 CONTROL_MODE_TOPIC="${GEN0_EPSILON_CONTROL_MODE_TOPIC:-/epsilon/control_mode}"
 SELECTED_SOURCE_TOPIC="${GEN0_EPSILON_SELECTED_SOURCE_TOPIC:-/epsilon/selected_control_source}"
 EPSILON_STATUS_TOPIC="${GEN0_EPSILON_STATUS_TOPIC:-/epsilon/status}"
-EPSILON_STATUS_TIMEOUT="${GEN0_EPSILON_STATUS_TIMEOUT:-0.6}"
+EPSILON_STATUS_TIMEOUT="${GEN0_EPSILON_STATUS_TIMEOUT:-1.5}"
 FALLBACK_TO_NAV2="${GEN0_EPSILON_FALLBACK_TO_NAV2:-true}"
 ACTOR_SOURCE="${GEN0_EPSILON_ACTOR_SOURCE:-scenario}"
 ACTORS_SCENARIO_PATH="${GEN0_EPSILON_ACTORS_SCENARIO_PATH:-}"
@@ -347,13 +347,10 @@ epsilon_launch=(
   path_topic:="$PATH_TOPIC"
   costmap_topic:="$COSTMAP_TOPIC"
   object_pose_topic:="$OBJECT_POSE_TOPIC"
-  actor_pose_topics:="$ACTOR_POSE_TOPICS"
   use_scenario_actor_publisher:="$USE_SCENARIO_ACTOR_PUBLISHER"
-  actor_scenario_path:="$ACTORS_SCENARIO_PATH"
   scenario_actor_pose_topic_prefix:="$SCENARIO_ACTOR_TOPIC_PREFIX"
   scenario_actor_publish_rate:="$SCENARIO_ACTOR_PUBLISH_RATE"
   scenario_actor_frame_id:="$SCENARIO_ACTOR_FRAME_ID"
-  scenario_actor_world_sdf_path:="$SCENARIO_ACTOR_WORLD_SDF_PATH"
   scenario_actor_world_vehicle_name:="$SCENARIO_ACTOR_WORLD_VEHICLE_NAME"
   scenario_actor_world_to_output:="$SCENARIO_ACTOR_WORLD_TO_OUTPUT"
   scenario_actor_output_origin_xy:="$SCENARIO_ACTOR_OUTPUT_ORIGIN_XY"
@@ -376,6 +373,15 @@ epsilon_launch=(
   epsilon_status_timeout:="$EPSILON_STATUS_TIMEOUT"
   fallback_to_nav2:="$FALLBACK_TO_NAV2"
 )
+if [[ -n "$ACTOR_POSE_TOPICS" ]]; then
+  epsilon_launch+=(actor_pose_topics:="$ACTOR_POSE_TOPICS")
+fi
+if [[ -n "$ACTORS_SCENARIO_PATH" ]]; then
+  epsilon_launch+=(actor_scenario_path:="$ACTORS_SCENARIO_PATH")
+fi
+if [[ -n "$SCENARIO_ACTOR_WORLD_SDF_PATH" ]]; then
+  epsilon_launch+=(scenario_actor_world_sdf_path:="$SCENARIO_ACTOR_WORLD_SDF_PATH")
+fi
 if [[ -n "$PARAMS_FILE" ]]; then
   epsilon_launch+=(params_file:="$PARAMS_FILE")
 fi

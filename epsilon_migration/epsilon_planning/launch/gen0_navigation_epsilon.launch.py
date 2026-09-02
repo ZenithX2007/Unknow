@@ -11,7 +11,7 @@ from nav2_common.launch import RewrittenYaml
 
 DEFAULT_GEN0_NAV_MAP_YAML = '/tmp/gen0_my_map_nav.yaml'
 DEFAULT_GEN0_NAV_MAP_IMAGE = '/tmp/gen0_my_map_nav.pgm'
-DEFAULT_GEN0_NAV_COSTMAP_OVERLAY = '/tmp/gen0_nav2_costmap_overlay.yaml'
+DEFAULT_GEN0_NAV_COSTMAP_OVERLAY = '/tmp/gen0_epsilon_nav2_costmap_overlay.yaml'
 
 
 def _scope_yaml(namespace, body):
@@ -69,7 +69,10 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
             if map_source == 'projected_map' and projected_map_unknown_as_free
             else 'true'
         )
-        pointcloud_clearing = 'false' if map_source == 'projected_map' else 'true'
+        # terrain_map is already registered in the global map/odom frame.  Its
+        # cloud origin is therefore not a live sensor origin; raytrace clearing
+        # would incorrectly use (0, 0) and fall outside the rolling window.
+        pointcloud_clearing = 'false'
         overlay = f"""local_costmap:
   local_costmap:
     ros__parameters:
@@ -78,8 +81,8 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
       publish_frequency: 10.0
       global_frame: map
       rolling_window: true
-      width: 15
-      height: 15
+      width: 30
+      height: 30
       resolution: 0.05
       footprint: "[[2.0, 1.0], [2.0, -1.0], [-2.0, -1.0], [-2.0, 1.0]]"
       footprint_padding: 0.05
@@ -93,7 +96,7 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
       local_inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 5.0
-        inflation_radius: 1.2
+        inflation_radius: 0.6
       local_obstacle_layer:
         plugin: "costmap_intensity::ObstacleLayerIntensity"
         enabled: true
@@ -136,9 +139,9 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
           expected_update_rate: 0.0
           max_obstacle_height: 2.0
           min_obstacle_height: -2.0
-          obstacle_max_range: 7.0
+          obstacle_max_range: 14.0
           obstacle_min_range: 0.15
-          raytrace_max_range: 8.0
+          raytrace_max_range: 15.0
           raytrace_min_range: 0.1
           clearing: true
           marking: true
@@ -157,7 +160,7 @@ global_costmap:
       global_inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 10.0
-        inflation_radius: 1.2
+        inflation_radius: 0.6
 """
     else:
         overlay = """local_costmap:
@@ -357,6 +360,11 @@ def generate_launch_description():
         'final_cmd_vel_topic',
         default_value='/cmd_vel',
         description='Final robot command topic after EPSILON/Nav2 arbitration and pose guarding.',
+    )
+    declare_actor_obstacle_topic = DeclareLaunchArgument(
+        'actor_obstacle_topic',
+        default_value='/gen0_mapping/actor_obstacles',
+        description='PointCloud2 topic containing current pedestrian obstacles.',
     )
     declare_publish_identity_map_to_odom = DeclareLaunchArgument(
         'publish_identity_map_to_odom',
@@ -562,6 +570,16 @@ def generate_launch_description():
                         'use_sim_time': use_sim_time,
                         'input_cmd_vel_topic': guarded_cmd_vel_topic,
                         'output_cmd_vel_topic': final_cmd_vel_topic,
+                        'actor_obstacle_topic': LaunchConfiguration('actor_obstacle_topic'),
+                        'actor_vehicle_length': 4.0,
+                        'actor_vehicle_width': 2.0,
+                        'actor_radius': 0.45,
+                        # Keep the final gate close to the actual footprint.
+                        # Larger pedestrian clearance is handled by the actor
+                        # costmap so Nav2 can still generate a lateral detour.
+                        'actor_safety_margin': 0.05,
+                        'actor_forward_buffer': 0.8,
+                        'actor_reverse_buffer': 0.35,
                         'map_topic': '/map',
                         'odom_topic': odom_topic,
                         'reference_odom_topic': reference_odom_topic,
@@ -678,6 +696,7 @@ def generate_launch_description():
         declare_nav2_cmd_vel_topic,
         declare_guarded_cmd_vel_topic,
         declare_final_cmd_vel_topic,
+        declare_actor_obstacle_topic,
         declare_publish_identity_map_to_odom,
         declare_costmap_source,
         declare_map_source,
