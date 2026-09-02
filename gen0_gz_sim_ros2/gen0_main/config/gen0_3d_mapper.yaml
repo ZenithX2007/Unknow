@@ -1,0 +1,19 @@
+gen0_3d_mapper:
+  ros__parameters:
+    use_sim_time: true
+    cloud_topic: /gen0_model/front3d/lidar/points
+    odom_topic: /odom
+    map_topic: /gen0_mapping/map_cloud
+    map_frame: map
+    voxel_size: 0.25
+    publish_period: 1.0
+    max_points: 500000
+    max_points_per_scan: 25000
+    min_range: 0.7
+    max_range: 80.0
+    min_z: -5.0
+    max_z: 30.0
+    min_translation_delta: 0.10
+    min_rotation_delta: 0.02
+    lidar_xyz_in_base: [1.9, 0.0, 1.9]
+    save_pcd_path: /tmp/gen0_3d_map.pcd

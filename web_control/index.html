@@ -1,0 +1,360 @@
+<!doctype html>
+<html>
+ 
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gen0 ROS2 控制台</title>
+  <link rel="stylesheet" href="./style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/roslib@1.3.0/build/roslib.js"></script>
+</head>
+ 
+<body>
+  <div id="gen0App">
+    <header class="app-topbar">
+      <div class="brand-block">
+        <p class="eyebrow">GEN0 / ROS2 HUMBLE</p>
+        <h1>机器人导航控制台</h1>
+        <p class="subtitle">手动驾驶、Nav2 目标点与前置相机监视</p>
+      </div>
+
+      <div class="connection-controls" aria-label="ROS bridge connection">
+        <label class="field field--connection">
+          <span>rosbridge 地址</span>
+          <input
+            id="rosbridgeUrl"
+            type="url"
+            value="ws://localhost:9090"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </label>
+        <button id="connectButton" class="button button--primary" type="button">
+          连接
+        </button>
+        <button id="disconnectButton" class="button" type="button" disabled>
+          断开
+        </button>
+        <span id="connectionBadge" class="status-badge status-badge--offline">
+          未连接
+        </span>
+      </div>
+    </header>
+
+    <main class="dashboard">
+      <section class="panel panel--camera" aria-labelledby="cameraHeading">
+        <div class="panel-header">
+          <div>
+            <p class="panel-kicker">LIVE SENSOR</p>
+            <h2 id="cameraHeading">前置相机</h2>
+          </div>
+          <span id="cameraBadge" class="status-badge status-badge--offline">
+            等待数据
+          </span>
+        </div>
+
+        <div class="camera-toolbar">
+          <label class="field field--grow">
+            <span>图像 topic</span>
+            <input
+              id="cameraTopic"
+              type="text"
+              value="/gen0_model/front_camera"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="field">
+            <span>消息类型</span>
+            <select id="cameraMessageType">
+              <option value="image">sensor_msgs/msg/Image</option>
+              <option value="compressed">sensor_msgs/msg/CompressedImage</option>
+            </select>
+          </label>
+          <button id="subscribeCameraButton" class="button" type="button">
+            订阅相机
+          </button>
+        </div>
+
+        <div class="camera-frame" id="cameraFrame">
+          <canvas id="cameraCanvas" aria-label="相机图像"></canvas>
+          <div id="cameraPlaceholder" class="media-placeholder">
+            <span class="placeholder-mark">CAM</span>
+            <strong>等待相机帧</strong>
+            <span>连接 rosbridge 后自动订阅</span>
+          </div>
+          <div class="media-overlay media-overlay--top">
+            <span id="cameraTopicLabel">/gen0_model/front_camera</span>
+            <span id="cameraEncodingLabel">--</span>
+          </div>
+          <div class="media-overlay media-overlay--bottom">
+            <span id="cameraResolutionLabel">-- x --</span>
+            <span id="cameraFpsLabel">-- FPS</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel panel--teleop" aria-labelledby="teleopHeading">
+        <div class="panel-header">
+          <div>
+            <p class="panel-kicker">DIRECT DRIVE</p>
+            <h2 id="teleopHeading">手动驾驶</h2>
+          </div>
+          <label class="toggle">
+            <input id="teleopEnabled" type="checkbox" checked />
+            <span class="toggle-track" aria-hidden="true"></span>
+            <span>手动使能</span>
+          </label>
+        </div>
+
+        <div class="teleop-toolbar">
+          <label class="field field--grow">
+            <span>速度 topic</span>
+            <input
+              id="cmdVelTopic"
+              type="text"
+              value="/cmd_vel"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <button id="applyCmdVelButton" class="button" type="button">
+            应用
+          </button>
+          <button id="stopButton" class="button button--danger" type="button">
+            停止
+          </button>
+        </div>
+
+        <div class="teleop-layout">
+          <div class="joystick-wrap">
+            <div
+              id="joystick"
+              class="joystick"
+              role="slider"
+              aria-label="手动驾驶摇杆"
+              aria-valuemin="-1"
+              aria-valuemax="1"
+              aria-valuenow="0"
+              tabindex="0"
+            >
+              <span class="joystick-axis joystick-axis--horizontal"></span>
+              <span class="joystick-axis joystick-axis--vertical"></span>
+              <span id="joystickKnob" class="joystick-knob">DRIVE</span>
+            </div>
+            <p class="helper-text">W / A / S / D 或拖动摇杆</p>
+          </div>
+
+          <div class="speed-controls">
+            <label class="range-field">
+              <span>
+                <span>线速度上限</span>
+                <output id="linearSpeedValue" for="linearSpeed">1.00 m/s</output>
+              </span>
+              <input
+                id="linearSpeed"
+                type="range"
+                min="0.1"
+                max="2"
+                value="1"
+                step="0.05"
+              />
+            </label>
+            <label class="range-field">
+              <span>
+                <span>角速度上限</span>
+                <output id="angularSpeedValue" for="angularSpeed">0.40 rad/s</output>
+              </span>
+              <input
+                id="angularSpeed"
+                type="range"
+                min="0.05"
+                max="0.4"
+                value="0.4"
+                step="0.01"
+              />
+            </label>
+            <div class="command-readout">
+              <span>当前指令</span>
+              <strong id="commandReadout">x 0.00 m/s · z 0.00 rad/s</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel panel--map" aria-labelledby="mapHeading">
+        <div class="panel-header">
+          <div>
+            <p class="panel-kicker">MAP SERVER / NAV2</p>
+            <h2 id="mapHeading">导航地图</h2>
+          </div>
+          <span id="mapBadge" class="status-badge status-badge--offline">
+            等待地图
+          </span>
+        </div>
+
+        <div class="map-toolbar">
+          <label class="field field--grow">
+            <span>地图 topic</span>
+            <input
+              id="mapTopic"
+              type="text"
+              value="/map"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <label class="field field--grow">
+            <span>里程计 topic</span>
+            <input
+              id="odomTopic"
+              type="text"
+              value="/odom"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+          <button id="subscribeMapButton" class="button" type="button">
+            应用订阅
+          </button>
+        </div>
+
+        <div class="map-frame" id="mapFrame">
+          <canvas id="mapCanvas" aria-label="导航栅格地图"></canvas>
+          <div id="mapPlaceholder" class="media-placeholder">
+            <span class="placeholder-mark">MAP</span>
+            <strong>加载导航地图</strong>
+            <span>已有地图或 ROS /map 到达后可选目标</span>
+          </div>
+          <div class="map-legend">
+            <span><i class="legend-dot legend-dot--robot"></i>机器人</span>
+            <span><i class="legend-dot legend-dot--goal"></i>目标点</span>
+            <span><i class="legend-swatch"></i>障碍物</span>
+          </div>
+        </div>
+        <p class="helper-text">单击地图发送导航目标。</p>
+      </section>
+
+      <section class="panel panel--navigation" aria-labelledby="navigationHeading">
+        <div class="panel-header">
+          <div>
+            <p class="panel-kicker">AUTONOMOUS NAVIGATION</p>
+            <h2 id="navigationHeading">Nav2 目标</h2>
+          </div>
+          <span id="navigationBadge" class="status-badge status-badge--offline">
+            空闲
+          </span>
+        </div>
+
+        <div class="goal-grid">
+          <label class="field">
+            <span>X / m</span>
+            <input id="goalX" type="number" value="0" step="0.1" />
+          </label>
+          <label class="field">
+            <span>Y / m</span>
+            <input id="goalY" type="number" value="0" step="0.1" />
+          </label>
+          <label class="field">
+            <span>朝向 / deg</span>
+            <input id="goalYaw" type="number" value="0" step="5" />
+          </label>
+          <label class="field">
+            <span>坐标系</span>
+            <input id="goalFrame" type="text" value="map" spellcheck="false" />
+          </label>
+        </div>
+
+        <label class="field field--full">
+          <span>Action server</span>
+          <input
+            id="navActionServer"
+            type="text"
+            value="/navigate_to_pose"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </label>
+
+        <div class="button-row">
+          <button id="useCurrentPoseButton" class="button" type="button">
+            使用当前位置
+          </button>
+          <button id="sendGoalButton" class="button button--primary" type="button">
+            发送导航目标
+          </button>
+          <button id="cancelGoalButton" class="button button--danger" type="button">
+            取消目标
+          </button>
+        </div>
+
+        <div class="goal-status">
+          <div class="status-line">
+            <span>Nav2 反馈</span>
+            <strong id="goalFeedback">尚未发送目标</strong>
+          </div>
+          <div class="progress-track" aria-hidden="true">
+            <span id="goalProgress"></span>
+          </div>
+          <div class="metrics-grid metrics-grid--three">
+            <div class="metric">
+              <span>剩余距离</span>
+              <strong id="goalDistance">--</strong>
+            </div>
+            <div class="metric">
+              <span>恢复次数</span>
+              <strong id="goalRecoveries">--</strong>
+            </div>
+            <div class="metric">
+              <span>Nav2 代码</span>
+              <strong id="goalStatusCode">--</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel panel--diagnostics" aria-labelledby="diagnosticsHeading">
+        <div class="panel-header">
+          <div>
+            <p class="panel-kicker">SYSTEM TELEMETRY</p>
+            <h2 id="diagnosticsHeading">状态与数据</h2>
+          </div>
+          <button id="clearLogButton" class="button" type="button">清空日志</button>
+        </div>
+
+        <div class="metrics-grid metrics-grid--five">
+          <div class="metric">
+            <span>机器人位置</span>
+            <strong id="robotPose">--</strong>
+          </div>
+          <div class="metric">
+            <span>机器人朝向</span>
+            <strong id="robotYaw">--</strong>
+          </div>
+          <div class="metric">
+            <span>地图尺寸</span>
+            <strong id="mapInfo">--</strong>
+          </div>
+          <div class="metric">
+            <span>Nav2 状态</span>
+            <strong id="navStatus">--</strong>
+          </div>
+          <div class="metric">
+            <span>最后消息</span>
+            <strong id="lastMessage">--</strong>
+          </div>
+        </div>
+
+        <div id="eventLog" class="event-log" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <span>ROS2 topic bridge</span>
+      <span>/cmd_vel · /map · /odom · /gen0_model/front_camera</span>
+    </footer>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

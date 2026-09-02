@@ -1,0 +1,21 @@
+{
+  "agent_config": {
+    "num": 1,
+    "info": [
+      {
+        "id": 0,
+        "type": "car",
+        "obstacle_map_meta_info": {
+          "width": 600,
+          "height": 600,
+          "resolution": 0.2
+        },
+        "surrounding_search_radius": 80.0,
+        "enable_openloop_prediction": true,
+        "enable_tracking_noise": false,
+        "enable_log": false,
+        "log_file": "/tmp/epsilon_semantic_map.log"
+      }
+    ]
+  }
+}

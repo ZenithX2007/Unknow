@@ -1,0 +1,27 @@
+# Gazebo plugin build output
+gen0_gz_sim_ros2/gz_plugins/build/
+gen0_gz_sim_ros2/gz_plugins/build_wsl/
+
+# ROS 2 / colcon generated directories
+build/
+install/
+log/
+runtime_logs/
+
+# Optional local integration folders
+ORBit/
+
+# Python caches
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local runtime logs
+.ros/
+
+# Local editor settings
+.vscode/
+
+# Large local FAST-LIO map dumps. Commit selected prior/projected maps explicitly.
+gen0_gz_sim_ros2/gen0_main/maps/recovered_fast_lio_*.pcd
