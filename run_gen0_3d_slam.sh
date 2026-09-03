@@ -566,7 +566,6 @@ fast_lio_launch=(
   projected_map_reference_odom_timeout:="$PROJECTED_MAP_ODOM_TIMEOUT"
   local_costmap:="$LOCAL_COSTMAP"
   actor_costmap:="$ACTOR_COSTMAP"
-  actor_pose_topics:="$ACTOR_COSTMAP_POSE_TOPICS"
   actor_obstacle_topic:="$ACTOR_OBSTACLE_TOPIC"
   actor_obstacle_frame:="$ACTOR_OBSTACLE_FRAME"
   actor_world_sdf_path:="$ACTOR_WORLD_SDF_PATH"
@@ -604,6 +603,9 @@ fast_lio_launch=(
 )
 if [[ -n "$ACTORS_SCENARIO_PATH" ]]; then
   fast_lio_launch+=(actors_scenario_path:="$ACTORS_SCENARIO_PATH")
+fi
+if [[ -n "$ACTOR_COSTMAP_POSE_TOPICS" ]]; then
+  fast_lio_launch+=(actor_pose_topics:="$ACTOR_COSTMAP_POSE_TOPICS")
 fi
 if [[ -n "$DYNAMIC_ACTOR_TOPICS" ]]; then
   fast_lio_launch+=(dynamic_actor_topics:="$DYNAMIC_ACTOR_TOPICS")
