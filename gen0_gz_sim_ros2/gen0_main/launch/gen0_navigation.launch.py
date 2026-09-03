@@ -81,7 +81,7 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
       width: 15
       height: 15
       resolution: 0.05
-      footprint: "[[2.0, 1.0], [2.0, -1.0], [-2.0, -1.0], [-2.0, 1.0]]"
+      footprint: "[[1.2, 0.825], [1.2, -0.825], [-1.2, -0.825], [-1.2, 0.825]]"
       footprint_padding: 0.05
       track_unknown_space: false
       plugins: ["static_layer", "local_obstacle_layer", "actor_obstacle_layer", "local_inflation_layer"]
@@ -147,7 +147,7 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
 global_costmap:
   global_costmap:
     ros__parameters:
-      footprint: "[[2.0, 1.0], [2.0, -1.0], [-2.0, -1.0], [-2.0, 1.0]]"
+      footprint: "[[1.2, 0.825], [1.2, -0.825], [-1.2, -0.825], [-1.2, 0.825]]"
       footprint_padding: 0.05
       track_unknown_space: {global_track_unknown}
       plugins: ["static_layer", "global_inflation_layer"]
