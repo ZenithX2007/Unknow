@@ -30,6 +30,8 @@ def package_files(data_files, directory_list):
             for filename in filenames:
                 if filename.endswith('.pyc'):
                     continue
+                if filename.endswith('_source.glb'):
+                    continue
 
                 file_path = os.path.join(path, filename)
                 install_path = os.path.join('share', package_name, path)

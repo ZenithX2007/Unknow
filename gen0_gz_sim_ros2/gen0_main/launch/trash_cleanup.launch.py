@@ -42,12 +42,12 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument(
                 "vehicle_length",
-                default_value="4.40",
+                default_value="2.40",
                 description="Vehicle top-down rectangular footprint length in meters.",
             ),
             DeclareLaunchArgument(
                 "vehicle_width",
-                default_value="2.20",
+                default_value="1.65",
                 description="Vehicle top-down rectangular footprint width in meters.",
             ),
             DeclareLaunchArgument(

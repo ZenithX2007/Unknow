@@ -116,6 +116,12 @@ class SimulatedWorldLidar(Node):
         self.declare_parameter("dynamic_actor_ground_snap_radius", 2.0)
         self.declare_parameter("dynamic_actor_ground_snap_percentile", 15.0)
         self.declare_parameter("dynamic_actor_ground_snap_max_height", 3.5)
+        self.declare_parameter("dynamic_vehicle_topics", "")
+        self.declare_parameter("dynamic_vehicle_radius", 1.55)
+        self.declare_parameter("dynamic_vehicle_height", 1.85)
+        self.declare_parameter("dynamic_vehicle_z_offset", 0.05)
+        self.declare_parameter("dynamic_vehicle_radial_samples", 20)
+        self.declare_parameter("dynamic_vehicle_height_samples", 8)
         self.declare_parameter("trash_scenario_path", "")
         self.declare_parameter("trash_obstacle_radius", 0.10)
         self.declare_parameter("trash_obstacle_height", 0.15)
@@ -228,6 +234,24 @@ class SimulatedWorldLidar(Node):
         self.dynamic_actor_ground_snap_max_height = float(
             self.get_parameter("dynamic_actor_ground_snap_max_height").value
         )
+        self.dynamic_vehicle_topics = self.string_list_parameter(
+            "dynamic_vehicle_topics"
+        )
+        self.dynamic_vehicle_radius = float(
+            self.get_parameter("dynamic_vehicle_radius").value
+        )
+        self.dynamic_vehicle_height = float(
+            self.get_parameter("dynamic_vehicle_height").value
+        )
+        self.dynamic_vehicle_z_offset = float(
+            self.get_parameter("dynamic_vehicle_z_offset").value
+        )
+        self.dynamic_vehicle_radial_samples = max(
+            3, int(self.get_parameter("dynamic_vehicle_radial_samples").value)
+        )
+        self.dynamic_vehicle_height_samples = max(
+            2, int(self.get_parameter("dynamic_vehicle_height_samples").value)
+        )
         self.trash_scenario_path = self.get_parameter("trash_scenario_path").value
         self.trash_obstacle_radius = float(
             self.get_parameter("trash_obstacle_radius").value
@@ -248,6 +272,7 @@ class SimulatedWorldLidar(Node):
         self.vehicle_position = None
         self.vehicle_rotation = None
         self.actor_positions = {}
+        self.vehicle_positions = {}
         self.world_points = self.load_world_points()
         self.trash_points = self.load_trash_points()
 
@@ -262,6 +287,17 @@ class SimulatedWorldLidar(Node):
                 10,
             )
             for topic in self.dynamic_actor_topics
+        ]
+        self.vehicle_subscriptions = [
+            self.create_subscription(
+                PoseStamped,
+                topic,
+                lambda msg, vehicle_topic=topic: self.vehicle_pose_callback(
+                    vehicle_topic, msg
+                ),
+                10,
+            )
+            for topic in self.dynamic_vehicle_topics
         ]
         self.publisher = self.create_publisher(PointCloud2, self.output_topic, 10)
         self.filtered_publisher = None
@@ -286,6 +322,7 @@ class SimulatedWorldLidar(Node):
             f"v=[{self.vertical_min_angle:.2f}, {self.vertical_max_angle:.2f}], "
             f"add_obstacle_columns={self.add_obstacle_columns}, "
             f"actor_topics={len(self.dynamic_actor_topics)}, "
+            f"vehicle_topics={len(self.dynamic_vehicle_topics)}, "
             f"trash_points={len(self.trash_points)}"
         )
 
@@ -592,6 +629,12 @@ class SimulatedWorldLidar(Node):
             dtype=np.float32,
         )
 
+    def vehicle_pose_callback(self, topic, msg):
+        self.vehicle_positions[topic] = np.array(
+            [msg.pose.position.x, msg.pose.position.y, msg.pose.position.z],
+            dtype=np.float32,
+        )
+
     def dynamic_world_points(self):
         clouds = [self.world_points]
         trash_masks = [
@@ -625,6 +668,23 @@ class SimulatedWorldLidar(Node):
                 clouds.append(actor_points)
                 trash_masks.append(np.zeros(len(actor_points), dtype=bool))
                 dynamic_masks.append(np.ones(len(actor_points), dtype=bool))
+
+        if self.vehicle_positions:
+            vehicle_centers = np.asarray(
+                list(self.vehicle_positions.values()), dtype=np.float32
+            )
+            vehicle_points = self.build_cylinder_points(
+                vehicle_centers,
+                self.dynamic_vehicle_radius,
+                self.dynamic_vehicle_height,
+                self.dynamic_vehicle_z_offset,
+                self.dynamic_vehicle_radial_samples,
+                self.dynamic_vehicle_height_samples,
+            )
+            if vehicle_points.size:
+                clouds.append(vehicle_points)
+                trash_masks.append(np.zeros(len(vehicle_points), dtype=bool))
+                dynamic_masks.append(np.ones(len(vehicle_points), dtype=bool))
 
         combined_points = np.vstack(clouds)
         return (

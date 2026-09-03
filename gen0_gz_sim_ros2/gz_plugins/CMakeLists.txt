@@ -13,3 +13,9 @@ set_property(TARGET ActorPose PROPERTY CXX_STANDARD 17)
 target_link_libraries(ActorPose
   PRIVATE ignition-plugin${IGN_PLUGIN_VER}::ignition-plugin${IGN_PLUGIN_VER}
   PRIVATE ignition-gazebo6::ignition-gazebo6)
+
+add_library(TrafficPose SHARED TrafficPose.cc)
+set_property(TARGET TrafficPose PROPERTY CXX_STANDARD 17)
+target_link_libraries(TrafficPose
+  PRIVATE ignition-plugin${IGN_PLUGIN_VER}::ignition-plugin${IGN_PLUGIN_VER}
+  PRIVATE ignition-gazebo6::ignition-gazebo6)
