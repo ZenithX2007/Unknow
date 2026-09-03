@@ -75,10 +75,100 @@
 
     <model name="car_008">
       <self_collide>true</self_collide>
-      <pose>8.0 0 3 0 0 1.57</pose>
+      <pose>11.0 -3.5 2.57 0 0 1.91</pose>
       <include merge="true">
-        <uri>../models/car_012/model.sdf</uri>
+        <uri>../models/car_008/model.sdf</uri>
       </include>
+      <plugin filename="libTrafficPose.so" name="ignition::gazebo::systems::TrafficPose">
+        <trajectory>
+          <loop>true</loop>
+          <waypoint>
+            <time>0.0</time>
+            <pose>11.0 -3.5 2.57 0 0 1.91</pose>
+          </waypoint>
+          <waypoint>
+            <time>8.0</time>
+            <pose>8.0 5.0 2.61 0 0 -2.68</pose>
+          </waypoint>
+          <waypoint>
+            <time>12.0</time>
+            <pose>5.0 3.5 2.61 0 0 -2.09</pose>
+          </waypoint>
+          <waypoint>
+            <time>16.0</time>
+            <pose>3.0 0 2.57 0 0 -1.05</pose>
+          </waypoint>
+          <waypoint>
+            <time>20.0</time>
+            <pose>5.0 -3.5 2.53 0 0 -0.46</pose>
+          </waypoint>
+          <waypoint>
+            <time>24.0</time>
+            <pose>8.0 -5.0 2.53 0 0 0.46</pose>
+          </waypoint>
+          <waypoint>
+            <time>28.0</time>
+            <pose>11.0 -3.5 2.57 0 0 1.91</pose>
+          </waypoint>
+        </trajectory>
+      </plugin>
+    </model>
+
+    <model name="car_009">
+      <self_collide>true</self_collide>
+      <pose>-16.182 -26.069 2.572 0 0 -0.5</pose>
+      <include merge="true">
+        <uri>../models/car_008/model.sdf</uri>
+      </include>
+      <plugin filename="libTrafficPose.so" name="ignition::gazebo::systems::TrafficPose">
+        <trajectory>
+          <loop>true</loop>
+          <waypoint>
+            <time>0.0</time>
+            <pose>-16.182 -26.069 2.572 0 0 -0.5</pose>
+          </waypoint>
+          <waypoint>
+            <time>6.0</time>
+            <pose>-8.682 -30.069 2.552 0 0 -0.5</pose>
+          </waypoint>
+          <waypoint>
+            <time>12.0</time>
+            <pose>-1.682 -34.069 2.652 0 0 -0.5</pose>
+          </waypoint>
+          <waypoint>
+            <time>18.0</time>
+            <pose>5.818 -38.069 2.558 0 0 -0.5</pose>
+          </waypoint>
+          <waypoint>
+            <time>24.0</time>
+            <pose>13.318 -42.069 2.569 0 0 -0.5</pose>
+          </waypoint>
+          <waypoint>
+            <time>30.0</time>
+            <pose>20.318 -46.069 2.582 0 0 -0.5</pose>
+          </waypoint>
+          <waypoint>
+            <time>36.0</time>
+            <pose>13.318 -42.069 2.569 0 0 2.64</pose>
+          </waypoint>
+          <waypoint>
+            <time>42.0</time>
+            <pose>5.818 -38.069 2.558 0 0 2.64</pose>
+          </waypoint>
+          <waypoint>
+            <time>48.0</time>
+            <pose>-1.682 -34.069 2.652 0 0 2.64</pose>
+          </waypoint>
+          <waypoint>
+            <time>54.0</time>
+            <pose>-8.682 -30.069 2.552 0 0 2.64</pose>
+          </waypoint>
+          <waypoint>
+            <time>60.0</time>
+            <pose>-16.182 -26.069 2.572 0 0 2.64</pose>
+          </waypoint>
+      </trajectory>
+      </plugin>
     </model>
 
   <actor name="pedestrian_1">

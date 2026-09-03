@@ -62,7 +62,10 @@ def gazebo_environment(
         os.path.join(workspace_root, 'gen0_gz_sim_ros2', 'gz_plugins', 'build'),
     )
     for actor_pose_plugin_path in actor_pose_plugin_paths:
-        if os.path.exists(os.path.join(actor_pose_plugin_path, 'libActorPose.so')):
+        if any(
+            os.path.exists(os.path.join(actor_pose_plugin_path, filename))
+            for filename in ('libActorPose.so', 'libTrafficPose.so')
+        ):
             prepend_env_path(env, 'IGN_GAZEBO_SYSTEM_PLUGIN_PATH', actor_pose_plugin_path)
             prepend_env_path(env, 'GZ_SIM_SYSTEM_PLUGIN_PATH', actor_pose_plugin_path)
             prepend_env_path(env, 'LD_LIBRARY_PATH', actor_pose_plugin_path)

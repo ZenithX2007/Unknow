@@ -6,9 +6,9 @@ WORKSPACE="${GEN0_WORKSPACE:-$SCRIPT_DIR}"
 WORLD="${GEN0_WORLD:-my_map}"
 ACTORS_SCENARIO="${GEN0_ACTORS_SCENARIO:-}"
 TRASH_SCENARIO="${GEN0_TRASH_SCENARIO-small_trash_dense}"
-TRASH_CLEANUP="${GEN0_TRASH_CLEANUP:-false}"
-TRASH_VEHICLE_LENGTH="${GEN0_TRASH_VEHICLE_LENGTH:-4.40}"
-TRASH_VEHICLE_WIDTH="${GEN0_TRASH_VEHICLE_WIDTH:-2.20}"
+TRASH_CLEANUP="${GEN0_TRASH_CLEANUP:-true}"
+TRASH_VEHICLE_LENGTH="${GEN0_TRASH_VEHICLE_LENGTH:-2.40}"
+TRASH_VEHICLE_WIDTH="${GEN0_TRASH_VEHICLE_WIDTH:-1.65}"
 TRASH_VEHICLE_CENTER_OFFSET_X="${GEN0_TRASH_VEHICLE_CENTER_OFFSET_X:-0.0}"
 TRASH_VEHICLE_CENTER_OFFSET_Y="${GEN0_TRASH_VEHICLE_CENTER_OFFSET_Y:-0.0}"
 TRASH_COVERAGE_MARGIN="${GEN0_TRASH_COVERAGE_MARGIN:-0.0}"
@@ -35,7 +35,7 @@ RVIZ="${GEN0_RVIZ:-true}"
 DEFAULT_RVIZ_CONFIG="$WORKSPACE/gen0_gz_sim_ros2/gen0_main/config/gen0_3d_mapping.rviz"
 DEFAULT_RELOCALIZATION_RVIZ_CONFIG="$WORKSPACE/gen0_gz_sim_ros2/gen0_main/config/gen0_relocalization_loam_livox.rviz"
 RVIZ_CONFIG="${GEN0_RVIZ_CONFIG:-}"
-RVIZ_RENDER_ENV="${GEN0_RVIZ_RENDER_ENV:-software}"
+RVIZ_RENDER_ENV="${GEN0_RVIZ_RENDER_ENV:-passthrough}"
 LOG_DIR="${GEN0_LOG_DIR:-$WORKSPACE/runtime_logs}"
 ROS_LOG_DIR="${ROS_LOG_DIR:-$LOG_DIR/ros}"
 FAST_LIO_ODOM_TOPIC="${GEN0_FAST_LIO_ODOM_TOPIC:-/gen0_mapping/fast_lio/odom}"
@@ -87,6 +87,7 @@ SIM_LIDAR_SURFACE_SAMPLES="${GEN0_SIM_LIDAR_SURFACE_SAMPLES:-1000000}"
 SIM_LIDAR_ADD_OBSTACLE_COLUMNS="${GEN0_SIM_LIDAR_ADD_OBSTACLE_COLUMNS:-false}"
 DYNAMIC_ACTOR_TOPICS="${GEN0_DYNAMIC_ACTOR_TOPICS:-}"
 ACTOR_COSTMAP_POSE_TOPICS="${GEN0_ACTOR_COSTMAP_POSE_TOPICS:-}"
+DYNAMIC_VEHICLE_TOPICS="${GEN0_DYNAMIC_VEHICLE_TOPICS:-/car/car_008/pose,/car/car_009/pose}"
 ACTOR_COSTMAP="${GEN0_ACTOR_COSTMAP:-true}"
 ACTOR_OBSTACLE_TOPIC="${GEN0_ACTOR_OBSTACLE_TOPIC:-/gen0_mapping/actor_obstacles}"
 ACTOR_OBSTACLE_FRAME="${GEN0_ACTOR_OBSTACLE_FRAME:-odom}"
@@ -150,6 +151,14 @@ fi
 if [[ -z "$ACTOR_WORLD_SDF_PATH" ]]; then
   ACTOR_WORLD_SDF_PATH="$WORKSPACE/gen0_gz_sim_ros2/gen0_main/worlds/$WORLD/$WORLD.sdf"
 fi
+
+append_launch_arg_if_non_empty() {
+  local name="$1"
+  local value="$2"
+  if [[ -n "$value" ]]; then
+    fast_lio_launch+=("$name:=$value")
+  fi
+}
 
 case "$PROJECTED_MAP_BACKEND" in
   octomap|python) ;;
@@ -252,7 +261,7 @@ check_existing_ros_nodes() {
   local existing
   existing="$(
     timeout 5s ros2 node list --no-daemon 2>/dev/null \
-      | grep -E '(^/pose_publisher$|^/gen0_simulated_world_lidar$|^/gen0_gazebo_livox_adapter$|^/gen0_trash_fusion_detector$|^/gen0_stable_odom$|^/gen0_odom_registered_scan$|^/gen0_icp_transform_publisher$|^/gen0_icp_relocalization$|^/gen0_fast_lio$|^/gen0_mapping_drive$|^/gen0_trash_cleanup$|^/gen0_scurm_terrain_analysis$|^/gen0_scurm_terrain_analysis_ext$|^/gen0_actor_obstacle_costmap$|^/gen0_scurm_map_to_odom$|^/gen0_scurm_exchange_field$|^/gen0_scurm_sensor_scan_generation$|^/gen0_scurm_octomap_server$|^/gen0_projected_terrain_map$|^/costmap/costmap$|^/lifecycle_manager_costmap$|^/raw_front3d_preview$|^/cloud_registered_preview$|^/terrain_map_preview$|^/terrain_map_ext_preview$|^/fast_lio_map_preview$|^/pointcloud_accumulator_preview$|^/rviz$|^/rviz2$|^/vehicle_movement_interface$)' \
+      | grep -E '(^/pose_publisher$|^/gen0_simulated_world_lidar$|^/gen0_gazebo_livox_adapter$|^/gen0_trash_fusion_detector$|^/gen0_stable_odom$|^/gen0_odom_registered_scan$|^/gen0_icp_transform_publisher$|^/gen0_icp_relocalization$|^/gen0_fast_lio$|^/gen0_mapping_drive$|^/gen0_trash_cleanup$|^/gen0_scurm_terrain_analysis$|^/gen0_scurm_terrain_analysis_ext$|^/gen0_actor_obstacle_costmap$|^/gen0_scurm_map_to_odom$|^/gen0_scurm_exchange_field$|^/gen0_scurm_sensor_scan_generation$|^/gen0_scurm_octomap_server$|^/gen0_projected_terrain_map$|^/costmap/costmap$|^/lifecycle_manager_costmap$|^/raw_front3d_preview$|^/cloud_registered_preview$|^/terrain_map_preview$|^/terrain_map_ext_preview$|^/fast_lio_map_preview$|^/pointcloud_accumulator_preview$|^/gen0_mapping_rviz$|^/gen0_nav2_rviz$|^/rviz$|^/rviz2$|^/vehicle_movement_interface$)' \
       || true
   )"
   if [[ -n "$existing" ]]; then
@@ -484,7 +493,7 @@ fi
 if [[ "$SIMULATED_LIDAR" == "true" ]]; then
   log "Simulated lidar scan: max_points=$SIM_LIDAR_MAX_POINTS, max_range=$SIM_LIDAR_MAX_RANGE, h=[$SIM_LIDAR_HORIZONTAL_MIN, $SIM_LIDAR_HORIZONTAL_MAX], v=[$SIM_LIDAR_VERTICAL_MIN, $SIM_LIDAR_VERTICAL_MAX]"
   log "Simulated lidar mesh: world_voxel_size=$SIM_LIDAR_WORLD_VOXEL_SIZE, surface_sampling=$SIM_LIDAR_SURFACE_SAMPLING, surface_samples=$SIM_LIDAR_SURFACE_SAMPLES, add_obstacle_columns=$SIM_LIDAR_ADD_OBSTACLE_COLUMNS"
-  log "Simulated lidar dynamic objects: actor_topics=${DYNAMIC_ACTOR_TOPICS:-none}, trash_scenario_path=${TRASH_SCENARIO_PATH:-none}"
+  log "Simulated lidar dynamic objects: actor_topics=${DYNAMIC_ACTOR_TOPICS:-none}, vehicle_topics=${DYNAMIC_VEHICLE_TOPICS:-none}, trash_scenario_path=${TRASH_SCENARIO_PATH:-none}"
 fi
 log "Actor costmap source: enabled=$ACTOR_COSTMAP, topic=$ACTOR_OBSTACLE_TOPIC, frame=$ACTOR_OBSTACLE_FRAME, scenario_path=${ACTORS_SCENARIO_PATH:-none}, world_sdf=$ACTOR_WORLD_SDF_PATH, world_to_output=$ACTOR_WORLD_TO_OUTPUT, output_origin_xy=$ACTOR_OUTPUT_ORIGIN_XY"
 log "Actor soft-stop: enabled=$ACTOR_SOFT_STOP, vehicle=$ACTOR_SOFT_STOP_VEHICLE_NAME, stop_margin=$ACTOR_SOFT_STOP_MARGIN, release_margin=$ACTOR_SOFT_STOP_RELEASE_MARGIN"
@@ -599,6 +608,9 @@ fi
 if [[ -n "$DYNAMIC_ACTOR_TOPICS" ]]; then
   fast_lio_launch+=(dynamic_actor_topics:="$DYNAMIC_ACTOR_TOPICS")
 fi
+if [[ -n "$DYNAMIC_VEHICLE_TOPICS" ]]; then
+  fast_lio_launch+=(dynamic_vehicle_topics:="$DYNAMIC_VEHICLE_TOPICS")
+fi
 if [[ -n "$PROJECTED_MAP_REFERENCE_ODOM_TOPIC" ]]; then
   fast_lio_launch+=(projected_map_reference_odom_topic:="$PROJECTED_MAP_REFERENCE_ODOM_TOPIC")
 fi
@@ -614,9 +626,7 @@ if [[ "$SIMULATED_LIDAR" == "true" ]]; then
   fast_lio_launch+=(simulated_lidar_surface_sampling:="$SIM_LIDAR_SURFACE_SAMPLING")
   fast_lio_launch+=(simulated_lidar_surface_samples:="$SIM_LIDAR_SURFACE_SAMPLES")
   fast_lio_launch+=(simulated_lidar_add_obstacle_columns:="$SIM_LIDAR_ADD_OBSTACLE_COLUMNS")
-  if [[ -n "$TRASH_SCENARIO_PATH" ]]; then
-    fast_lio_launch+=(trash_scenario_path:="$TRASH_SCENARIO_PATH")
-  fi
+  append_launch_arg_if_non_empty trash_scenario_path "$TRASH_SCENARIO_PATH"
 fi
 
 start_process fast_lio_3d_slam "${fast_lio_launch[@]}"

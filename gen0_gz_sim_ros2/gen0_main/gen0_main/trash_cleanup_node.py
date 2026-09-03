@@ -14,6 +14,7 @@ from geometry_msgs.msg import PoseArray
 from nav_msgs.msg import Odometry
 import rclpy
 from rcl_interfaces.msg import SetParametersResult
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 
 from .trash_model_geometry import load_trash_model_geometry
@@ -642,7 +643,7 @@ def main(args=None):
     node = TrashCleanupNode()
     try:
         rclpy.spin(node)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, ExternalShutdownException):
         pass
     finally:
         node.destroy_node()

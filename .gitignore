@@ -25,3 +25,6 @@ __pycache__/
 
 # Large local FAST-LIO map dumps. Commit selected prior/projected maps explicitly.
 gen0_gz_sim_ros2/gen0_main/maps/recovered_fast_lio_*.pcd
+
+# SolidWorks exports used only to regenerate the tracked Gazebo DAE meshes.
+gen0_gz_sim_ros2/gen0_main/meshes/gen0_cad/*_source.glb
