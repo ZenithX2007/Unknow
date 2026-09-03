@@ -86,6 +86,7 @@ SIM_LIDAR_SURFACE_SAMPLING="${GEN0_SIM_LIDAR_SURFACE_SAMPLING:-true}"
 SIM_LIDAR_SURFACE_SAMPLES="${GEN0_SIM_LIDAR_SURFACE_SAMPLES:-1000000}"
 SIM_LIDAR_ADD_OBSTACLE_COLUMNS="${GEN0_SIM_LIDAR_ADD_OBSTACLE_COLUMNS:-false}"
 DYNAMIC_ACTOR_TOPICS="${GEN0_DYNAMIC_ACTOR_TOPICS:-}"
+DYNAMIC_VEHICLE_TOPICS="${GEN0_DYNAMIC_VEHICLE_TOPICS:-/car/car_008/pose,/car/car_009/pose}"
 ACTOR_COSTMAP="${GEN0_ACTOR_COSTMAP:-true}"
 ACTOR_OBSTACLE_TOPIC="${GEN0_ACTOR_OBSTACLE_TOPIC:-/gen0_mapping/actor_obstacles}"
 ACTOR_OBSTACLE_FRAME="${GEN0_ACTOR_OBSTACLE_FRAME:-odom}"
@@ -491,7 +492,7 @@ fi
 if [[ "$SIMULATED_LIDAR" == "true" ]]; then
   log "Simulated lidar scan: max_points=$SIM_LIDAR_MAX_POINTS, max_range=$SIM_LIDAR_MAX_RANGE, h=[$SIM_LIDAR_HORIZONTAL_MIN, $SIM_LIDAR_HORIZONTAL_MAX], v=[$SIM_LIDAR_VERTICAL_MIN, $SIM_LIDAR_VERTICAL_MAX]"
   log "Simulated lidar mesh: world_voxel_size=$SIM_LIDAR_WORLD_VOXEL_SIZE, surface_sampling=$SIM_LIDAR_SURFACE_SAMPLING, surface_samples=$SIM_LIDAR_SURFACE_SAMPLES, add_obstacle_columns=$SIM_LIDAR_ADD_OBSTACLE_COLUMNS"
-  log "Simulated lidar dynamic objects: actor_topics=${DYNAMIC_ACTOR_TOPICS:-none}, trash_scenario_path=${TRASH_SCENARIO_PATH:-none}"
+  log "Simulated lidar dynamic objects: actor_topics=${DYNAMIC_ACTOR_TOPICS:-none}, vehicle_topics=${DYNAMIC_VEHICLE_TOPICS:-none}, trash_scenario_path=${TRASH_SCENARIO_PATH:-none}"
 fi
 log "Actor costmap source: enabled=$ACTOR_COSTMAP, topic=$ACTOR_OBSTACLE_TOPIC, frame=$ACTOR_OBSTACLE_FRAME, scenario_path=${ACTORS_SCENARIO_PATH:-none}, world_sdf=$ACTOR_WORLD_SDF_PATH, world_to_output=$ACTOR_WORLD_TO_OUTPUT, output_origin_xy=$ACTOR_OUTPUT_ORIGIN_XY"
 log "Actor soft-stop: enabled=$ACTOR_SOFT_STOP, vehicle=$ACTOR_SOFT_STOP_VEHICLE_NAME, stop_margin=$ACTOR_SOFT_STOP_MARGIN, release_margin=$ACTOR_SOFT_STOP_RELEASE_MARGIN"
@@ -605,6 +606,9 @@ fi
 if [[ -n "$DYNAMIC_ACTOR_TOPICS" ]]; then
   fast_lio_launch+=(dynamic_actor_topics:="$DYNAMIC_ACTOR_TOPICS")
 fi
+if [[ -n "$DYNAMIC_VEHICLE_TOPICS" ]]; then
+  fast_lio_launch+=(dynamic_vehicle_topics:="$DYNAMIC_VEHICLE_TOPICS")
+fi
 if [[ -n "$PROJECTED_MAP_REFERENCE_ODOM_TOPIC" ]]; then
   fast_lio_launch+=(projected_map_reference_odom_topic:="$PROJECTED_MAP_REFERENCE_ODOM_TOPIC")
 fi
@@ -622,9 +626,6 @@ if [[ "$SIMULATED_LIDAR" == "true" ]]; then
   fast_lio_launch+=(simulated_lidar_add_obstacle_columns:="$SIM_LIDAR_ADD_OBSTACLE_COLUMNS")
   append_launch_arg_if_non_empty trash_scenario_path "$TRASH_SCENARIO_PATH"
 fi
-
-append_launch_arg_if_non_empty actors_scenario_path "$ACTORS_SCENARIO_PATH"
-append_launch_arg_if_non_empty dynamic_actor_topics "$DYNAMIC_ACTOR_TOPICS"
 
 start_process fast_lio_3d_slam "${fast_lio_launch[@]}"
 FAST_LIO_PID="${PIDS[-1]}"

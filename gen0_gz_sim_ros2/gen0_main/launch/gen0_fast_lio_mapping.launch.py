@@ -137,6 +137,7 @@ def generate_launch_description():
         "simulated_lidar_vertical_max_angle"
     )
     dynamic_actor_topics = LaunchConfiguration("dynamic_actor_topics")
+    dynamic_vehicle_topics = LaunchConfiguration("dynamic_vehicle_topics")
     actors_scenario_path = LaunchConfiguration("actors_scenario_path")
     actor_costmap = LaunchConfiguration("actor_costmap")
     actor_obstacle_topic = LaunchConfiguration("actor_obstacle_topic")
@@ -491,6 +492,11 @@ def generate_launch_description():
                 description="Comma-separated actor PoseStamped topics added to the simulated lidar fallback.",
             ),
             DeclareLaunchArgument(
+                "dynamic_vehicle_topics",
+                default_value="/car/car_008/pose,/car/car_009/pose",
+                description="Comma-separated vehicle PoseStamped topics added to the simulated lidar fallback.",
+            ),
+            DeclareLaunchArgument(
                 "actors_scenario_path",
                 default_value="",
                 description="Actor scenario SDF used as a fallback source for dynamic costmap obstacles.",
@@ -655,6 +661,7 @@ def generate_launch_description():
                         "self_filter_min_xyz": [-2.8, -1.4, -0.4],
                         "self_filter_max_xyz": [2.8, 1.4, 2.9],
                         "dynamic_actor_topics": dynamic_actor_topics,
+                        "dynamic_vehicle_topics": dynamic_vehicle_topics,
                         "trash_scenario_path": trash_scenario_path,
                     }
                 ],
