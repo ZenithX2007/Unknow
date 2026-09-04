@@ -79,6 +79,7 @@ setup(
         'nav2_projected_map_relay = gen0_main.nav2_projected_map_relay:main',
         'trash_cleanup_node = gen0_main.trash_cleanup_node:main',
         'trash_fusion_detector = gen0_main.trash_fusion_detector:main',
+        'camera_viewer = gen0_main.camera_viewer:main',
         ],
     },
 )

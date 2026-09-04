@@ -26,6 +26,8 @@ TRASH_FUSION_POINTCLOUD_TOPIC="${GEN0_TRASH_FUSION_POINTCLOUD_TOPIC:-}"
 GPU_ADAPTER="${GEN0_GPU_ADAPTER:-NVIDIA}"
 PARTITION="${GEN0_PARTITION:-gen0_scurm_demo}"
 GAZEBO_GUI="${GEN0_GAZEBO_GUI:-true}"
+CAMERA_VIEW="${GEN0_CAMERA_VIEW:-true}"
+CAMERA_TOPIC="${GEN0_CAMERA_TOPIC:-/gen0_model/front_camera}"
 GROUND_TRUTH_LOCALIZATION="${GEN0_GROUND_TRUTH_LOCALIZATION:-false}"
 STATIC_ODOM_BASE="${GEN0_STATIC_ODOM_BASE:-false}"
 GAZEBO_BRIDGE_FILE="${GEN0_GAZEBO_BRIDGE_FILE:-$WORKSPACE/gen0_gz_sim_ros2/gen0_main/config/bridge_no_gz_odom_tf.yaml}"
@@ -506,6 +508,8 @@ gazebo_launch=(
   ros2 launch gen0_main spawn.launch.py
   world:="$WORLD"
   gazebo_gui:="$GAZEBO_GUI"
+  camera_view:="$CAMERA_VIEW"
+  camera_topic:="$CAMERA_TOPIC"
   partition:="$PARTITION"
   rviz:=false
   ground_truth_localization:="$GROUND_TRUTH_LOCALIZATION"
