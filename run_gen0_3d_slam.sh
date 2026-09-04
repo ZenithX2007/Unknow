@@ -611,7 +611,7 @@ if [[ -n "$DYNAMIC_ACTOR_TOPICS" ]]; then
   fast_lio_launch+=(dynamic_actor_topics:="$DYNAMIC_ACTOR_TOPICS")
 fi
 if [[ -n "$DYNAMIC_VEHICLE_TOPICS" ]]; then
-  fast_lio_launch+=(dynamic_vehicle_topics:="$DYNAMIC_VEHICLE_TOPICS")
+  fast_lio_launch+=(vehicle_pose_topics:="$DYNAMIC_VEHICLE_TOPICS")
 fi
 if [[ -n "$PROJECTED_MAP_REFERENCE_ODOM_TOPIC" ]]; then
   fast_lio_launch+=(projected_map_reference_odom_topic:="$PROJECTED_MAP_REFERENCE_ODOM_TOPIC")

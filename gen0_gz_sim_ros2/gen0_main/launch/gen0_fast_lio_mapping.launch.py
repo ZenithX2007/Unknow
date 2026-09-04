@@ -138,6 +138,7 @@ def generate_launch_description():
     )
     dynamic_actor_topics = LaunchConfiguration("dynamic_actor_topics")
     actor_pose_topics = LaunchConfiguration("actor_pose_topics")
+    vehicle_pose_topics = LaunchConfiguration("vehicle_pose_topics")
     dynamic_vehicle_topics = LaunchConfiguration("dynamic_vehicle_topics")
     actors_scenario_path = LaunchConfiguration("actors_scenario_path")
     actor_costmap = LaunchConfiguration("actor_costmap")
@@ -498,9 +499,14 @@ def generate_launch_description():
                 description="Comma-separated live actor PoseStamped topics used by the actor costmap and collision monitor.",
             ),
             DeclareLaunchArgument(
-                "dynamic_vehicle_topics",
+                "vehicle_pose_topics",
                 default_value="/car/car_008/pose,/car/car_009/pose",
-                description="Comma-separated vehicle PoseStamped topics added to the simulated lidar fallback.",
+                description="Comma-separated live vehicle PoseStamped topics used by the dynamic obstacle costmap.",
+            ),
+            DeclareLaunchArgument(
+                "dynamic_vehicle_topics",
+                default_value="",
+                description="Optional vehicle PoseStamped topics added to simulated lidar; normally empty to avoid mapping vehicles as dense point clouds.",
             ),
             DeclareLaunchArgument(
                 "actors_scenario_path",
@@ -994,6 +1000,7 @@ def generate_launch_description():
                         "use_sim_time": use_sim_time,
                         "actors_scenario_path": actors_scenario_path,
                         "actor_pose_topics": actor_pose_topics,
+                        "vehicle_pose_topics": vehicle_pose_topics,
                         "output_topic": actor_obstacle_topic,
                         "frame_id": actor_obstacle_frame,
                         "world_sdf_path": actor_world_sdf_path,
@@ -1013,6 +1020,9 @@ def generate_launch_description():
                         "actor_clear_intensity": 0.0,
                         "actor_radial_samples": 12,
                         "actor_height_samples": 2,
+                        "vehicle_length": 2.4,
+                        "vehicle_width": 1.65,
+                        "vehicle_grid_spacing": 0.5,
                     }
                 ],
             ),

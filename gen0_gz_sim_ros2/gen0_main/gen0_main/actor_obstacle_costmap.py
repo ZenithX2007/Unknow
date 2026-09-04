@@ -61,6 +61,7 @@ class ActorObstacleCostmap(Node):
 
         self.declare_parameter("actors_scenario_path", "")
         self.declare_parameter("actor_pose_topics", "")
+        self.declare_parameter("vehicle_pose_topics", "")
         self.declare_parameter("output_topic", "/gen0_mapping/actor_obstacles")
         self.declare_parameter("frame_id", "map")
         self.declare_parameter("world_sdf_path", "")
@@ -76,9 +77,13 @@ class ActorObstacleCostmap(Node):
         self.declare_parameter("actor_clear_intensity", 0.0)
         self.declare_parameter("actor_radial_samples", 24)
         self.declare_parameter("actor_height_samples", 4)
+        self.declare_parameter("vehicle_length", 2.4)
+        self.declare_parameter("vehicle_width", 1.65)
+        self.declare_parameter("vehicle_grid_spacing", 0.5)
 
         self.scenario_path = self.get_parameter("actors_scenario_path").value
         self.actor_pose_topics = self.string_list_parameter("actor_pose_topics")
+        self.vehicle_pose_topics = self.string_list_parameter("vehicle_pose_topics")
         self.output_topic = self.get_parameter("output_topic").value
         self.frame_id = self.get_parameter("frame_id").value
         self.world_sdf_path = self.get_parameter("world_sdf_path").value
@@ -106,6 +111,11 @@ class ActorObstacleCostmap(Node):
         self.actor_height_samples = max(
             1, int(self.get_parameter("actor_height_samples").value)
         )
+        self.vehicle_length = max(0.1, float(self.get_parameter("vehicle_length").value))
+        self.vehicle_width = max(0.1, float(self.get_parameter("vehicle_width").value))
+        self.vehicle_grid_spacing = max(
+            0.1, float(self.get_parameter("vehicle_grid_spacing").value)
+        )
 
         self.world_origin_xy = np.zeros(2, dtype=np.float32)
         self.world_origin_yaw = 0.0
@@ -113,6 +123,8 @@ class ActorObstacleCostmap(Node):
         self.trajectories = self.load_trajectories(self.scenario_path)
         self.live_positions = {}
         self.previous_centers = np.empty((0, 2), dtype=np.float32)
+        self.live_vehicle_poses = {}
+        self.previous_vehicle_poses = []
 
         qos = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
@@ -128,12 +140,24 @@ class ActorObstacleCostmap(Node):
             )
             for topic in self.actor_pose_topics
         ]
+        self.vehicle_subscriptions = [
+            self.create_subscription(
+                PoseStamped,
+                topic,
+                lambda msg, vehicle_topic=topic: self.vehicle_pose_callback(
+                    vehicle_topic, msg
+                ),
+                qos,
+            )
+            for topic in self.vehicle_pose_topics
+        ]
         self.publisher = self.create_publisher(PointCloud2, self.output_topic, 10)
         self.create_timer(1.0 / self.publish_rate, self.publish_obstacles)
 
         self.get_logger().info(
             f"Publishing actor costmap obstacles on {self.output_topic}, "
             f"scenario_actors={len(self.trajectories)}, live_topics={len(self.actor_pose_topics)}, "
+            f"vehicle_topics={len(self.vehicle_pose_topics)}, "
             f"frame={self.frame_id}, radius={self.actor_radius:.2f}, "
             f"z=[{self.actor_z_min:.2f}, {self.actor_z_max:.2f}], "
             f"mark_intensity={self.actor_mark_intensity:.2f}, "
@@ -283,6 +307,19 @@ class ActorObstacleCostmap(Node):
             self.now_sec(),
         )
 
+    def vehicle_pose_callback(self, topic, msg):
+        xy = np.asarray([msg.pose.position.x, msg.pose.position.y], dtype=np.float32)
+        quaternion = msg.pose.orientation
+        yaw = math.atan2(
+            2.0 * (quaternion.w * quaternion.z + quaternion.x * quaternion.y),
+            1.0 - 2.0 * (quaternion.y * quaternion.y + quaternion.z * quaternion.z),
+        )
+        self.live_vehicle_poses[topic] = (
+            self.world_to_output_xy(xy),
+            yaw - self.world_origin_yaw if self.transform_world_to_output else yaw,
+            self.now_sec(),
+        )
+
     def now_sec(self):
         return self.get_clock().now().nanoseconds * 1e-9
 
@@ -350,6 +387,39 @@ class ActorObstacleCostmap(Node):
         values = np.full((xyz.shape[0], 1), intensity, dtype=np.float32)
         return np.hstack((xyz, values)).astype(np.float32, copy=False)
 
+    def build_vehicle_points(self, poses, intensity):
+        if not poses:
+            return np.empty((0, 4), dtype=np.float32)
+
+        half_length = self.vehicle_length * 0.5
+        half_width = self.vehicle_width * 0.5
+        perimeter = np.asarray(
+            [
+                [-half_length, -half_width],
+                [-half_length, half_width],
+                [half_length, half_width],
+                [half_length, -half_width],
+            ],
+            dtype=np.float32,
+        )
+        points = []
+        for center, yaw, _ in poses:
+            cos_yaw = math.cos(yaw)
+            sin_yaw = math.sin(yaw)
+            rotated = np.column_stack(
+                (
+                    perimeter[:, 0] * cos_yaw - perimeter[:, 1] * sin_yaw,
+                    perimeter[:, 0] * sin_yaw + perimeter[:, 1] * cos_yaw,
+                )
+            )
+            xy = rotated + center
+            z = np.full((xy.shape[0], 1), 0.35, dtype=np.float32)
+            points.append(np.hstack((xy, z)))
+
+        xyz = np.vstack(points).astype(np.float32, copy=False)
+        values = np.full((xyz.shape[0], 1), intensity, dtype=np.float32)
+        return np.hstack((xyz, values)).astype(np.float32, copy=False)
+
     def publish_obstacles(self):
         now = self.now_sec()
         current_centers = self.actor_centers(now)
@@ -358,6 +428,34 @@ class ActorObstacleCostmap(Node):
             self.previous_centers, self.actor_clear_intensity
         )
         self.previous_centers = current_centers.copy()
+
+        current_vehicle_poses = [
+            pose
+            for pose in self.live_vehicle_poses.values()
+            if now - pose[2] <= self.live_pose_timeout
+        ]
+        mark_vehicle_points = self.build_vehicle_points(
+            current_vehicle_poses, self.actor_mark_intensity
+        )
+        clear_vehicle_points = self.build_vehicle_points(
+            self.previous_vehicle_poses, self.actor_clear_intensity
+        )
+        self.previous_vehicle_poses = [
+            (pose[0].copy(), pose[1], pose[2]) for pose in current_vehicle_poses
+        ]
+
+        if mark_vehicle_points.size:
+            mark_points = (
+                np.vstack((mark_points, mark_vehicle_points))
+                if mark_points.size
+                else mark_vehicle_points
+            )
+        if clear_vehicle_points.size:
+            clear_points = (
+                np.vstack((clear_points, clear_vehicle_points))
+                if clear_points.size
+                else clear_vehicle_points
+            )
 
         if mark_points.size and clear_points.size:
             points = np.vstack((clear_points, mark_points))
