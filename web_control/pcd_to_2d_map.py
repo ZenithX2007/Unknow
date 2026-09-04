@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import math
 import os
 from pathlib import Path
@@ -12,62 +13,95 @@ OUT_DIR = PCD_PATH.parent
 OUT_PREFIX = "prior_map_2d"
 RESOLUTION = 0.1
 OCCUPIED_THRESHOLD = 1
-MIN_Z = -0.2
+MIN_Z = 0.2
 MAX_Z = 20.0
 
 
 def read_ascii_pcd(path: Path):
-    """Read a simple ASCII .pcd file with x y z [intensity]."""
-    with path.open("r", encoding="utf-8") as fp:
-        lines = fp.readlines()
+    """Read x/y/z from an ASCII or standard binary PCD file."""
+    raw = path.read_bytes()
+    header_end = raw.find(b"DATA")
+    if header_end < 0:
+        raise ValueError(f"No DATA header found in {path}")
 
+    data_line_end = raw.find(b"\n", header_end)
+    if data_line_end < 0:
+        raise ValueError(f"DATA header is incomplete in {path}")
+
+    header = raw[:data_line_end].decode("ascii", errors="strict")
+    header_lines = header.splitlines()
     fields = None
-    data_started = False
-    data_lines = []
-
-    for raw in lines:
-        line = raw.strip()
-        if not line or line.startswith("#"):
+    sizes = None
+    types = None
+    counts = None
+    points_count = None
+    data_type = None
+    for line in header_lines:
+        parts = line.strip().split()
+        if not parts:
             continue
-        if not data_started:
-            if line.startswith("FIELDS"):
-                fields = line.split()[1:]
-            elif line.startswith("DATA"):
-                data_type = line.split()[1]
-                if data_type.lower() != "ascii":
-                    raise ValueError(f"Only ASCII PCD is supported: {path}")
-                data_started = True
-            continue
+        key = parts[0].upper()
+        if key == "FIELDS":
+            fields = parts[1:]
+        elif key == "SIZE":
+            sizes = [int(value) for value in parts[1:]]
+        elif key == "TYPE":
+            types = parts[1:]
+        elif key == "COUNT":
+            counts = [int(value) for value in parts[1:]]
+        elif key == "POINTS":
+            points_count = int(parts[1])
+        elif key == "DATA":
+            data_type = parts[1].lower()
 
-        if data_started:
-            data_lines.append(line)
+    if not fields or not sizes or not types or not data_type:
+        raise ValueError(f"Incomplete PCD header in {path}")
+    if counts is None:
+        counts = [1] * len(fields)
+    if data_type == "ascii":
+        text = raw[data_line_end + 1:].decode("ascii", errors="strict")
+        values = np.fromstring(text, sep=" ", dtype=np.float64)
+        columns = sum(counts)
+        if columns <= 0 or values.size % columns != 0:
+            raise ValueError(f"Invalid ASCII point data in {path}")
+        values = values.reshape((-1, columns))
+        field_offsets = np.cumsum([0] + counts)
+        xyz_indices = [fields.index(name) for name in ("x", "y", "z")]
+        return values[:, [field_offsets[index] for index in xyz_indices]]
+    if data_type != "binary":
+        raise ValueError(f"Unsupported PCD DATA type {data_type!r} in {path}")
 
-    if fields is None:
-        raise ValueError(f"No FIELDS header found in {path}")
+    if points_count is None:
+        width_index = next((i for i, line in enumerate(header_lines) if line.startswith("WIDTH")), None)
+        height_index = next((i for i, line in enumerate(header_lines) if line.startswith("HEIGHT")), None)
+        if width_index is None or height_index is None:
+            raise ValueError(f"Binary PCD has no POINTS/WIDTH/HEIGHT in {path}")
+        points_count = int(header_lines[width_index].split()[1]) * int(header_lines[height_index].split()[1])
 
-    if not data_lines:
-        raise ValueError(f"No point data found in {path}")
-
-    points = []
-    for line in data_lines:
-        vals = line.split()
-        if len(vals) < 3:
-            continue
-        # Keep exactly x, y, z and optionally intensity
-        if len(vals) >= 4:
-            points.append([float(vals[0]), float(vals[1]), float(vals[2]), float(vals[3])])
+    dtype_fields = []
+    for field, size, field_type, count in zip(fields, sizes, types, counts):
+        if field_type == "F" and size == 4:
+            numpy_type = "<f4"
+        elif field_type == "F" and size == 8:
+            numpy_type = "<f8"
+        elif field_type == "U":
+            numpy_type = f"<u{size}"
+        elif field_type == "I":
+            numpy_type = f"<i{size}"
         else:
-            points.append([float(vals[0]), float(vals[1]), float(vals[2])])
+            raise ValueError(f"Unsupported PCD field type {field_type}{size} in {path}")
+        shape = () if count == 1 else (count,)
+        dtype_fields.append((field, numpy_type, shape))
 
-    if not points:
-        raise ValueError(f"No valid points parsed from {path}")
-
-    arr = np.asarray(points, dtype=np.float64)
-    if arr.shape[1] == 3:
-        return arr
-    if arr.shape[1] == 4:
-        return arr
-    raise ValueError(f"Unexpected point format in {path}: shape={arr.shape}")
+    structured = np.frombuffer(
+        raw[data_line_end + 1:], dtype=np.dtype(dtype_fields), count=points_count
+    )
+    try:
+        return np.column_stack((structured["x"], structured["y"], structured["z"])).astype(
+            np.float64, copy=False
+        )
+    except (KeyError, ValueError) as error:
+        raise ValueError(f"Binary PCD does not contain scalar x/y/z fields: {path}") from error
 
 
 def project_to_2d(points):
@@ -99,37 +133,57 @@ def project_to_2d(points):
         if 0 <= gx < width and 0 <= gy < height:
             grid[height - 1 - gy, gx] += 1
 
-    occupied = np.where(grid >= OCCUPIED_THRESHOLD, 0, 255).astype(np.uint8)
+    # Keep the Nav2 occupancy meaning unchanged while rendering occupied cells white.
+    occupied = np.where(grid >= OCCUPIED_THRESHOLD, 255, 0).astype(np.uint8)
     return occupied, min_x, min_y
 
 
 def save_yaml(yaml_path: Path, image_name: str, origin_x: float, origin_y: float):
-    yaml_path.write_text(
+    yaml_content = (
         f"image: {image_name}\n"
         "mode: trinary\n"
         f"resolution: {RESOLUTION}\n"
         f"origin: [{origin_x}, {origin_y}, 0.0]\n"
-        "negate: 0\n"
+        "negate: 1\n"
         "occupied_thresh: 0.65\n"
-        "free_thresh: 0.25\n",
-        encoding="utf-8",
+        "free_thresh: 0.25\n"
     )
+    temporary_path = yaml_path.with_name(f".{yaml_path.name}.tmp")
+    temporary_path.write_text(yaml_content, encoding="utf-8")
+    os.replace(temporary_path, yaml_path)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Convert a PCD point cloud to a Nav2 map.")
+    parser.add_argument("--pcd", type=Path, default=PCD_PATH)
+    parser.add_argument("--output-dir", type=Path, default=OUT_DIR)
+    parser.add_argument("--prefix", default=OUT_PREFIX)
+    parser.add_argument("--image-format", choices=("pgm", "png"), default="pgm")
+    return parser.parse_args()
 
 
 def main():
-    if not PCD_PATH.exists():
-        raise FileNotFoundError(f"PCD not found: {PCD_PATH}")
+    args = parse_args()
+    pcd_path = args.pcd.expanduser().resolve()
+    output_dir = args.output_dir.expanduser().resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
+    if not pcd_path.is_file():
+        raise FileNotFoundError(f"PCD not found: {pcd_path}")
 
-    points = read_ascii_pcd(PCD_PATH)
+    points = read_ascii_pcd(pcd_path)
     img, origin_x, origin_y = project_to_2d(points)
 
-    pgm_path = OUT_DIR / f"{OUT_PREFIX}.pgm"
-    yaml_path = OUT_DIR / f"{OUT_PREFIX}.yaml"
+    image_path = output_dir / f"{args.prefix}.{args.image_format}"
+    yaml_path = output_dir / f"{args.prefix}.yaml"
 
-    Image.fromarray(img, mode="L").save(pgm_path)
-    save_yaml(yaml_path, f"{OUT_PREFIX}.pgm", origin_x, origin_y)
+    temporary_image_path = image_path.with_name(
+        f".{image_path.name}.tmp.{args.image_format}"
+    )
+    Image.fromarray(img, mode="L").save(temporary_image_path, format=args.image_format.upper())
+    os.replace(temporary_image_path, image_path)
+    save_yaml(yaml_path, image_path.name, origin_x, origin_y)
 
-    print(f"Saved 2D occupancy map to: {pgm_path}")
+    print(f"Saved 2D occupancy map to: {image_path}")
     print(f"Saved YAML map to: {yaml_path}")
     print(f"Origin: ({origin_x}, {origin_y}), resolution={RESOLUTION} m/cell")
 

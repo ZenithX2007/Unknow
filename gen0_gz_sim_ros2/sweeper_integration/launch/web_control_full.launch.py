@@ -1,8 +1,14 @@
 import os
+from pathlib import Path
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription, TimerAction
+from launch.actions import (
+    DeclareLaunchArgument,
+    ExecuteProcess,
+    IncludeLaunchDescription,
+    TimerAction,
+)
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_xml.launch_description_sources import XMLLaunchDescriptionSource
@@ -14,7 +20,9 @@ def generate_launch_description():
     rosbridge_share = get_package_share_directory('rosbridge_server')
     workspace_root = os.path.abspath(os.path.join(sweeper_share, '..', '..', '..', '..'))
     web_root = os.path.join(workspace_root, 'web_control')
-    default_nav2_map = '/home/xixi/Unknow-gen0_humble/gen0_gz_sim_ros2/gen0_main/maps/prior_map_2d.yaml'
+    web_map_dir = Path(web_root, 'static_map')
+    nav2_map_yaml = web_map_dir / 'prior_map_2d.yaml'
+    default_nav2_map = str(nav2_map_yaml)
 
     world = LaunchConfiguration('world')
     gazebo_gui = LaunchConfiguration('gazebo_gui')
@@ -47,7 +55,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             'nav2_map_path',
             default_value=default_nav2_map,
-            description='Static OccupancyGrid YAML used by Nav2 as the map source.',
+            description='Static OccupancyGrid YAML regenerated from prior_map.pcd.',
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
@@ -72,23 +80,6 @@ def generate_launch_description():
             ],
         ),
         TimerAction(
-            period=8.0,
-            actions=[
-                IncludeLaunchDescription(
-                    PythonLaunchDescriptionSource(
-                        os.path.join(gen0_main_share, 'launch', 'gen0_navigation.launch.py')
-                    ),
-                    launch_arguments={
-                        'map': nav2_map_path,
-                        'map_source': 'yaml',
-                        'publish_identity_map_to_odom': 'true',
-                        'rviz': 'false',
-                        'autostart': 'true',
-                    }.items(),
-                )
-            ],
-        ),
-        TimerAction(
             period=10.0,
             actions=[
                 IncludeLaunchDescription(
@@ -108,6 +99,23 @@ def generate_launch_description():
                 ExecuteProcess(
                     cmd=['python3', '-m', 'http.server', web_port, '--directory', web_root],
                     output='screen',
+                )
+            ],
+        ),
+        TimerAction(
+            period=8.0,
+            actions=[
+                IncludeLaunchDescription(
+                    PythonLaunchDescriptionSource(
+                        os.path.join(gen0_main_share, 'launch', 'gen0_navigation.launch.py')
+                    ),
+                    launch_arguments={
+                        'map': nav2_map_path,
+                        'map_source': 'yaml',
+                        'publish_identity_map_to_odom': 'true',
+                        'rviz': 'false',
+                        'autostart': 'true',
+                    }.items(),
                 )
             ],
         ),

@@ -11,6 +11,7 @@
     navClient: null,
     navGoal: null,
     map: null,
+    staticMapLoaded: false,
     odom: null,
     goal: null,
     keys: new Set(),
@@ -97,6 +98,7 @@
     updateSpeedLabels();
     drawCameraPlaceholder();
     drawMap();
+    loadStaticMap();
     setBadge(dom.connectionBadge, "offline", "未连接");
     setBadge(dom.cameraBadge, "offline", "等待数据");
     setBadge(dom.mapBadge, "offline", "等待地图");
@@ -470,6 +472,61 @@
     appendLog(`地图和里程计已订阅 ${mapName} / ${odomName}。`);
   }
 
+  async function loadStaticMap() {
+    try {
+      const staticMapUrl = new URL("static_map/", document.baseURI);
+      const yamlResponse = await fetch(
+        new URL("prior_map_2d.yaml", staticMapUrl),
+        {
+        cache: "no-store",
+        },
+      );
+      if (!yamlResponse.ok) {
+        throw new Error(`HTTP ${yamlResponse.status}`);
+      }
+      const yaml = await yamlResponse.text();
+      const imageMatch = yaml.match(/^image:\s*(.+)$/m);
+      const resolutionMatch = yaml.match(/^resolution:\s*([^\s]+)$/m);
+      const imageName = imageMatch && imageMatch[1].trim();
+      const resolution = Number(resolutionMatch && resolutionMatch[1]);
+      const origin = yaml.match(/^origin:\s*\[([^,]+),\s*([^,]+),/m);
+      if (!imageName || !resolution || !origin) {
+        throw new Error("地图 YAML 缺少 image、resolution 或 origin");
+      }
+
+      const image = new Image();
+      await new Promise((resolve, reject) => {
+        image.onload = resolve;
+        image.onerror = () => reject(new Error(`无法读取地图图片 ${imageName}`));
+        image.src = new URL(imageName, staticMapUrl).href;
+      });
+      const raster = document.createElement("canvas");
+      raster.width = image.naturalWidth;
+      raster.height = image.naturalHeight;
+      raster.getContext("2d").drawImage(image, 0, 0);
+      state.map = {
+        width: image.naturalWidth,
+        height: image.naturalHeight,
+        resolution,
+        originX: Number(origin[1]),
+        originY: Number(origin[2]),
+        data: null,
+        raster,
+        transform: null,
+      };
+      state.staticMapLoaded = true;
+      dom.mapInfo.textContent =
+        `${image.naturalWidth} x ${image.naturalHeight} @ ${resolution.toFixed(2)}m`;
+      dom.mapPlaceholder.hidden = true;
+      setBadge(dom.mapBadge, "online", "静态底图正常");
+      appendLog("已加载 prior_map.pcd 转换的 Nav2 静态栅格底图。");
+      drawMap();
+    } catch (error) {
+      setBadge(dom.mapBadge, "error", "底图加载失败");
+      appendLog(`静态底图加载失败：${error.message}`, "error");
+    }
+  }
+
   function handleMapMessage(message) {
     const info = message.info || {};
     const width = Number(info.width);
@@ -480,28 +537,38 @@
       return;
     }
 
-    state.map = {
+    const rosMap = {
       width,
       height,
       resolution,
-      originX: Number(info.origin?.position?.x) || 0,
-      originY: Number(info.origin?.position?.y) || 0,
+      originX: Number(
+        info.origin && info.origin.position && info.origin.position.x,
+      ) || 0,
+      originY: Number(
+        info.origin && info.origin.position && info.origin.position.y,
+      ) || 0,
       data: signedOccupancyData(message.data),
       raster: null,
       transform: null,
     };
-    buildMapRaster();
-    dom.mapInfo.textContent =
-      `${width} x ${height} @ ${resolution.toFixed(2)}m`;
-    dom.mapPlaceholder.hidden = true;
+    buildMapRaster(rosMap);
+    if (!state.staticMapLoaded) {
+      state.map = rosMap;
+      dom.mapInfo.textContent =
+        `${width} x ${height} @ ${resolution.toFixed(2)}m`;
+      dom.mapPlaceholder.hidden = true;
+    }
     dom.lastMessage.textContent = "地图";
-    setBadge(dom.mapBadge, "online", "地图正常");
+    if (!state.staticMapLoaded) {
+      setBadge(dom.mapBadge, "online", "地图正常");
+    }
     drawMap();
   }
 
   function handleOdomMessage(message) {
-    const pose = message.pose?.pose || message.pose;
-    if (!pose?.position || !pose?.orientation) {
+    const poseContainer = message.pose || {};
+    const pose = poseContainer.pose || message.pose;
+    if (!pose || !pose.position || !pose.orientation) {
       return;
     }
 
@@ -518,23 +585,23 @@
     drawMap();
   }
 
-  function buildMapRaster() {
-    if (!state.map) {
+  function buildMapRaster(map) {
+    if (!map) {
       return;
     }
 
     const raster = document.createElement("canvas");
-    raster.width = state.map.width;
-    raster.height = state.map.height;
+    raster.width = map.width;
+    raster.height = map.height;
     const context = raster.getContext("2d");
     const imageData = context.createImageData(raster.width, raster.height);
     const pixels = imageData.data;
 
-    for (let mapY = 0; mapY < state.map.height; mapY += 1) {
-      for (let mapX = 0; mapX < state.map.width; mapX += 1) {
-        const value = state.map.data[mapY * state.map.width + mapX];
-        const displayY = state.map.height - 1 - mapY;
-        const index = (displayY * state.map.width + mapX) * 4;
+    for (let mapY = 0; mapY < map.height; mapY += 1) {
+      for (let mapX = 0; mapX < map.width; mapX += 1) {
+        const value = map.data[mapY * map.width + mapX];
+        const displayY = map.height - 1 - mapY;
+        const index = (displayY * map.width + mapX) * 4;
         let red = 216;
         let green = 224;
         let blue = 218;
@@ -558,7 +625,7 @@
       }
     }
     context.putImageData(imageData, 0, 0);
-    state.map.raster = raster;
+    map.raster = raster;
   }
 
   function drawMap() {
@@ -581,7 +648,7 @@
     context.fillStyle = "#28312b";
     context.fillRect(0, 0, cssWidth, cssHeight);
 
-    if (!state.map?.raster) {
+    if (!state.map || !state.map.raster) {
       return;
     }
 
@@ -641,7 +708,7 @@
   }
 
   function canvasToWorld(event) {
-    if (!state.map?.transform) {
+    if (!state.map || !state.map.transform) {
       appendLog("地图尚未到达，暂时无法选取目标。", "warn");
       return null;
     }
@@ -796,9 +863,12 @@
   }
 
   function handleGoalFeedback(feedback) {
-    const distance = feedback?.distance_remaining ?? feedback?.distanceRemaining;
-    const recoveries =
-      feedback?.number_of_recoveries ?? feedback?.numberOfRecoveries;
+    const distance = feedback && (feedback.distance_remaining !== undefined
+      ? feedback.distance_remaining
+      : feedback.distanceRemaining);
+    const recoveries = feedback && (feedback.number_of_recoveries !== undefined
+      ? feedback.number_of_recoveries
+      : feedback.numberOfRecoveries);
     if (Number.isFinite(Number(distance))) {
       const numericDistance = Number(distance);
       dom.goalDistance.textContent = `${numericDistance.toFixed(2)} m`;
@@ -821,9 +891,9 @@
   }
 
   function handleGoalResult(message) {
-    const status = Number(message?.status);
-    const values = message?.values;
-    if (message?.result === false) {
+    const status = Number(message && message.status);
+    const values = message && message.values;
+    if (message && message.result === false) {
       const detail = typeof values === "string"
         ? values
         : JSON.stringify(values || {});

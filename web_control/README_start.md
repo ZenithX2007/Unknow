@@ -122,7 +122,7 @@ ros2 launch sweeper_integration web_control_full.launch.py
 默认使用：
 
 ```text
-/home/xixi/Unknow-gen0_humble/gen0_gz_sim_ros2/gen0_main/maps/prior_map_2d.yaml
+~/Unknow-gen0_humble/gen0_gz_sim_ros2/gen0_main/maps/prior_map_2d.yaml
 ```
 
 启动静态地图 Nav2、Gazebo、接口层、rosbridge 和网页服务。
@@ -144,7 +144,7 @@ ros2 launch sweeper_integration web_control_full.launch.py
 
 网页中“停止”按钮会发布零速度，并且会试图取消当前 Nav2 目标；自动驾驶时，Nav2 目标控制最终经过 `/cmd_vel` 进入车体控制链路。
 
-在浏览器中打开 web_control/index.html 即可控制（哪个都可以）
+在浏览器中打开 http://localhost:8000/ 即可控制
 
 ## 快速检查 ROS2 链路
 
