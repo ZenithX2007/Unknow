@@ -15,10 +15,10 @@
                 </geometry>
             </visual>
             <collision name='collision_base_link'>
-                <pose>0 0 0.35 0 0 0</pose>
+                <pose>0 0 0.45 0 0 0</pose>
                 <geometry>
                     <box>
-                        <size>2.40 1.65 0.70</size>
+                        <size>2.40 1.65 0.40</size>
                     </box>
                 </geometry>
             </collision>
@@ -870,11 +870,11 @@
             <right_joint>back_right_wheel_joint</right_joint>
             <left_steering_joint>front_left_steering_joint</left_steering_joint>
             <right_steering_joint>front_right_steering_joint</right_steering_joint>
-            <kingpin_width>1.585</kingpin_width>
+            <kingpin_width>1.198</kingpin_width>
             <steering_limit>0.4</steering_limit>
-            <wheel_base>2.8</wheel_base>
-            <wheel_separation>1.585</wheel_separation>
-            <wheel_radius>0.33</wheel_radius>
+            <wheel_base>1.232</wheel_base>
+            <wheel_separation>1.198</wheel_separation>
+            <wheel_radius>0.272</wheel_radius>
             <min_velocity>-1.0</min_velocity>
             <max_velocity>3.0</max_velocity>
             <min_acceleration>-1.5</min_acceleration>
