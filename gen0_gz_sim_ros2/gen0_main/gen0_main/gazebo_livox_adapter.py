@@ -25,7 +25,7 @@ class GazeboLivoxAdapter(Node):
         self.declare_parameter("min_range", 0.5)
         self.declare_parameter("max_range", 80.0)
         self.declare_parameter("self_filter_enabled", True)
-        self.declare_parameter("lidar_xyz_in_base", [1.9, 0.0, 1.9])
+        self.declare_parameter("lidar_xyz_in_base", [0.85, 0.0, 0.72])
         self.declare_parameter("self_filter_min_xyz", [-2.8, -1.4, -0.4])
         self.declare_parameter("self_filter_max_xyz", [2.8, 1.4, 2.9])
 
@@ -46,7 +46,7 @@ class GazeboLivoxAdapter(Node):
             self.get_parameter("self_filter_enabled").value
         )
         self.lidar_xyz_in_base = self.vector_parameter(
-            "lidar_xyz_in_base", [1.9, 0.0, 1.9]
+            "lidar_xyz_in_base", [0.85, 0.0, 0.72]
         )
         self.self_filter_min_xyz = self.vector_parameter(
             "self_filter_min_xyz", [-2.8, -1.4, -0.4]

@@ -4,7 +4,7 @@ gen0_trash_fusion_detector:
     image_topic: /gen0_model/front_camera
     camera_info_topic: /gen0_model/camera_info
     pointcloud_topic: /gen0_mapping/simulated_front3d/lidar/points
-    model_path: /home/zjxue2007/Unknow/best.pt
+    model_path: /home/zjxue2007/Unknow/best_road.pt
     output_frame: map
     base_frame: base_link
     camera_frame: front_camera_link
@@ -44,5 +44,5 @@ gen0_trash_fusion_detector:
     fallback_image_width: 1600
     fallback_image_height: 1200
     fallback_horizontal_fov: 1.047
-    fallback_lidar_to_base_xyz: [1.9, 0.0, 1.9]
+    fallback_lidar_to_base_xyz: [0.85, 0.0, 0.72]
     fallback_lidar_to_camera_xyz: [0.0, 0.0, 0.3]

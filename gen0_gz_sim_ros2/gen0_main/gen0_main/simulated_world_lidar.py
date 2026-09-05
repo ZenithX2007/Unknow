@@ -90,7 +90,7 @@ class SimulatedWorldLidar(Node):
         self.declare_parameter("random_seed", 7)
         self.declare_parameter("world_pose_xyz", [0.0, 0.0, 0.0])
         self.declare_parameter("world_pose_rpy", [1.57079632679, 0.0, 0.0])
-        self.declare_parameter("lidar_xyz_in_base", [1.9, 0.0, 1.9])
+        self.declare_parameter("lidar_xyz_in_base", [0.85, 0.0, 0.72])
         self.declare_parameter("min_range", 0.6)
         self.declare_parameter("max_range", 80.0)
         self.declare_parameter("horizontal_min_angle", -math.pi)
@@ -169,7 +169,7 @@ class SimulatedWorldLidar(Node):
             "world_pose_rpy", [1.57079632679, 0.0, 0.0]
         )
         self.lidar_xyz_in_base = self.vector_parameter(
-            "lidar_xyz_in_base", [1.9, 0.0, 1.9]
+            "lidar_xyz_in_base", [0.85, 0.0, 0.72]
         )
         self.min_range = float(self.get_parameter("min_range").value)
         self.max_range = float(self.get_parameter("max_range").value)

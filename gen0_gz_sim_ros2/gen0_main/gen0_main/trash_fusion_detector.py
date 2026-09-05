@@ -126,7 +126,7 @@ class TrashFusionDetector(Node):
         self.declare_parameter(
             "pointcloud_topic", "/gen0_mapping/simulated_front3d/lidar/points"
         )
-        self.declare_parameter("model_path", "/home/zjxue2007/Unknow/best.pt")
+        self.declare_parameter("model_path", "/home/zjxue2007/Unknow/best_road.pt")
         self.declare_parameter("output_frame", "map")
         self.declare_parameter("base_frame", "base_link")
         self.declare_parameter("camera_frame", "front_camera_link")
@@ -160,7 +160,7 @@ class TrashFusionDetector(Node):
         self.declare_parameter("fallback_image_width", 1600)
         self.declare_parameter("fallback_image_height", 1200)
         self.declare_parameter("fallback_horizontal_fov", 1.047)
-        self.declare_parameter("fallback_lidar_to_base_xyz", [1.9, 0.0, 1.9])
+        self.declare_parameter("fallback_lidar_to_base_xyz", [0.85, 0.0, 0.72])
         self.declare_parameter("fallback_lidar_to_camera_xyz", [0.0, 0.0, 0.3])
 
         self.image_topic = str(self.get_parameter("image_topic").value)
@@ -225,7 +225,7 @@ class TrashFusionDetector(Node):
             self.get_parameter("fallback_horizontal_fov").value
         )
         self.fallback_lidar_to_base_xyz = self.vector_parameter(
-            "fallback_lidar_to_base_xyz", [1.9, 0.0, 1.9]
+            "fallback_lidar_to_base_xyz", [0.85, 0.0, 0.72]
         )
         self.fallback_lidar_to_camera_xyz = self.vector_parameter(
             "fallback_lidar_to_camera_xyz", [0.0, 0.0, 0.3]

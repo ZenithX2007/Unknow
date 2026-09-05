@@ -55,7 +55,7 @@ class OdomRegisteredScan(Node):
             "output_topic", "/gen0_mapping/stable_registered_scan"
         )
         self.declare_parameter("output_frame", "odom")
-        self.declare_parameter("lidar_xyz_in_base", [1.9, 0.0, 1.9])
+        self.declare_parameter("lidar_xyz_in_base", [0.85, 0.0, 0.72])
         self.declare_parameter("max_odom_age", 1.0)
         self.declare_parameter("max_points", 25000)
 
@@ -64,7 +64,7 @@ class OdomRegisteredScan(Node):
         self.output_topic = self.get_parameter("output_topic").value
         self.output_frame = self.get_parameter("output_frame").value
         self.lidar_xyz_in_base = self.vector_parameter(
-            "lidar_xyz_in_base", [1.9, 0.0, 1.9]
+            "lidar_xyz_in_base", [0.85, 0.0, 0.72]
         )
         self.max_odom_age = float(self.get_parameter("max_odom_age").value)
         self.max_points = int(self.get_parameter("max_points").value)

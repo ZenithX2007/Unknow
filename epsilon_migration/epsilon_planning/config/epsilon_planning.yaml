@@ -19,8 +19,8 @@ epsilon_integrated_planner_node:
     max_steer: 0.4
     max_linear_velocity: 3.0
     min_linear_velocity: -1.0
-    vehicle_width: 1.9
-    vehicle_length: 4.88
+    vehicle_width: 1.65
+    vehicle_length: 2.40
     front_suspension: 0.93
     rear_suspension: 1.10
     d_cr: 1.34
@@ -76,8 +76,8 @@ epsilon_scene_bridge_node:
     shift_path_to_rear_axle: true
     wheel_base: 2.8
     max_steer: 0.4
-    vehicle_width: 1.9
-    vehicle_length: 4.88
+    vehicle_width: 1.65
+    vehicle_length: 2.40
     front_suspension: 0.93
     rear_suspension: 1.10
     d_cr: 1.34

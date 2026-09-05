@@ -30,10 +30,11 @@ Important logs are under `/home/zjxue2007/Unknow/runtime_logs/`, especially
 `relocalization_stack.log`, `relocalization_3d_slam.log`, `gazebo.log`, and
 `fast_lio_3d_slam.log`.
 
-## Current Verified State (2026-09-02)
+## Current Verified State (2026-09-05)
 
-- The normal entry point remains `run_gen0_full_stack.sh`; no startup entry
-  point was changed.
+- The generic entry point remains `run_gen0_full_stack.sh`. The dedicated
+  `start_gen0_full_stack_vision.sh` wrapper provides the fixed one-click
+  Nav2-plus-vision configuration documented below.
 - The `my_map` Gazebo vehicle spawn pose is restored to the original pose:
   `x=-20.6991, y=-22.4324, z=2.85, yaw=-0.5406`. The temporary 9 m forward
   spawn experiment was removed.
@@ -46,10 +47,11 @@ Important logs are under `/home/zjxue2007/Unknow/runtime_logs/`, especially
   They are intentionally excluded from the simulated lidar input so that
   `odom_registered_scan` and terrain mapping do not accumulate a horizontal
   trail when an actor crosses the road.
-- The Nav2 local inflation radius in the EPSILON profile is `0.6 m`, reduced
-  from `1.2 m` to avoid unnecessarily closing narrow passages. The final
-  `nav2_pose_guard` remains an emergency collision gate; normal pedestrian
-  clearance and detours are handled by the actor costmap and Nav2 controller.
+- The Gazebo collision body, Nav2 local/global footprint, and final
+  `nav2_pose_guard` use the same `2.40 x 1.65 m` vehicle rectangle. Nav2 adds
+  `0.05 m` footprint padding. The generated full-stack costmap overlay is also
+  aligned to this footprint; it uses a `1.2 m` inflation radius so Nav2 no
+  longer starts with an inflation-smaller-than-footprint warning.
 - The last parameter/documentation change was committed and pushed to
   `origin/gen0_humble` as commit `39ebd5b`. Other current worktree changes are
   intentionally not included in that commit.
@@ -192,6 +194,79 @@ GEN0_START_NAV2=false \
 ./run_gen0_full_stack.sh
 ```
 
+## One-Click Vision Navigation
+
+For the current integrated validation configuration, use the dedicated entry
+point instead of retyping environment variables:
+
+```bash
+cd /home/zjxue2007/Unknow
+./start_gen0_full_stack_vision.sh
+```
+
+The script stops an existing full stack and starts `my_map` with Nav2 enabled,
+EPSILON disabled, pedestrian soft-stop enabled at `1.5 m` with a `1.9 m`
+release threshold, camera view enabled, and trash fusion detection enabled.
+It retains `GEN0_TRASH_CLEANUP=false`, so visual detection does not remove
+objects from the simulation.
+
+The generic `run_gen0_full_stack.sh` remains available for experiments and
+continues to accept environment-variable overrides. The one-click script also
+allows an explicit environment override when debugging, for example:
+
+```bash
+GEN0_TRASH_FUSION_DETECTION=false ./start_gen0_full_stack_vision.sh
+```
+
+Do not set `GEN0_GAZEBO_RENDER_ENV=software` for the full city world. It
+forces CPU `llvmpipe` rendering and makes simulation time progress far more
+slowly than wall time. The normal unset/default render environment uses the
+WSL GPU path.
+
+## Vision and Point-Cloud Fusion
+
+`gen0_trash_fusion_detector` consumes the front camera image, camera info, and
+front 3D point cloud. It runs YOLO first, filters and clusters the point cloud,
+projects clusters into the image, and publishes the matched 3D detections:
+
+```text
+/gen0_model/front_camera + /gen0_mapping/simulated_front3d/lidar/points
+-> gen0_trash_fusion_detector
+-> /gen0_perception/trash_debug_image
+-> /gen0_perception/trash_markers
+-> /gen0_perception/trash_poses
+-> /gen0_perception/trash_detections
+```
+
+The model file is `best_road.pt` in the workspace root. It is a YOLO detector
+for bottle, can, coffee cup, crushed can, food can, paper crumple, small
+bottle, and box. The launch defaults and detector configuration use this path.
+
+Both full-stack RViz configurations show
+`/gen0_perception/trash_debug_image` as **Trash Detection Overlay**, not the
+raw camera topic. `/gen0_model/front_camera` remains the raw image source for
+the standalone camera window.
+
+This is image-and-point-cloud fusion, not SLAM-map fusion. The detector does
+not insert detected objects into FAST-LIO, `prior_map.pcd`, `/projected_map`,
+or the static Nav2 `/map`. It publishes localized perception results only.
+With EPSILON enabled, its scene bridge can consume
+`/gen0_perception/trash_poses` as static planning obstacles; with
+`GEN0_START_EPSILON=false`, no planner consumes those poses yet.
+
+If no markers or 3D poses appear, inspect the detector diagnostics:
+
+```bash
+tail -f /home/zjxue2007/Unknow/runtime_logs/ros/python3_*.log | \
+  grep 'Trash fusion diagnostic'
+```
+
+`reason=no_yolo_detection, yolo=0` means image and point-cloud synchronization
+is working but the model found no class in the current camera image. In that
+case no point-cloud cluster matching is attempted, so empty 3D poses and
+markers are expected. It is a detector/FOV/training-data issue rather than a
+SLAM or TF fusion failure.
+
 ## Keyboard Control
 
 In a second terminal while the base terminal is running:
@@ -317,9 +392,9 @@ expected because the Nav2 publisher has exited. Similarly, `ros2 topic info
 The corresponding runtime log is `runtime_logs/nav2_epsilon.log`. If Nav2
 reports `Failed to make progress` while the pose guard is forwarding commands,
 the remaining issue is downstream vehicle motion or controller tuning. The
-profile also reports that its `0.6 m` inflation radius is smaller than the
-approximately `1.05 m` inscribed radius of the configured `4 m x 2 m`
-footprint; this warning remains relevant for tuning.
+current integrated profile uses a `2.40 m x 1.65 m` footprint with `0.05 m`
+padding and a `1.2 m` inflation radius in both the main parameters and the
+full-stack-generated costmap overlay.
 
 ## Pedestrian Loading
 

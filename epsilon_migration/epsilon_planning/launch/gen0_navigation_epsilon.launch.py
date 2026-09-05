@@ -84,7 +84,7 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
       width: 30
       height: 30
       resolution: 0.05
-      footprint: "[[2.0, 1.0], [2.0, -1.0], [-2.0, -1.0], [-2.0, 1.0]]"
+      footprint: "[[1.2, 0.825], [1.2, -0.825], [-1.2, -0.825], [-1.2, 0.825]]"
       footprint_padding: 0.05
       track_unknown_space: false
       plugins: ["static_layer", "local_obstacle_layer", "actor_obstacle_layer", "local_inflation_layer"]
@@ -96,7 +96,7 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
       local_inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 5.0
-        inflation_radius: 0.6
+        inflation_radius: 1.2
       local_obstacle_layer:
         plugin: "costmap_intensity::ObstacleLayerIntensity"
         enabled: true
@@ -150,7 +150,7 @@ def ensure_nav2_costmap_overlay(context, *args, **kwargs):
 global_costmap:
   global_costmap:
     ros__parameters:
-      footprint: "[[2.0, 1.0], [2.0, -1.0], [-2.0, -1.0], [-2.0, 1.0]]"
+      footprint: "[[1.2, 0.825], [1.2, -0.825], [-1.2, -0.825], [-1.2, 0.825]]"
       footprint_padding: 0.05
       track_unknown_space: {global_track_unknown}
       plugins: ["static_layer", "global_inflation_layer"]
@@ -160,7 +160,7 @@ global_costmap:
       global_inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 10.0
-        inflation_radius: 0.6
+        inflation_radius: 1.2
 """
     else:
         overlay = """local_costmap:
@@ -571,8 +571,8 @@ def generate_launch_description():
                         'input_cmd_vel_topic': guarded_cmd_vel_topic,
                         'output_cmd_vel_topic': final_cmd_vel_topic,
                         'actor_obstacle_topic': LaunchConfiguration('actor_obstacle_topic'),
-                        'actor_vehicle_length': 4.0,
-                        'actor_vehicle_width': 2.0,
+                        'actor_vehicle_length': 2.40,
+                        'actor_vehicle_width': 1.65,
                         'actor_radius': 0.45,
                         # Keep the final gate close to the actual footprint.
                         # Larger pedestrian clearance is handled by the actor

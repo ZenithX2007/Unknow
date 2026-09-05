@@ -407,7 +407,7 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument(
                 "relocalization_input_cloud_to_base_x",
-                default_value="1.9",
+                default_value="0.85",
                 description="LiDAR input-cloud x offset in base_link before ICP.",
             ),
             DeclareLaunchArgument(
@@ -417,7 +417,7 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument(
                 "relocalization_input_cloud_to_base_z",
-                default_value="1.9",
+                default_value="0.72",
                 description="LiDAR input-cloud z offset in base_link before ICP.",
             ),
             DeclareLaunchArgument(
@@ -594,7 +594,7 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument(
                 "trash_fusion_model_path",
-                default_value="/home/zjxue2007/Unknow/best.pt",
+                default_value="/home/zjxue2007/Unknow/best_road.pt",
                 description="YOLO model weights used by the trash fusion detector.",
             ),
             DeclareLaunchArgument(
@@ -648,7 +648,7 @@ def generate_launch_description():
                         "add_obstacle_columns": ParameterValue(
                             simulated_lidar_add_obstacle_columns, value_type=bool
                         ),
-                        "lidar_xyz_in_base": [1.9, 0.0, 1.9],
+                        "lidar_xyz_in_base": [0.85, 0.0, 0.72],
                         "min_range": 0.6,
                         "max_range": ParameterValue(
                             simulated_lidar_max_range, value_type=float
@@ -701,7 +701,7 @@ def generate_launch_description():
                         "min_range": 0.5,
                         "max_range": 80.0,
                         "self_filter_enabled": True,
-                        "lidar_xyz_in_base": [1.9, 0.0, 1.9],
+                        "lidar_xyz_in_base": [0.85, 0.0, 0.72],
                         "self_filter_min_xyz": [-2.8, -1.4, -0.4],
                         "self_filter_max_xyz": [2.8, 1.4, 2.9],
                     }
@@ -766,7 +766,7 @@ def generate_launch_description():
                         "odom_topic": registered_scan_odom_topic,
                         "output_topic": stable_registered_scan_topic,
                         "output_frame": "odom",
-                        "lidar_xyz_in_base": [1.9, 0.0, 1.9],
+                        "lidar_xyz_in_base": [0.85, 0.0, 0.72],
                         "max_odom_age": 1.0,
                         "max_points": ParameterValue(
                             simulated_lidar_max_points, value_type=int
