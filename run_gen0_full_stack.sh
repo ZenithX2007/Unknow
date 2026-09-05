@@ -13,7 +13,7 @@ DEFAULT_NAV2_MAP=""
 if [[ "$WORLD" == "my_map" ]]; then
   DEFAULT_ACTORS_SCENARIO="walking_actors3"
   DEFAULT_TRASH_SCENARIO="small_trash_dense"
-  DEFAULT_NAV2_MAP="$WORKSPACE/gen0_gz_sim_ros2/gen0_main/maps/recovered_projected_20260807_102204.yaml"
+  DEFAULT_NAV2_MAP="$WORKSPACE/gen0_gz_sim_ros2/gen0_main/maps/my_map_scurm_latest.yaml"
 fi
 
 ACTORS_SCENARIO="${GEN0_ACTORS_SCENARIO-$DEFAULT_ACTORS_SCENARIO}"
@@ -24,7 +24,16 @@ START_NAV2="${GEN0_START_NAV2:-true}"
 START_EPSILON="${GEN0_START_EPSILON:-true}"
 
 ODOM_TOPIC="${GEN0_FULL_STACK_ODOM_TOPIC:-/gen0_mapping/stable_odom}"
-COSTMAP_TOPIC="${GEN0_FULL_STACK_COSTMAP_TOPIC:-/projected_costmap}"
+PROJECTED_MAP_BACKEND="${GEN0_PROJECTED_MAP_BACKEND:-octomap}"
+if [[ -n "${GEN0_FULL_STACK_COSTMAP_TOPIC:-}" ]]; then
+  COSTMAP_TOPIC="$GEN0_FULL_STACK_COSTMAP_TOPIC"
+elif [[ "$PROJECTED_MAP_BACKEND" == "octomap" ]]; then
+  # The Octomap pipeline publishes the online occupancy grid directly.
+  COSTMAP_TOPIC="/projected_map"
+else
+  # The Python terrain projection publishes a separate costmap topic.
+  COSTMAP_TOPIC="/projected_costmap"
+fi
 PATH_TOPIC="${GEN0_FULL_STACK_PATH_TOPIC:-/plan_smoothed}"
 
 NAV2_PARAMS_FILE="${GEN0_EPSILON_NAV2_PARAMS_FILE:-$WORKSPACE/epsilon_migration/epsilon_planning/config/nav2_gen0_scurm_epsilon_params.yaml}"
@@ -326,6 +335,7 @@ log "Workspace: $WORKSPACE"
 log "World: $WORLD, base=relocalization, actors_scenario=${ACTORS_SCENARIO:-none}, trash_scenario=${TRASH_SCENARIO:-none}"
 log "Nav2 sidecar: params=$NAV2_PARAMS_FILE, path_topic=$PATH_TOPIC, nav2_raw=$NAV2_RAW_CMD_VEL_TOPIC, controller_frequency=${NAV2_CONTROLLER_FREQUENCY}Hz, rviz=$NAV2_RVIZ"
 log "Nav2 pose guard: reference=$NAV2_REFERENCE_ODOM_TOPIC, max_xy_error=$NAV2_MAX_REFERENCE_ODOM_ERROR, max_yaw_error=$NAV2_MAX_REFERENCE_YAW_ERROR"
+log "Static Nav2 map: source=$NAV2_MAP_SOURCE, yaml=${NAV2_MAP:-none}; online map backend=$PROJECTED_MAP_BACKEND, readiness_topic=$COSTMAP_TOPIC"
 log "Actor source: $ACTOR_SOURCE, scenario_path=${ACTORS_SCENARIO_PATH:-none}, base_dynamic_topics=${BASE_DYNAMIC_ACTOR_TOPICS:-none}"
 log "EPSILON sidecar: control_source=$EPSILON_CONTROL_SOURCE, epsilon_raw=$EPSILON_CMD_VEL_TOPIC, mux_output=$GUARDED_CMD_VEL_TOPIC, final=$FINAL_CMD_VEL_TOPIC, selected_topic=$EPSILON_SELECTED_SOURCE_TOPIC, qcnet_backend=$QCNET_BACKEND, qcnet_device=$QCNET_DEVICE"
 log "Logs: $LOG_DIR"
@@ -345,6 +355,7 @@ if [[ "$START_BASE_STACK" == "true" ]]; then
       GEN0_ACTOR_WORLD_TO_OUTPUT="$ACTOR_WORLD_TO_OUTPUT" \
       GEN0_ACTOR_OUTPUT_ORIGIN_XY="$ACTOR_OUTPUT_ORIGIN_XY" \
       GEN0_TRASH_SCENARIO="$TRASH_SCENARIO" \
+      GEN0_PROJECTED_MAP_BACKEND="$PROJECTED_MAP_BACKEND" \
       GEN0_RELOCALIZATION_NAV2=false \
       "$WORKSPACE/run_gen0_relocalization.sh"
 fi
@@ -354,7 +365,7 @@ if ! wait_for_topic_once "$ODOM_TOPIC" "$ODOM_TIMEOUT" "stable odometry"; then
   exit 1
 fi
 
-if ! wait_for_topic_once "$COSTMAP_TOPIC" "$COSTMAP_TIMEOUT" "projected costmap"; then
+if ! wait_for_topic_once "$COSTMAP_TOPIC" "$COSTMAP_TIMEOUT" "online occupancy map"; then
   printf 'Timed out waiting for %s from the relocalization base stack.\n' "$COSTMAP_TOPIC" >&2
   exit 1
 fi
@@ -407,33 +418,40 @@ if [[ "$START_EPSILON" == "true" ]]; then
 fi
 
 if [[ "$START_NAV2" == "true" ]]; then
+  NAV2_LAUNCH_ARGS=(
+    use_sim_time:=true
+    "params_file:=$NAV2_PARAMS_FILE"
+    "use_respawn:=$NAV2_USE_RESPAWN"
+    "nav2_controller_frequency:=$NAV2_CONTROLLER_FREQUENCY"
+    "nav2_model_dt:=$NAV2_MODEL_DT"
+    "nav2_smoothing_frequency:=$NAV2_SMOOTHING_FREQUENCY"
+    "nav2_cmd_vel_topic:=$NAV2_RAW_CMD_VEL_TOPIC"
+    "guarded_cmd_vel_topic:=$GUARDED_CMD_VEL_TOPIC"
+    "final_cmd_vel_topic:=$FINAL_CMD_VEL_TOPIC"
+    actor_obstacle_topic:=/gen0_mapping/actor_obstacles
+    publish_identity_map_to_odom:=false
+    "costmap_source:=$NAV2_COSTMAP_SOURCE"
+    "map_source:=$NAV2_MAP_SOURCE"
+    map_server_topic:=map
+    "odom_topic:=$ODOM_TOPIC"
+    "max_reference_odom_error:=$NAV2_MAX_REFERENCE_ODOM_ERROR"
+    "max_reference_yaw_error:=$NAV2_MAX_REFERENCE_YAW_ERROR"
+    "reference_odom_timeout:=$NAV2_REFERENCE_ODOM_TIMEOUT"
+    "rviz:=$NAV2_RVIZ"
+    "rviz_render_env:=$NAV2_RVIZ_RENDER_ENV"
+    "default_nav_to_pose_bt_xml:=$NAV2_TO_POSE_BT"
+    "default_nav_through_poses_bt_xml:=$NAV2_THROUGH_POSES_BT"
+    "map:=$NAV2_MAP"
+  )
+  # ROS 2 launch rejects an empty `name:=` argument. This option is optional
+  # and is intentionally omitted when no reference odometry is configured.
+  if [[ -n "$NAV2_REFERENCE_ODOM_TOPIC" ]]; then
+    NAV2_LAUNCH_ARGS+=("reference_odom_topic:=$NAV2_REFERENCE_ODOM_TOPIC")
+  fi
   start_script \
     nav2_epsilon \
     ros2 launch epsilon_planning gen0_navigation_epsilon.launch.py \
-      use_sim_time:=true \
-      params_file:="$NAV2_PARAMS_FILE" \
-      use_respawn:="$NAV2_USE_RESPAWN" \
-      nav2_controller_frequency:="$NAV2_CONTROLLER_FREQUENCY" \
-      nav2_model_dt:="$NAV2_MODEL_DT" \
-      nav2_smoothing_frequency:="$NAV2_SMOOTHING_FREQUENCY" \
-      nav2_cmd_vel_topic:="$NAV2_RAW_CMD_VEL_TOPIC" \
-      guarded_cmd_vel_topic:="$GUARDED_CMD_VEL_TOPIC" \
-      final_cmd_vel_topic:="$FINAL_CMD_VEL_TOPIC" \
-      actor_obstacle_topic:="/gen0_mapping/actor_obstacles" \
-      publish_identity_map_to_odom:=false \
-      costmap_source:="$NAV2_COSTMAP_SOURCE" \
-      map_source:="$NAV2_MAP_SOURCE" \
-      map_server_topic:=map \
-      odom_topic:="$ODOM_TOPIC" \
-      reference_odom_topic:="$NAV2_REFERENCE_ODOM_TOPIC" \
-      max_reference_odom_error:="$NAV2_MAX_REFERENCE_ODOM_ERROR" \
-      max_reference_yaw_error:="$NAV2_MAX_REFERENCE_YAW_ERROR" \
-      reference_odom_timeout:="$NAV2_REFERENCE_ODOM_TIMEOUT" \
-      rviz:="$NAV2_RVIZ" \
-      rviz_render_env:="$NAV2_RVIZ_RENDER_ENV" \
-      default_nav_to_pose_bt_xml:="$NAV2_TO_POSE_BT" \
-      default_nav_through_poses_bt_xml:="$NAV2_THROUGH_POSES_BT" \
-      map:="$NAV2_MAP"
+      "${NAV2_LAUNCH_ARGS[@]}"
 fi
 
 log "Full stack is running. Send a Nav2 goal; EPSILON receives /plan_smoothed and muxes final control through $GUARDED_CMD_VEL_TOPIC -> $FINAL_CMD_VEL_TOPIC."

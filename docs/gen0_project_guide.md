@@ -53,6 +53,127 @@ Important logs are under `/home/zjxue2007/Unknow/runtime_logs/`, especially
 - The last parameter/documentation change was committed and pushed to
   `origin/gen0_humble` as commit `39ebd5b`. Other current worktree changes are
   intentionally not included in that commit.
+- When `GEN0_TRASH_CLEANUP=false`, the 3D SLAM launcher does not inject the
+  trash JSON into the simulated LiDAR stream. This preserves the historical
+  pure-mapping behavior and prevents generated trash from contaminating the
+  map unless trash cleanup is explicitly enabled.
+- The standalone historical `run_gen0_nav2.sh` workflow now keeps its Nav2
+  RViz disabled by default, so it does not open a second RViz alongside the
+  mapping RViz. Enable it explicitly with `GEN0_NAV2_RVIZ=true` when needed.
+
+## Current Map Processing Status (2026-09-04)
+
+The current Gen0 prior map is sourced from the newly saved PCD:
+
+```text
+/home/zjxue2007/Unknow-mapping-legacy/maps/my_map_preview_20260903_175101.pcd
+```
+
+`gen0_gz_sim_ros2/gen0_main/maps/prior_map.pcd` is byte-for-byte identical to
+that source file. The source has binary `x/y/z` fields, 488961 points, and no
+intensity field. A backup of the previous project copy is kept at
+`gen0_gz_sim_ros2/gen0_main/maps/prior_map_original_20260903_175101.pcd`.
+
+The project static map generated from this PCD is:
+
+```text
+gen0_gz_sim_ros2/gen0_main/maps/my_map_from_pcd.yaml
+gen0_gz_sim_ros2/gen0_main/maps/my_map_from_pcd.pgm
+```
+
+It is a 0.20 m resolution ROS occupancy map with origin
+`[-69.800, -93.000, 0.0]`. The PGM export includes the required vertical row
+flip, so the map is not displayed upside down in RViz. The PCD itself was not
+flipped or otherwise rewritten.
+
+### Latest Manually Cleaned 2D Map (2026-09-05)
+
+The latest manually cleaned map image is:
+
+```text
+gen0_gz_sim_ros2/gen0_main/maps/my_map_scurm_latest3.pgm
+```
+
+The project YAML used by Nav2 is:
+
+```text
+gen0_gz_sim_ros2/gen0_main/maps/my_map_scurm_latest.yaml
+```
+
+Its `image` entry points to `my_map_scurm_latest3.pgm`. The map is a raw
+1800 x 1800 PGM at 0.10 m/cell with origin `[-38.7, -71.4, 0.0]`. The
+previous `latest`, `latest1`, and `latest2` images are retained as local
+comparison copies.
+
+When the full stack is already running, reload this YAML without restarting
+Gazebo, localization, Nav2, or RViz:
+
+```bash
+ros2 service call /map_server/load_map nav2_msgs/srv/LoadMap \
+  "{map_url: '/home/zjxue2007/Unknow/gen0_gz_sim_ros2/gen0_main/maps/my_map_scurm_latest.yaml'}"
+```
+
+Verify that the new image was read and inspect only the map metadata:
+
+```bash
+tail -50 /home/zjxue2007/Unknow/runtime_logs/nav2_epsilon.log \
+  | rg 'Loading image_file|Read map|latest3'
+ros2 topic echo /map --once --field info
+```
+
+Editing the PGM changes the static Nav2 `/map` only. It does not modify
+`prior_map.pcd`, Gazebo geometry, `/projected_map`, `/projected_costmap`, or
+the dynamic pedestrian/obstacle layers. If the YAML `image` filename changes,
+update that entry before calling `load_map` again.
+
+The formal project map currently uses the stable building and curb projection.
+The strict curb experiment is separate and temporary: `/tmp/reproject_map_edges.py`
+filters absolute PCD height to `0.05 <= z <= 0.50 m` and writes
+`/tmp/my_map_curb_candidate.yaml` and `/tmp/my_map_curb_candidate.pgm`. It is
+not the default map and does not project points above 0.50 m. Because this is
+an absolute `z` filter, it should not be interpreted as 0.05--0.50 m above
+local ground on sloped terrain.
+
+To inspect that candidate through the normal stack, use the temporary map
+override below. This does not modify the normal startup command:
+
+```bash
+cd /home/zjxue2007/Unknow
+./stop_gen0_full_stack.sh
+GEN0_WORLD=my_map \
+GEN0_NAV2_MAP=/tmp/my_map_curb_candidate.yaml \
+GEN0_START_EPSILON=false \
+GEN0_START_NAV2=true \
+./run_gen0_full_stack.sh
+```
+
+For ordinary startup, do not set `GEN0_NAV2_MAP`. The normal full-stack entry
+point remains `run_gen0_full_stack.sh`, and no launch workflow change is
+required by the PCD projection work.
+
+## SCURM-Native Remapping
+
+New mapping runs now default to `GEN0_PROJECTED_MAP_BACKEND=octomap`. This
+selects the migrated SCURM-native chain:
+
+```text
+terrainAnalysis -> terrainAnalysisExt -> exchangeField
+-> sensorScanGeneration -> octomap_server -> /projected_map
+```
+
+The previous `python` projected-map implementation is still available for
+explicit experiments, but is no longer the default. Once `/projected_map` is
+stable, save the 2D map separately:
+
+```bash
+mkdir -p /home/zjxue2007/Unknow/maps
+ros2 run nav2_map_server map_saver_cli \
+  -f /home/zjxue2007/Unknow/maps/my_map_scurm \
+  -t /projected_map
+```
+
+This produces `my_map_scurm.pgm` and `my_map_scurm.yaml`. Saving
+`/gen0_mapping/save_fast_lio_map` produces the separate 3D PCD prior map.
 
 ## Normal Base Startup
 
@@ -94,7 +215,7 @@ Do not run this together with keyboard teleoperation.
 cd /home/zjxue2007/Unknow
 source /opt/ros/humble/setup.bash
 source install/setup.bash
-ros2 launch gen0_main gen0_mapping_drive.launch.py enabled:=true drive_speed:=0.35 stop_distance:=2.5 slow_distance:=5.0
+ros2 launch gen0_main gen0_mapping_drive.launch.py enabled:=true drive_speed:=2.0 stop_distance:=2.5 slow_distance:=5.0
 ```
 
 It reads `/gen0_model/front3d/lidar/points`, publishes `/cmd_vel`, slows inside
@@ -102,6 +223,31 @@ It reads `/gen0_model/front3d/lidar/points`, publishes `/cmd_vel`, slows inside
 `gen0_gz_sim_ros2/gen0_interface/gen0_interface/mapping_drive.py`.
 
 Stop with `Ctrl+C`, then publish a zero command on `/cmd_vel`.
+
+## Speed Configuration
+
+All speeds below are in meters per second (`m/s`). The automatic low-speed
+mapping drive uses `drive_speed`, whose default is now `2.0 m/s`.
+
+For EPSILON mode, `GEN0_EPSILON_DESIRED_VELOCITY` controls the planner's desired
+forward speed. Its current default is now `2.0 m/s`:
+
+```bash
+GEN0_EPSILON_DESIRED_VELOCITY=2.0
+```
+
+The Nav2 MPPI controller allows up to `vx_max: 3.0 m/s`, and the velocity
+smoother has the same forward limit. These are upper bounds, not guaranteed
+vehicle speeds; obstacles, curvature, costmap constraints, and pedestrian
+avoidance can reduce the actual command substantially. Recent runtime output
+was commonly around `0.1-0.4 m/s` near obstacles and sometimes included
+reverse commands while MPPI searched for a feasible Ackermann trajectory.
+
+For Nav2-only mode with EPSILON disabled, `GEN0_EPSILON_DESIRED_VELOCITY` has
+no effect. The actual speed is selected by MPPI, bounded by `vx_max`, and then
+processed by the velocity smoother and `nav2_pose_guard`. Do not raise
+`vx_max` above `3.0 m/s` until the pedestrian detour and the current minimum
+turning radius of approximately `6.62m` have been validated at lower speed.
 
 ## Nav2 and EPSILON
 

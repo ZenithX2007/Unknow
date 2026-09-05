@@ -22,7 +22,7 @@ class MappingDrive(Node):
         self.declare_parameter("fr_scan_topic", "/gen0_model/fr/lidar/scan")
         self.declare_parameter("front3d_topic", "/gen0_model/front3d/lidar/points")
         self.declare_parameter("safety_source", "front3d")
-        self.declare_parameter("drive_speed", 0.35)
+        self.declare_parameter("drive_speed", 2.0)
         self.declare_parameter("turn_angular_z", 0.04)
         self.declare_parameter("straight_duration", 10.0)
         self.declare_parameter("turn_duration", 5.0)

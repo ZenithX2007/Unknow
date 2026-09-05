@@ -42,7 +42,7 @@ FAST_LIO_ODOM_TOPIC="${GEN0_FAST_LIO_ODOM_TOPIC:-/gen0_mapping/fast_lio/odom}"
 TERRAIN_ANALYSIS="${GEN0_TERRAIN_ANALYSIS:-true}"
 TERRAIN_ANALYSIS_EXT="${GEN0_TERRAIN_ANALYSIS_EXT:-true}"
 PROJECTED_MAP="${GEN0_PROJECTED_MAP:-true}"
-PROJECTED_MAP_BACKEND="${GEN0_PROJECTED_MAP_BACKEND:-python}"
+PROJECTED_MAP_BACKEND="${GEN0_PROJECTED_MAP_BACKEND:-octomap}"
 LOCAL_COSTMAP="${GEN0_LOCAL_COSTMAP:-true}"
 PROJECTED_MAP_ODOM_GUARD="${GEN0_PROJECTED_MAP_ODOM_GUARD:-true}"
 PROJECTED_MAP_REFERENCE_ODOM_TOPIC="${GEN0_PROJECTED_MAP_REFERENCE_ODOM_TOPIC:-/odom}"
@@ -144,7 +144,7 @@ if [[ -z "$ACTOR_COSTMAP_POSE_TOPICS" && -n "$ACTORS_SCENARIO" ]]; then
   done
 fi
 
-if [[ -z "$TRASH_SCENARIO_PATH" && -n "$TRASH_SCENARIO" ]]; then
+if [[ -z "$TRASH_SCENARIO_PATH" && -n "$TRASH_SCENARIO" && "$TRASH_CLEANUP" == "true" ]]; then
   TRASH_SCENARIO_PATH="$WORKSPACE/gen0_gz_sim_ros2/gen0_main/worlds/trash_scenarios/$WORLD/$TRASH_SCENARIO.json"
 fi
 if [[ -z "$ACTOR_WORLD_SDF_PATH" ]]; then
@@ -557,7 +557,6 @@ fast_lio_launch=(
   projected_map_reference_odom_timeout:="$PROJECTED_MAP_ODOM_TIMEOUT"
   local_costmap:="$LOCAL_COSTMAP"
   actor_costmap:="$ACTOR_COSTMAP"
-  actor_pose_topics:="$ACTOR_COSTMAP_POSE_TOPICS"
   actor_obstacle_topic:="$ACTOR_OBSTACLE_TOPIC"
   actor_obstacle_frame:="$ACTOR_OBSTACLE_FRAME"
   actor_world_sdf_path:="$ACTOR_WORLD_SDF_PATH"
@@ -593,6 +592,9 @@ fast_lio_launch=(
   fast_lio_pcd_save:="$FAST_LIO_PCD_SAVE"
   fast_lio_pcd_save_interval:="$FAST_LIO_PCD_SAVE_INTERVAL"
 )
+if [[ -n "$ACTOR_COSTMAP_POSE_TOPICS" ]]; then
+  fast_lio_launch+=(actor_pose_topics:="$ACTOR_COSTMAP_POSE_TOPICS")
+fi
 if [[ -n "$ACTORS_SCENARIO_PATH" ]]; then
   fast_lio_launch+=(actors_scenario_path:="$ACTORS_SCENARIO_PATH")
 fi

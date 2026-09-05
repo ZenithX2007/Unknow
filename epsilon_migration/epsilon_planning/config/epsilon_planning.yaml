@@ -4,7 +4,7 @@ epsilon_integrated_planner_node:
     map_frame: map
     work_rate: 20.0
     dynamic_scene_timeout: 1.5
-    desired_velocity: 1.5
+    desired_velocity: 2.0
     preferred_lateral_behavior: 0
     is_under_control: true
 
