@@ -565,14 +565,14 @@ Visualization Manager:
       Value: true
     - Class: rviz_default_plugins/Image
       Enabled: true
-      Name: Trash Fusion Debug Image
+      Name: Front Camera
       Normalize Range: true
       Topic:
         Depth: 5
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /gen0_perception/trash_debug_image
+        Value: /gen0_model/front_camera
       Value: true
     - Class: rviz_common/Group
       Displays:
