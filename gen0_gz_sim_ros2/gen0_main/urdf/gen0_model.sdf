@@ -7,21 +7,19 @@
             <pose>0 0 0 0 0 0</pose>
             <visual name='visual'>
                 <visibility_flags>0x02</visibility_flags>
-                <pose>0 0 0 0 0 -1.57079633</pose>
                 <geometry>
                     <mesh>
-                        <uri>../meshes/gen0_colored.dae</uri>
+                        <uri>../meshes/gen0_cad/gen0_body.dae</uri>
                         <scale>1 1 1</scale>
                     </mesh>
                 </geometry>
             </visual>
             <collision name='collision_base_link'>
-                <pose>0 0 0 0 0 -1.57079633</pose>
+                <pose>0 0 0.45 0 0 0</pose>
                 <geometry>
-                    <mesh>
-                        <uri>../meshes/gen0_colored.dae</uri>
-                        <scale>1 1 1</scale>
-                    </mesh>
+                    <box>
+                        <size>2.40 1.65 0.40</size>
+                    </box>
                 </geometry>
             </collision>
         </link>
@@ -42,7 +40,7 @@
         </link>
 
         <link name="back_right_steering_link">
-            <pose>-1.4 -0.7925 0.33 0 0 0</pose>
+            <pose>-0.616 -0.599 0.272 0 0 0</pose>
             <inertial>
                 <mass>8.0</mass>
                 <inertia>
@@ -81,7 +79,7 @@
         </link>
 
         <link name="back_right_wheel_link">
-            <pose>-1.4 -0.7925 0.33 0 0 -1.570796</pose>
+            <pose>-0.616 -0.599 0.272 0 0 -1.570796</pose>
             <inertial>
                 <mass>20.00</mass>
                 <inertia>
@@ -97,17 +95,22 @@
                 <visibility_flags>0x02</visibility_flags>
                 <geometry>
                     <mesh>
-                        <uri>../meshes/gen0_wheels.dae</uri>
+                        <uri>../meshes/gen0_cad/gen0_tyre.dae</uri>
                         <scale>1 1 1</scale>
                     </mesh>
                 </geometry>
+                <material>
+                    <ambient>0.012 0.016 0.020 1</ambient>
+                    <diffuse>0.030 0.038 0.046 1</diffuse>
+                    <specular>0.10 0.10 0.10 1</specular>
+                </material>
             </visual>
             <collision name='collision_back_right_wheel'>
                 <pose>0 0 0 0 1.570796 0</pose>
                 <geometry>
                     <cylinder>
-                        <length>0.18</length>
-                        <radius>0.33</radius>
+                        <length>0.195</length>
+                        <radius>0.272</radius>
                     </cylinder>
                 </geometry>
                 <surface>
@@ -134,7 +137,7 @@
         </link>
 
         <link name="back_left_steering_link">
-            <pose>-1.4 0.7925 0.33 0 0 0</pose>
+            <pose>-0.616 0.599 0.272 0 0 0</pose>
             <inertial>
                 <mass>8.0</mass>
                 <inertia>
@@ -173,7 +176,7 @@
         </link>
 
         <link name="back_left_wheel_link">
-            <pose>-1.4 0.7925 0.33 0 0 1.570796</pose>
+            <pose>-0.616 0.599 0.272 0 0 1.570796</pose>
             <inertial>
                 <mass>20.00</mass>
                 <inertia>
@@ -189,17 +192,22 @@
                 <visibility_flags>0x02</visibility_flags>
                 <geometry>
                     <mesh>
-                        <uri>../meshes/gen0_wheels.dae</uri>
+                        <uri>../meshes/gen0_cad/gen0_tyre.dae</uri>
                         <scale>1 1 1</scale>
                     </mesh>
                 </geometry>
+                <material>
+                    <ambient>0.012 0.016 0.020 1</ambient>
+                    <diffuse>0.030 0.038 0.046 1</diffuse>
+                    <specular>0.10 0.10 0.10 1</specular>
+                </material>
             </visual>
             <collision name='collision_back_left_wheel'>
                 <pose>0 0 0 0 1.570796 0</pose>
                 <geometry>
                     <cylinder>
-                        <length>0.18</length>
-                        <radius>0.33</radius>
+                        <length>0.195</length>
+                        <radius>0.272</radius>
                     </cylinder>
                 </geometry>
                 <surface>
@@ -225,7 +233,7 @@
         </link>
 
         <link name="front_right_steering_link">
-            <pose>1.4 -0.7925 0.33 0 0 0</pose>
+            <pose>0.616 -0.599 0.272 0 0 0</pose>
             <inertial>
                 <mass>8.0</mass>
                 <inertia>
@@ -264,7 +272,7 @@
         </link>
 
         <link name="front_right_wheel_link">
-            <pose>1.4 -0.7925 0.33 0 0 -1.570796</pose>
+            <pose>0.616 -0.599 0.272 0 0 -1.570796</pose>
             <inertial>
                 <mass>20.00</mass>
                 <inertia>
@@ -280,17 +288,22 @@
                 <visibility_flags>0x02</visibility_flags>
                 <geometry>
                     <mesh>
-                        <uri>../meshes/gen0_wheels.dae</uri>
+                        <uri>../meshes/gen0_cad/gen0_tyre.dae</uri>
                         <scale>1 1 1</scale>
                     </mesh>
                 </geometry>
+                <material>
+                    <ambient>0.012 0.016 0.020 1</ambient>
+                    <diffuse>0.030 0.038 0.046 1</diffuse>
+                    <specular>0.10 0.10 0.10 1</specular>
+                </material>
             </visual>
             <collision name='collision_front_right_wheel'>
                 <pose>0 0 0 0 1.570796 0</pose>
                 <geometry>
                     <cylinder>
-                        <length>0.18</length>
-                        <radius>0.33</radius>
+                        <length>0.195</length>
+                        <radius>0.272</radius>
                     </cylinder>
                 </geometry>
                 <surface>
@@ -316,7 +329,7 @@
         </link>
 
         <link name="front_left_steering_link">
-            <pose>1.4 0.7925 0.33 0 0 0</pose>
+            <pose>0.616 0.599 0.272 0 0 0</pose>
             <inertial>
                 <mass>8.0</mass>
                 <inertia>
@@ -355,7 +368,7 @@
         </link>
 
         <link name="front_left_wheel_link">
-            <pose>1.4 0.7925 0.33 0 0 1.570796</pose>
+            <pose>0.616 0.599 0.272 0 0 1.570796</pose>
             <inertial>
                 <mass>20.00</mass>
                 <inertia>
@@ -371,17 +384,22 @@
                 <visibility_flags>0x02</visibility_flags>
                 <geometry>
                     <mesh>
-                        <uri>../meshes/gen0_wheels.dae</uri>
+                        <uri>../meshes/gen0_cad/gen0_tyre.dae</uri>
                         <scale>1 1 1</scale>
                     </mesh>
                 </geometry>
+                <material>
+                    <ambient>0.012 0.016 0.020 1</ambient>
+                    <diffuse>0.030 0.038 0.046 1</diffuse>
+                    <specular>0.10 0.10 0.10 1</specular>
+                </material>
             </visual>
             <collision name='collision_front_left_wheel'>
                 <pose>0 0 0 0 1.570796 0</pose>
                 <geometry>
                     <cylinder>
-                        <length>0.18</length>
-                        <radius>0.33</radius>
+                        <length>0.195</length>
+                        <radius>0.272</radius>
                     </cylinder>
                 </geometry>
                 <surface>
@@ -406,7 +424,7 @@
             </collision>
         </link>
         <link name="front_3d_lidar_link">
-            <pose>1.9 0 1.9 0 0 0</pose>
+            <pose>0.85 0 0.72 0 0 0</pose>
             <inertial>
                 <mass>0.1</mass>
                 <inertia>
@@ -424,7 +442,7 @@
                 </geometry>
             </collision>
             <visual name="lidar_visual">
-                <visibility_flags>0x02</visibility_flags>
+                <visibility_flags>0x00</visibility_flags>
                 <geometry>
                     <box>
                         <size>0.1 0.1 0.1</size>
@@ -461,7 +479,7 @@
             </sensor>
         </link>
         <link name="front_camera_link">
-            <pose>1.9 0 1.6 0 0 0</pose>
+            <pose>1.10 0 0.48 0 0 0</pose>
             <inertial>
                 <mass>0.1</mass>
                 <inertia>
@@ -478,7 +496,7 @@
                 </geometry>
             </collision>
             <visual name="camera_visual">
-                <visibility_flags>0x02</visibility_flags>
+                <visibility_flags>0x00</visibility_flags>
                 <geometry>
                     <box>
                         <size>0.1 0.1 0.1</size>
@@ -518,7 +536,7 @@
         </link>
 
         <link name="fr_2d_lidar_link">
-            <pose>1.84 -0.85 0.33 0 0 0</pose>
+            <pose>0.92 -0.68 0.28 0 0 0</pose>
             <inertial>
                 <mass>0.1</mass>
                 <inertia>
@@ -535,7 +553,7 @@
                 </geometry>
             </collision>
             <visual name="fr_2d_lidar_visual">
-                <visibility_flags>0x02</visibility_flags>
+                <visibility_flags>0x00</visibility_flags>
                 <geometry>
                     <box>
                         <size>0.1 0.1 0.1</size>
@@ -574,7 +592,7 @@
 
 
         <link name="fl_2d_lidar_link">
-            <pose>1.84 0.85 0.33 0 0 0</pose>
+            <pose>0.92 0.68 0.28 0 0 0</pose>
             <inertial>
                 <mass>0.1</mass>
                 <inertia>
@@ -591,7 +609,7 @@
                 </geometry>
             </collision>
             <visual name="fl_2d_lidar_visual">
-                <visibility_flags>0x02</visibility_flags>
+                <visibility_flags>0x00</visibility_flags>
                 <geometry>
                     <box>
                         <size>0.1 0.1 0.1</size>
@@ -640,7 +658,7 @@
         </link>
 
       <link name="gps_link">
-        <pose>-0.25 0 3.0 0 0 0</pose>
+        <pose>0 0 0.80 0 0 0</pose>
         <inertial>
           <mass>0.1</mass>
           <inertia>
@@ -657,7 +675,7 @@
           </geometry>
         </collision>
         <visual name="visual">
-          <visibility_flags>0x02</visibility_flags>
+          <visibility_flags>0x00</visibility_flags>
           <geometry>
             <box>
               <size>0.1 0.1 0.1</size>
@@ -852,11 +870,11 @@
             <right_joint>back_right_wheel_joint</right_joint>
             <left_steering_joint>front_left_steering_joint</left_steering_joint>
             <right_steering_joint>front_right_steering_joint</right_steering_joint>
-            <kingpin_width>1.585</kingpin_width>
+            <kingpin_width>1.198</kingpin_width>
             <steering_limit>0.4</steering_limit>
-            <wheel_base>2.8</wheel_base>
-            <wheel_separation>1.585</wheel_separation>
-            <wheel_radius>0.33</wheel_radius>
+            <wheel_base>1.232</wheel_base>
+            <wheel_separation>1.198</wheel_separation>
+            <wheel_radius>0.272</wheel_radius>
             <min_velocity>-1.0</min_velocity>
             <max_velocity>3.0</max_velocity>
             <min_acceleration>-1.5</min_acceleration>

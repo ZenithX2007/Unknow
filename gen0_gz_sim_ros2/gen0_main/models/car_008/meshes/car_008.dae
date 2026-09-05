@@ -32338,20 +32338,10 @@
         </effect>
         <effect id="ID1023">
             <profile_COMMON>
-                <newparam sid="ID1025">
-                    <surface type="2D">
-                        <init_from>ID1024</init_from>
-                    </surface>
-                </newparam>
-                <newparam sid="ID1026">
-                    <sampler2D>
-                        <source>ID1025</source>
-                    </sampler2D>
-                </newparam>
                 <technique sid="COMMON">
                     <lambert>
                         <diffuse>
-                            <texture texture="ID1026" texcoord="UVSET0" />
+                            <color>0.020 0.055 0.100 1</color>
                         </diffuse>
                     </lambert>
                 </technique>
@@ -32571,11 +32561,6 @@
             </profile_COMMON>
         </effect>
     </library_effects>
-    <library_images>
-        <image id="ID1024">
-            <init_from>car_008/ford_logo.jpg</init_from>
-        </image>
-    </library_images>
     <scene>
         <instance_visual_scene url="#ID12" />
     </scene>

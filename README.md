@@ -67,10 +67,17 @@ GEN0_SIM_LIDAR_MAX_RANGE=15 GEN0_SIM_LIDAR_MAX_POINTS=4000 ./run_gen0_3d_slam.sh
 GEN0_SIM_LIDAR_SURFACE_SAMPLES=800000 GEN0_SIM_LIDAR_WORLD_VOXEL_SIZE=0.12 ./run_gen0_3d_slam.sh
 GEN0_DRIVE_SPEED=0.15 ./run_gen0_3d_slam.sh
 GEN0_MAPPING_DRIVE=false ./run_gen0_3d_slam.sh
+GEN0_CAMERA_VIEW=false ./run_gen0_3d_slam.sh
+GEN0_CAMERA_TOPIC=/gen0_model/front_camera ./run_gen0_3d_slam.sh
 GEN0_PREVIEW_MAX_POINTS=25000 ./run_gen0_3d_slam.sh
 GEN0_FAST_LIO_PCD_SAVE=true GEN0_FAST_LIO_MAP_FILE_PATH=/tmp/my_map_prior.pcd ./run_gen0_3d_slam.sh
 GEN0_RELOCALIZATION=true GEN0_PRIOR_MAP_PATH=/path/to/prior_map.pcd ./run_gen0_3d_slam.sh
 ```
+
+The launcher opens a resizable **Gen0 Sweeper - Front Camera** window by
+default. It displays the bridged `/gen0_model/front_camera` stream, its native
+resolution, and the measured frame rate. Press `q` or `Esc` to close only the
+camera viewer. Set `GEN0_CAMERA_VIEW=false` when running without WSLg/X11.
 
 `GEN0_SIMULATED_LIDAR=false` disables the OBJ-based simulated LiDAR fallback and
 uses only Gazebo's `/gen0_model/front3d/lidar/points` output. This is useful

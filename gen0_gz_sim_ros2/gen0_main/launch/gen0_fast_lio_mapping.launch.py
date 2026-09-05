@@ -138,6 +138,8 @@ def generate_launch_description():
     )
     dynamic_actor_topics = LaunchConfiguration("dynamic_actor_topics")
     actor_pose_topics = LaunchConfiguration("actor_pose_topics")
+    vehicle_pose_topics = LaunchConfiguration("vehicle_pose_topics")
+    dynamic_vehicle_topics = LaunchConfiguration("dynamic_vehicle_topics")
     actors_scenario_path = LaunchConfiguration("actors_scenario_path")
     actor_costmap = LaunchConfiguration("actor_costmap")
     actor_obstacle_topic = LaunchConfiguration("actor_obstacle_topic")
@@ -497,6 +499,16 @@ def generate_launch_description():
                 description="Comma-separated live actor PoseStamped topics used by the actor costmap and collision monitor.",
             ),
             DeclareLaunchArgument(
+                "vehicle_pose_topics",
+                default_value="/car/car_008/pose,/car/car_009/pose",
+                description="Comma-separated live vehicle PoseStamped topics used by the dynamic obstacle costmap.",
+            ),
+            DeclareLaunchArgument(
+                "dynamic_vehicle_topics",
+                default_value="",
+                description="Optional vehicle PoseStamped topics added to simulated lidar; normally empty to avoid mapping vehicles as dense point clouds.",
+            ),
+            DeclareLaunchArgument(
                 "actors_scenario_path",
                 default_value="",
                 description="Actor scenario SDF used as a fallback source for dynamic costmap obstacles.",
@@ -535,12 +547,12 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument(
                 "actor_collision_vehicle_length",
-                default_value="4.0",
+                default_value="2.40",
                 description="Vehicle rectangle length in meters used by actor collision validation.",
             ),
             DeclareLaunchArgument(
                 "actor_collision_vehicle_width",
-                default_value="2.0",
+                default_value="1.65",
                 description="Vehicle rectangle width in meters used by actor collision validation.",
             ),
             DeclareLaunchArgument(
@@ -661,6 +673,7 @@ def generate_launch_description():
                         "self_filter_min_xyz": [-2.8, -1.4, -0.4],
                         "self_filter_max_xyz": [2.8, 1.4, 2.9],
                         "dynamic_actor_topics": dynamic_actor_topics,
+                        "dynamic_vehicle_topics": dynamic_vehicle_topics,
                         "trash_scenario_path": trash_scenario_path,
                     }
                 ],
@@ -918,8 +931,8 @@ def generate_launch_description():
                         "vehicleHeight": 1.5,
                         "sensorOffsetX": 0.0,
                         "sensorOffsetY": 0.0,
-                        "vehicleLength": 4.4,
-                        "vehicleWidth": 2.2,
+                        "vehicleLength": 2.4,
+                        "vehicleWidth": 1.65,
                         "voxelPointUpdateThre": 100,
                         "voxelTimeUpdateThre": 2.0,
                         "minRelZ": -2.5,
@@ -954,8 +967,8 @@ def generate_launch_description():
                         "vehicleHeight": 1.5,
                         "sensorOffsetX": 0.0,
                         "sensorOffsetY": 0.0,
-                        "vehicleLength": 4.4,
-                        "vehicleWidth": 2.2,
+                        "vehicleLength": 2.4,
+                        "vehicleWidth": 1.65,
                         "voxelPointUpdateThre": 100,
                         "voxelTimeUpdateThre": 2.0,
                         "lowerBoundZ": -2.5,
@@ -987,6 +1000,7 @@ def generate_launch_description():
                         "use_sim_time": use_sim_time,
                         "actors_scenario_path": actors_scenario_path,
                         "actor_pose_topics": actor_pose_topics,
+                        "vehicle_pose_topics": vehicle_pose_topics,
                         "output_topic": actor_obstacle_topic,
                         "frame_id": actor_obstacle_frame,
                         "world_sdf_path": actor_world_sdf_path,
@@ -1006,6 +1020,9 @@ def generate_launch_description():
                         "actor_clear_intensity": 0.0,
                         "actor_radial_samples": 12,
                         "actor_height_samples": 2,
+                        "vehicle_length": 2.4,
+                        "vehicle_width": 1.65,
+                        "vehicle_grid_spacing": 0.5,
                     }
                 ],
             ),

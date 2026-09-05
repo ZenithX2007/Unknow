@@ -62,7 +62,10 @@ def gazebo_environment(
         os.path.join(workspace_root, 'gen0_gz_sim_ros2', 'gz_plugins', 'build'),
     )
     for actor_pose_plugin_path in actor_pose_plugin_paths:
-        if os.path.exists(os.path.join(actor_pose_plugin_path, 'libActorPose.so')):
+        if any(
+            os.path.exists(os.path.join(actor_pose_plugin_path, filename))
+            for filename in ('libActorPose.so', 'libTrafficPose.so')
+        ):
             prepend_env_path(env, 'IGN_GAZEBO_SYSTEM_PLUGIN_PATH', actor_pose_plugin_path)
             prepend_env_path(env, 'GZ_SIM_SYSTEM_PLUGIN_PATH', actor_pose_plugin_path)
             prepend_env_path(env, 'LD_LIBRARY_PATH', actor_pose_plugin_path)
@@ -286,6 +289,27 @@ def generate_launch_description():
         default_value='false',
         choices=['true', 'false'],
     )
+    camera_view_arg = DeclareLaunchArgument(
+        'camera_view',
+        default_value='true',
+        choices=['true', 'false'],
+        description='Open a live window for the sweeper front camera.',
+    )
+    camera_topic_arg = DeclareLaunchArgument(
+        'camera_topic',
+        default_value='/gen0_model/front_camera',
+        description='ROS image topic shown in the live camera window.',
+    )
+    camera_view_width_arg = DeclareLaunchArgument(
+        'camera_view_width',
+        default_value='960',
+        description='Maximum camera window image width in pixels.',
+    )
+    camera_view_height_arg = DeclareLaunchArgument(
+        'camera_view_height',
+        default_value='720',
+        description='Maximum camera window image height in pixels.',
+    )
     gazebo_gui_arg = DeclareLaunchArgument(
         'gazebo_gui',
         default_value='true',
@@ -388,6 +412,10 @@ def generate_launch_description():
         sim_arg,
         actors_arg,
         rviz_arg,
+        camera_view_arg,
+        camera_topic_arg,
+        camera_view_width_arg,
+        camera_view_height_arg,
         gazebo_gui_arg,
         gui_arg,
         start_gazebo_arg,
@@ -432,6 +460,19 @@ def generate_launch_description():
             arguments=['-d', os.path.join(pkg_share_dir, 'config', 'gen0_main.rviz')],
             condition=IfCondition(LaunchConfiguration('rviz')),
             parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+        ),
+        Node(
+            package='gen0_main',
+            executable='camera_viewer',
+            name='gen0_camera_viewer',
+            output='screen',
+            condition=IfCondition(LaunchConfiguration('camera_view')),
+            parameters=[{
+                'use_sim_time': LaunchConfiguration('use_sim_time'),
+                'image_topic': LaunchConfiguration('camera_topic'),
+                'max_width': LaunchConfiguration('camera_view_width'),
+                'max_height': LaunchConfiguration('camera_view_height'),
+            }],
         ),
         Node(
             package='gen0_main',
