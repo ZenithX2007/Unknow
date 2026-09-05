@@ -112,7 +112,11 @@ def generate_launch_description():
                     launch_arguments={
                         'map': nav2_map_path,
                         'map_source': 'yaml',
-                        'publish_identity_map_to_odom': 'true',
+                        'publish_identity_map_to_odom': 'false',
+                        'publish_map_to_odom': 'true',
+                        'map_to_odom_x': '32.2026',
+                        'map_to_odom_y': '29.8863',
+                        'map_to_odom_yaw': '0.5406',
                         'rviz': 'false',
                         'autostart': 'true',
                     }.items(),

@@ -193,6 +193,10 @@ def generate_launch_description():
     nav2_model_dt = LaunchConfiguration('nav2_model_dt')
     nav2_smoothing_frequency = LaunchConfiguration('nav2_smoothing_frequency')
     publish_identity_map_to_odom = LaunchConfiguration('publish_identity_map_to_odom')
+    publish_map_to_odom = LaunchConfiguration('publish_map_to_odom')
+    map_to_odom_x = LaunchConfiguration('map_to_odom_x')
+    map_to_odom_y = LaunchConfiguration('map_to_odom_y')
+    map_to_odom_yaw = LaunchConfiguration('map_to_odom_yaw')
     odom_topic = LaunchConfiguration('odom_topic')
     reference_odom_topic = LaunchConfiguration('reference_odom_topic')
     max_reference_odom_error = LaunchConfiguration('max_reference_odom_error')
@@ -340,6 +344,27 @@ def generate_launch_description():
         default_value='false',
         choices=['true', 'false'],
         description='Publish identity map -> odom for odom-only Nav2 validation without ICP/prior map.',
+    )
+    declare_publish_map_to_odom = DeclareLaunchArgument(
+        'publish_map_to_odom',
+        default_value='false',
+        choices=['true', 'false'],
+        description='Publish a configured static map -> odom transform.',
+    )
+    declare_map_to_odom_x = DeclareLaunchArgument(
+        'map_to_odom_x',
+        default_value='0.0',
+        description='map -> odom translation x in meters.',
+    )
+    declare_map_to_odom_y = DeclareLaunchArgument(
+        'map_to_odom_y',
+        default_value='0.0',
+        description='map -> odom translation y in meters.',
+    )
+    declare_map_to_odom_yaw = DeclareLaunchArgument(
+        'map_to_odom_yaw',
+        default_value='0.0',
+        description='map -> odom yaw in radians.',
     )
     declare_costmap_source = DeclareLaunchArgument(
         'costmap_source',
@@ -636,6 +661,24 @@ def generate_launch_description():
         condition=IfCondition(publish_identity_map_to_odom),
     )
 
+    map_to_odom_node = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='map_to_odom',
+        output='screen',
+        arguments=[
+            '--x', map_to_odom_x,
+            '--y', map_to_odom_y,
+            '--z', '0',
+            '--roll', '0',
+            '--pitch', '0',
+            '--yaw', map_to_odom_yaw,
+            '--frame-id', 'map',
+            '--child-frame-id', 'odom',
+        ],
+        condition=IfCondition(publish_map_to_odom),
+    )
+
     return LaunchDescription([
         SetEnvironmentVariable('RCUTILS_LOGGING_BUFFERED_STREAM', '1'),
         declare_namespace,
@@ -653,6 +696,10 @@ def generate_launch_description():
         declare_nav2_model_dt,
         declare_nav2_smoothing_frequency,
         declare_publish_identity_map_to_odom,
+        declare_publish_map_to_odom,
+        declare_map_to_odom_x,
+        declare_map_to_odom_y,
+        declare_map_to_odom_yaw,
         declare_costmap_source,
         declare_map_source,
         declare_map_server_topic,
@@ -674,6 +721,7 @@ def generate_launch_description():
         declare_default_nav_through_poses_bt_xml,
         load_nodes,
         identity_map_to_odom_node,
+        map_to_odom_node,
         UnsetEnvironmentVariable(
             'LIBGL_ALWAYS_SOFTWARE',
             condition=rviz_passthrough,

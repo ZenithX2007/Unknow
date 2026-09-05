@@ -8,11 +8,14 @@
     camera: null,
     mapTopic: null,
     odomTopic: null,
+    tfTopic: null,
+    tfStaticTopic: null,
     navClient: null,
     navGoal: null,
     map: null,
     staticMapLoaded: false,
     odom: null,
+    mapToOdom: null,
     goal: null,
     keys: new Set(),
     joystick: {
@@ -225,6 +228,8 @@
     unsubscribe(state.camera);
     unsubscribe(state.mapTopic);
     unsubscribe(state.odomTopic);
+    unsubscribe(state.tfTopic);
+    unsubscribe(state.tfStaticTopic);
     if (state.cmdVel && state.cmdVel.unadvertise) {
       try {
         state.cmdVel.unadvertise();
@@ -235,11 +240,14 @@
     state.camera = null;
     state.mapTopic = null;
     state.odomTopic = null;
+    state.tfTopic = null;
+    state.tfStaticTopic = null;
     state.cmdVel = null;
     closeNavigationGoalSocket();
     state.navClient = null;
     state.navGoal = null;
     state.odom = null;
+    state.mapToOdom = null;
     state.wasMoving = false;
     resetJoystick();
     clearCamera();
@@ -467,9 +475,24 @@
       throttle_rate: 100,
       queue_length: 1,
     });
+    state.tfStaticTopic = new window.ROSLIB.Topic({
+      ros: state.ros,
+      name: "/tf_static",
+      messageType: "tf2_msgs/msg/TFMessage",
+      queue_length: 1,
+    });
+    state.tfTopic = new window.ROSLIB.Topic({
+      ros: state.ros,
+      name: "/tf",
+      messageType: "tf2_msgs/msg/TFMessage",
+      throttle_rate: 500,
+      queue_length: 1,
+    });
     state.mapTopic.subscribe(handleMapMessage);
     state.odomTopic.subscribe(handleOdomMessage);
-    appendLog(`地图和里程计已订阅 ${mapName} / ${odomName}。`);
+    state.tfStaticTopic.subscribe(handleTfStaticMessage);
+    state.tfTopic.subscribe(handleTfStaticMessage);
+    appendLog(`地图、里程计和 TF 已订阅 ${mapName} / ${odomName} /tf 与 /tf_static。`);
   }
 
   async function loadStaticMap() {
@@ -572,17 +595,61 @@
       return;
     }
 
-    state.odom = {
+    const odomPose = {
       x: Number(pose.position.x) || 0,
       y: Number(pose.position.y) || 0,
       yaw: quaternionToYaw(pose.orientation),
     };
+    state.odom = transformOdomToMap(odomPose);
     dom.robotPose.textContent =
       `${state.odom.x.toFixed(2)}, ${state.odom.y.toFixed(2)}`;
     dom.robotYaw.textContent =
       `${radToDeg(state.odom.yaw).toFixed(1)} deg`;
     dom.lastMessage.textContent = "里程计";
     drawMap();
+  }
+
+  function handleTfStaticMessage(message) {
+    const transforms = Array.isArray(message && message.transforms)
+      ? message.transforms
+      : [];
+    const transform = transforms.find((item) => {
+      const header = item && item.header;
+      return header && header.frame_id === "map" && item.child_frame_id === "odom";
+    });
+    if (!transform || !transform.transform) {
+      return;
+    }
+    const translation = transform.transform.translation || {};
+    const rotation = transform.transform.rotation || {};
+    state.mapToOdom = {
+      x: Number(translation.x) || 0,
+      y: Number(translation.y) || 0,
+      yaw: quaternionToYaw(rotation),
+    };
+    if (state.odom) {
+      state.odom = transformOdomToMap(state.odom.odomPose || state.odom);
+      dom.robotPose.textContent =
+        `${state.odom.x.toFixed(2)}, ${state.odom.y.toFixed(2)}`;
+      dom.robotYaw.textContent = `${radToDeg(state.odom.yaw).toFixed(1)} deg`;
+      drawMap();
+    }
+    appendLog(
+      `已接收 map -> odom: (${state.mapToOdom.x.toFixed(2)}, `
+      + `${state.mapToOdom.y.toFixed(2)})。`,
+    );
+  }
+
+  function transformOdomToMap(odomPose) {
+    const transform = state.mapToOdom || { x: 0, y: 0, yaw: 0 };
+    const cosYaw = Math.cos(transform.yaw);
+    const sinYaw = Math.sin(transform.yaw);
+    return {
+      x: cosYaw * odomPose.x - sinYaw * odomPose.y + transform.x,
+      y: sinYaw * odomPose.x + cosYaw * odomPose.y + transform.y,
+      yaw: normalizeAngle(odomPose.yaw + transform.yaw),
+      odomPose,
+    };
   }
 
   function buildMapRaster(map) {
@@ -763,10 +830,10 @@
     dom.goalX.value = state.odom.x.toFixed(2);
     dom.goalY.value = state.odom.y.toFixed(2);
     dom.goalYaw.value = radToDeg(state.odom.yaw).toFixed(1);
-    dom.goalFrame.value = "odom";
+    dom.goalFrame.value = "map";
     state.goal = { ...state.odom };
     drawMap();
-    appendLog("已将当前位置填入导航目标，坐标系切换为 odom。");
+    appendLog("已将当前位置填入导航目标，坐标系为 map。");
   }
 
   function createNavigationClient() {
@@ -1336,6 +1403,10 @@
 
   function radToDeg(radians) {
     return (radians * 180) / Math.PI;
+  }
+
+  function normalizeAngle(angle) {
+    return Math.atan2(Math.sin(angle), Math.cos(angle));
   }
 
   window.gen0WebControl = {
