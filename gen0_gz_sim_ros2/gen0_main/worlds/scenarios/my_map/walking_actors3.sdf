@@ -1,0 +1,331 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <actor name="pedestrian_1">
+    <plugin filename="libActorPose.so"
+    name="ignition::gazebo::systems::ActorPose">
+    </plugin>
+    <skin>
+      <filename>../../meshes/actors/Male Actor 2/meshes/walk.dae</filename>
+      <scale>1.0</scale>
+    </skin>
+    <animation name="walking">
+      <filename>../../meshes/actors/Male Actor 2/meshes/walk.dae</filename>
+      <interpolate_x>true</interpolate_x>
+    </animation>
+    <script>
+      <loop>true</loop>
+      <auto_start>true</auto_start>
+      <trajectory id="1" type="walking" tension="1">
+        <waypoint>
+          <time>0.00</time>
+          <pose>-14.98 -22.50 4.0 0 0 -0.5</pose>
+        </waypoint>
+        <waypoint>
+          <time>7.00</time>
+          <pose>-7.56 -26.70 4.0 0 0 -0.5</pose>
+        </waypoint>
+        <waypoint>
+          <time>12.60</time>
+          <pose>-1.62 -30.06 4.0 0 0 -0.5</pose>
+        </waypoint>
+        <waypoint>
+          <time>19.60</time>
+          <pose>5.81 -34.26 4.0 0 0 -0.5</pose>
+        </waypoint>
+        <waypoint>
+          <time>26.60</time>
+          <pose>13.23 -38.46 4.0 0 0 -0.5</pose>
+        </waypoint>
+        <waypoint>
+          <time>35.00</time>
+          <pose>22.14 -43.50 4.0 0 0 -0.5</pose>
+        </waypoint>
+      </trajectory>
+    </script>
+  </actor>
+  <actor name="pedestrian_2">
+    <plugin filename="libActorPose.so"
+    name="ignition::gazebo::systems::ActorPose">
+    </plugin>
+    <skin>
+      <filename>../../meshes/actors/Male Actor/meshes/talk_a.dae</filename>
+      <scale>1.0</scale>
+    </skin>
+    <animation name="talking_2">
+      <filename>../../meshes/actors/Male Actor/meshes/talk_a.dae</filename>
+      <interpolate_x>true</interpolate_x>
+    </animation>
+    <script>
+      <loop>true</loop>
+      <auto_start>true</auto_start>
+      <trajectory id="1" type="talking_2" tension="1">
+        <waypoint>
+          <time>0.00</time>
+          <pose>-11.8 -35.30 4.1 0 0 0.95</pose>
+        </waypoint>
+        <waypoint>
+          <time>10.00</time>
+          <pose>-11.8 -35.30 4.1 0 0 0.95</pose>
+        </waypoint>
+      </trajectory>
+    </script>
+  </actor>
+  <actor name="pedestrian_3">
+    <plugin filename="libActorPose.so"
+    name="ignition::gazebo::systems::ActorPose">
+    </plugin>
+    <skin>
+      <filename>../../meshes/actors/Male Actor/meshes/talk_b.dae</filename>
+      <scale>1.0</scale>
+    </skin>
+    <animation name="talking_3">
+      <filename>../../meshes/actors/Male Actor/meshes/talk_b.dae</filename>
+      <interpolate_x>true</interpolate_x>
+    </animation>
+    <script>
+      <loop>true</loop>
+      <auto_start>true</auto_start>
+      <trajectory id="1" type="talking" tension="1">
+        <waypoint>
+          <time>0.00</time>
+          <pose>-13.3 -34.50 4.1 0 0 1.0</pose>
+        </waypoint>
+        <waypoint>
+          <time>10.00</time>
+          <pose>-13.3 -34.50 4.1 0 0 1.0</pose>
+        </waypoint>
+      </trajectory>
+    </script>
+  </actor>
+  <actor name="pedestrian_4">
+    <plugin filename="libActorPose.so"
+    name="ignition::gazebo::systems::ActorPose">
+    </plugin>
+    <skin>
+      <filename>../../meshes/actors/Male visitor/meshes/MaleVisitorWalk.dae</filename>
+      <scale>1.0</scale>
+    </skin>
+    <animation name="walking_4">
+      <filename>../../meshes/actors/Male visitor/meshes/MaleVisitorWalk.dae</filename>
+      <interpolate_x>true</interpolate_x>
+    </animation>
+    <script>
+      <loop>true</loop>
+      <auto_start>true</auto_start>
+      <trajectory id="1" type="walking" tension="1">
+        <waypoint>
+          <time>0.00</time>
+          <pose>-1.8 -29.9 3.9 0 0 -0.5</pose>
+        </waypoint>
+        <waypoint>
+          <time>5.0</time>
+          <pose>2.8 -32.50 3.9 0 0 -2.14</pose>
+        </waypoint>
+        <waypoint>
+          <time>15.00</time>
+          <pose>-0.69 -41.8 3.9 0 0 -2.14</pose>
+        </waypoint>
+        <waypoint>
+          <time>17.00</time>
+          <pose>-0.69 -41.8 3.9 0 0 -0.57</pose>
+        </waypoint>
+        <waypoint>
+          <time>40.00</time>
+          <pose>26.2 -57.3 3.9 0 0 -0.57</pose>
+        </waypoint>
+      </trajectory>
+    </script>
+  </actor>
+  <actor name="pedestrian_5">
+    <plugin filename="libActorPose.so"
+    name="ignition::gazebo::systems::ActorPose">
+    </plugin>
+    <skin>
+      <filename>../../meshes/actors/Female Visitor/meshes/FemaleVisitorWalk.dae</filename>
+      <scale>1.0</scale>
+    </skin>
+    <animation name="walking_5">
+      <filename>../../meshes/actors/Female Visitor/meshes/FemaleVisitorWalk.dae</filename>
+      <interpolate_x>true</interpolate_x>
+    </animation>
+    <script>
+      <loop>true</loop>
+      <auto_start>true</auto_start>
+      <delay_start>0.0</delay_start>
+      <trajectory id="1" type="walking" tension="1">
+        <waypoint>
+          <time>0.00</time>
+          <pose>-3.3 -29.2 3.0 0 0 -2.14</pose>
+        </waypoint>
+        <waypoint>
+          <time>10.00</time>
+          <pose>-7.6 -37.8 3.1 0 0 -2.14</pose>
+        </waypoint>
+        <waypoint>
+          <time>12.00</time>
+          <pose>-7.6 -37.8 3.1 0 0 -0.57</pose>
+        </waypoint>
+        <waypoint>
+          <time>45.00</time>
+          <pose>26.2 -57.3 3.1 0 0 -0.57</pose>
+        </waypoint>
+      </trajectory>
+    </script>
+  </actor>
+  <actor name="pedestrian_6">
+    <plugin filename="libActorPose.so"
+    name="ignition::gazebo::systems::ActorPose">
+    </plugin>
+    <skin>
+      <filename>../../meshes/actors/Female Doctor/meshes/DoctorFemaleWalk.dae</filename>
+      <scale>1.0</scale>
+    </skin>
+    <animation name="walking_6">
+      <filename>../../meshes/actors/Female Doctor/meshes/DoctorFemaleWalk.dae</filename>
+      <interpolate_x>true</interpolate_x>
+    </animation>
+    <script>
+      <loop>true</loop>
+      <auto_start>true</auto_start>
+      <delay_start>5.0</delay_start>
+      <trajectory id="1" type="walking" tension="1">
+        <waypoint>
+          <time>60.0</time>
+          <pose>29.8 -22.3 3.0 0 0 1.069</pose>
+        </waypoint>
+        <waypoint>
+          <time>70.0</time>
+          <pose>33.5 -13.3 3.0 0 0 1.069</pose>
+        </waypoint>
+        <waypoint>
+          <time>72.0</time>
+          <pose>33.5 -13.3 3.0 0 0 2.6415</pose>
+        </waypoint>
+        <waypoint>
+          <time>87.0</time>
+          <pose>12.8 -1.22 3.0 0 0 2.6415</pose>
+        </waypoint>
+      </trajectory>
+    </script>
+  </actor>
+  <actor name="pedestrian_7">
+    <plugin filename="libActorPose.so"
+    name="ignition::gazebo::systems::ActorPose">
+    </plugin>
+    <skin>
+      <filename>../../meshes/actors/Male visitor/meshes/MaleVisitorWalk.dae</filename>
+      <scale>1.0</scale>
+    </skin>
+    <animation name="walking_4">
+      <filename>../../meshes/actors/Male visitor/meshes/MaleVisitorWalk.dae</filename>
+      <interpolate_x>true</interpolate_x>
+    </animation>
+    <script>
+      <loop>true</loop>
+      <auto_start>true</auto_start>
+      <!-- <delay_start>5.0</delay_start> -->
+      <trajectory id="1" type="walking" tension="1">
+        <waypoint>
+          <time>0.0</time>
+          <pose>27.3 -67.2 4.0 0 0 -0.57</pose>
+        </waypoint>
+        <waypoint>
+          <time>4.0</time>
+          <pose>35.67 -74.1 4.0 0 0 -0.57</pose>
+        </waypoint>
+        <waypoint>
+          <time>6.0</time>
+          <pose>33.67 -74.1 4.0 0 0 2.6415</pose>
+        </waypoint>
+        <waypoint>
+          <time>10.0</time>
+          <pose>27.3 -67.2 4.0 0 0 2.6415</pose>
+        </waypoint>
+        <waypoint>
+          <time>12.0</time>
+          <pose>27.3 -67.2 4.0 0 0 -0.57</pose>
+        </waypoint>
+      </trajectory>
+    </script>
+  </actor>
+  <actor name="pedestrian_8">
+    <plugin filename="libActorPose.so"
+    name="ignition::gazebo::systems::ActorPose">
+    </plugin>
+    <skin>
+      <filename>../../meshes/actors/Male Actor 2/meshes/walk.dae</filename>
+      <scale>1.0</scale>
+    </skin>
+    <animation name="walking">
+      <filename>../../meshes/actors/Male Actor 2/meshes/walk.dae</filename>
+      <interpolate_x>true</interpolate_x>
+    </animation>
+    <script>
+      <loop>true</loop>
+      <auto_start>true</auto_start>
+      <trajectory id="1" type="walking" tension="1">
+        <waypoint>
+          <time>0.00</time>
+          <pose>6.5788 -34.8975 4.1 0 0 -2.14</pose>
+        </waypoint>
+        <waypoint>
+          <time>5.00</time>
+          <pose>1.9128 -43.4391 4.1 0 0 -2.14</pose>
+        </waypoint>
+        <waypoint>
+          <time>6.00</time>
+          <pose>1.9128 -43.4391 4.1 0 0 1.0</pose>
+        </waypoint>
+        <waypoint>
+          <time>11.00</time>
+          <pose>6.5788 -34.8975 4.1 0 0 1.0</pose>
+        </waypoint>
+        <waypoint>
+          <time>12.00</time>
+          <pose>6.5788 -34.8975 4.1 0 0 -2.14</pose>
+        </waypoint>
+      </trajectory>
+    </script>
+  </actor>
+  <actor name="pedestrian_9">
+    <plugin filename="libActorPose.so"
+    name="ignition::gazebo::systems::ActorPose">
+    </plugin>
+    <skin>
+      <filename>../../meshes/actors/Male Actor 2/meshes/walk.dae</filename>
+      <scale>1.0</scale>
+    </skin>
+    <animation name="walking">
+      <filename>../../meshes/actors/Male Actor 2/meshes/walk.dae</filename>
+      <interpolate_x>true</interpolate_x>
+    </animation>
+    <script>
+      <loop>true</loop>
+      <auto_start>true</auto_start>
+      <trajectory id="1" type="walking" tension="1">
+        <waypoint>
+          <time>0.00</time>
+          <pose>5.0617 -44.8505 4.1 0 0 1.0</pose>
+        </waypoint>
+        <waypoint>
+          <time>5.00</time>
+          <pose>9.2902 -36.4660 4.1 0 0 1.0</pose>
+        </waypoint>
+        <waypoint>
+          <time>6.00</time>
+          <pose>9.2902 -36.4660 4.1 0 0 -2.14</pose>
+        </waypoint>
+        <waypoint>
+          <time>11.00</time>
+          <pose>5.0617 -44.8505 4.1 0 0 -2.14</pose>
+        </waypoint>
+        <waypoint>
+          <time>12.00</time>
+          <pose>5.0617 -44.8505 4.1 0 0 1.0</pose>
+        </waypoint>
+      </trajectory>
+    </script>
+  </actor>
+
+
+</sdf>

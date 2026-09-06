@@ -1,0 +1,7 @@
+builtin_interfaces/Duration time_from_start
+geometry_msgs/Point position
+float64 heading
+float64 curvature
+float64 velocity
+float64 acceleration
+float64 steer

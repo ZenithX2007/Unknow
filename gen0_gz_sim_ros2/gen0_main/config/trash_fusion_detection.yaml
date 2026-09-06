@@ -1,0 +1,48 @@
+gen0_trash_fusion_detector:
+  ros__parameters:
+    use_sim_time: true
+    image_topic: /gen0_model/front_camera
+    camera_info_topic: /gen0_model/camera_info
+    pointcloud_topic: /gen0_mapping/simulated_front3d/lidar/points
+    model_path: /home/zjxue2007/Unknow/best.pt
+    output_frame: map
+    base_frame: base_link
+    camera_frame: front_camera_link
+    pointcloud_frame: front_3d_lidar_link
+    camera_frame_uses_optical_axes: false
+
+    process_period: 0.5
+    max_sync_slop: 0.75
+    tf_timeout: 0.08
+
+    yolo_confidence: 0.25
+    yolo_imgsz: 640
+    yolo_max_det: 20
+    yolo_device: ""
+    class_filter: ""
+
+    max_input_points: 50000
+    min_range: 0.4
+    max_range: 22.0
+    object_min_base_z: 0.03
+    object_max_base_z: 0.80
+
+    cluster_voxel_size: 0.04
+    cluster_eps: 0.18
+    cluster_min_points: 4
+    cluster_max_points: 2500
+    cluster_max_extent_xy: 1.30
+    cluster_max_height: 1.00
+    cluster_min_height: 0.02
+
+    iou_threshold: 0.08
+    allow_center_match: true
+    use_roi_fallback: true
+    roi_min_points: 4
+    marker_lifetime: 1.0
+
+    fallback_image_width: 1600
+    fallback_image_height: 1200
+    fallback_horizontal_fov: 1.047
+    fallback_lidar_to_base_xyz: [1.9, 0.0, 1.9]
+    fallback_lidar_to_camera_xyz: [0.0, 0.0, 0.3]

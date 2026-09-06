@@ -1,0 +1,8 @@
+ground_truth_odometry:
+  ros__parameters:
+    pose_topic: /gen0_model/links/poses
+    odom_topic: /odom
+    pose_index: 15
+    odom_frame: odom
+    base_frame: base_footprint
+    publish_tf: true
