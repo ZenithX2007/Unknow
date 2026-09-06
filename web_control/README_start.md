@@ -134,6 +134,7 @@ ros2 launch sweeper_integration web_control_full.launch.py
 网页本身默认使用：
 
 ```text
+/voice_commands
 /cmd_vel
 /control/cmd_vel
 /map

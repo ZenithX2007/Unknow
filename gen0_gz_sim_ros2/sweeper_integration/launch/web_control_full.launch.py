@@ -11,6 +11,7 @@ from launch.actions import (
 )
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
+from launch.conditions import IfCondition
 from launch_xml.launch_description_sources import XMLLaunchDescriptionSource
 
 
@@ -29,6 +30,9 @@ def generate_launch_description():
     rosbridge_port = LaunchConfiguration('rosbridge_port')
     web_port = LaunchConfiguration('web_port')
     nav2_map_path = LaunchConfiguration('nav2_map_path')
+    voice_control = LaunchConfiguration('voice_control')
+    voice_mapper = os.path.join(workspace_root, 'web_control', 'voice_control', 'src',
+                                'voice_cmd_bot', 'voice_cmd_bot', 'command_mapper.py')
 
     return LaunchDescription([
         DeclareLaunchArgument(
@@ -51,6 +55,12 @@ def generate_launch_description():
             'web_port',
             default_value='8000',
             description='Port used by the static web server.',
+        ),
+        DeclareLaunchArgument(
+            'voice_control',
+            default_value='true',
+            choices=['true', 'false'],
+            description='Start the voice command mapper for web voice control.',
         ),
         DeclareLaunchArgument(
             'nav2_map_path',
@@ -101,6 +111,11 @@ def generate_launch_description():
                     output='screen',
                 )
             ],
+        ),
+        ExecuteProcess(
+            condition=IfCondition(voice_control),
+            cmd=['python3', voice_mapper],
+            output='screen',
         ),
         TimerAction(
             period=8.0,

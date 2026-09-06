@@ -5,8 +5,1132 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Gen0 ROS2 控制台</title>
-  <link rel="stylesheet" href="./style.css" />
   <script src="https://cdn.jsdelivr.net/npm/roslib@1.3.0/build/roslib.js"></script>
+  <style>
+    /* ===== 所有样式（与之前完全相同，已内嵌） ===== */
+    :root {
+      --page: #edf2ee;
+      --panel: #ffffff;
+      --panel-muted: #f6f8f6;
+      --ink: #17211c;
+      --muted: #6a766e;
+      --line: #d7e0d9;
+      --line-strong: #bfcdc3;
+      --green: #197253;
+      --green-dark: #10533d;
+      --green-soft: #dff1e8;
+      --blue: #2b65c7;
+      --blue-soft: #e7effd;
+      --amber: #b8691f;
+      --amber-soft: #fff0df;
+      --red: #aa3e3e;
+      --red-soft: #fbe6e5;
+      --shadow: 0 12px 30px rgba(31, 50, 39, 0.08);
+      --radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-width: 320px;
+      background: var(--page);
+    }
+
+    body {
+      display: block !important;
+      min-height: 100vh !important;
+      margin: 0 !important;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(237, 242, 238, 0.9)),
+        var(--page) !important;
+      font-family:
+        Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif !important;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    body > :not(#gen0App) {
+      display: none !important;
+    }
+
+    #gen0App {
+      display: block;
+      width: min(1600px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 30px 0 26px;
+    }
+
+    #gen0App button,
+    #gen0App input,
+    #gen0App select {
+      font: inherit;
+    }
+
+    #gen0App button {
+      border: 0;
+    }
+
+    #gen0App button:focus-visible,
+    #gen0App input:focus-visible,
+    #gen0App select:focus-visible,
+    #gen0App .joystick:focus-visible {
+      outline: 3px solid rgba(43, 101, 199, 0.28);
+      outline-offset: 2px;
+    }
+
+    .app-topbar {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand-block h1,
+    .brand-block p {
+      margin: 0;
+    }
+
+    .brand-block h1 {
+      margin-top: 4px;
+      font-size: clamp(1.65rem, 3vw, 2.3rem);
+      line-height: 1.15;
+    }
+
+    .eyebrow,
+    .panel-kicker {
+      color: var(--green);
+      font-size: 0.68rem;
+      font-weight: 850;
+      letter-spacing: 0.12em;
+    }
+
+    .subtitle {
+      margin-top: 8px !important;
+      color: var(--muted);
+    }
+
+    .connection-controls {
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-width: min(100%, 520px);
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      min-width: 100px;
+    }
+
+    .field > span,
+    .range-field > span,
+    .toggle > span:last-child {
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 750;
+    }
+
+    .field--connection,
+    .field--grow {
+      flex: 1 1 230px;
+    }
+
+    .field--full {
+      width: 100%;
+      margin-top: 13px;
+    }
+
+    #gen0App input,
+    #gen0App select {
+      width: 100%;
+      min-height: 38px;
+      padding: 8px 10px;
+      color: var(--ink);
+      background: var(--panel);
+      border: 1px solid var(--line-strong);
+      border-radius: 6px;
+    }
+
+    #gen0App input:hover,
+    #gen0App select:hover {
+      border-color: #91aa98;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 8px 13px;
+      color: var(--ink);
+      background: #edf2ee;
+      border: 1px solid var(--line) !important;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 750;
+      white-space: nowrap;
+      transition:
+        background 150ms ease,
+        border-color 150ms ease,
+        color 150ms ease,
+        transform 150ms ease;
+    }
+
+    .button:hover:not(:disabled) {
+      background: #e2eae4;
+      border-color: #a9baad !important;
+    }
+
+    .button:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    .button:disabled {
+      cursor: not-allowed;
+      opacity: 0.48;
+    }
+
+    .button--primary {
+      color: #ffffff;
+      background: var(--green);
+      border-color: var(--green) !important;
+    }
+
+    .button--primary:hover:not(:disabled) {
+      color: #ffffff;
+      background: var(--green-dark);
+      border-color: var(--green-dark) !important;
+    }
+
+    .button--danger {
+      color: var(--red);
+      background: var(--red-soft);
+      border-color: #efc6c4 !important;
+    }
+
+    .button--danger:hover:not(:disabled) {
+      color: #ffffff;
+      background: var(--red);
+      border-color: var(--red) !important;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .status-badge::before {
+      width: 7px;
+      height: 7px;
+      margin-right: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      content: "";
+    }
+
+    .status-badge--offline {
+      color: #69746d;
+      background: #e9eeea;
+    }
+
+    .status-badge--connecting {
+      color: var(--amber);
+      background: var(--amber-soft);
+    }
+
+    .status-badge--online,
+    .status-badge--active {
+      color: var(--green);
+      background: var(--green-soft);
+    }
+
+    .status-badge--error {
+      color: var(--red);
+      background: var(--red-soft);
+    }
+
+    /* ===== 仪表板网格布局 ===== */
+    .dashboard {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(360px, 0.75fr);
+      grid-template-areas:
+        "camera teleop"
+        "map navigation"
+        "voice voice"
+        "diagnostics diagnostics";
+      gap: 16px;
+      padding: 22px 0 28px;
+    }
+
+    .panel {
+      min-width: 0;
+      padding: 18px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .panel--camera {
+      grid-area: camera;
+    }
+
+    .panel--teleop {
+      grid-area: teleop;
+    }
+
+    .panel--map {
+      grid-area: map;
+    }
+
+    .panel--navigation {
+      grid-area: navigation;
+    }
+
+    .panel--voice {
+      grid-area: voice;
+    }
+
+    .panel--diagnostics {
+      grid-area: diagnostics;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .panel-header h2,
+    .panel-header p {
+      margin: 0;
+    }
+
+    .panel-header h2 {
+      margin-top: 2px;
+      font-size: 1.2rem;
+      line-height: 1.2;
+    }
+
+    .panel-kicker {
+      color: var(--muted);
+      font-size: 0.64rem;
+    }
+
+    /* ===== 相机、地图等面板通用 ===== */
+    .camera-toolbar,
+    .teleop-toolbar,
+    .map-toolbar {
+      display: flex;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .camera-toolbar .field:not(.field--grow) {
+      flex: 0 1 185px;
+    }
+
+    .camera-frame,
+    .map-frame {
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      min-height: 280px;
+      background: #18201b;
+      border: 1px solid #2f3e34;
+      border-radius: 7px;
+    }
+
+    .camera-frame {
+      aspect-ratio: 16 / 9;
+    }
+
+    .map-frame {
+      aspect-ratio: 16 / 10;
+      background: #28312b;
+    }
+
+    .camera-frame canvas,
+    .map-frame canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .media-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 6px;
+      color: #dfe9e1;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .media-placeholder[hidden] {
+      display: none;
+    }
+
+    .media-placeholder strong {
+      font-size: 0.95rem;
+    }
+
+    .media-placeholder span:last-child {
+      color: #aebcb1;
+      font-size: 0.75rem;
+    }
+
+    .placeholder-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 30px;
+      margin-bottom: 4px;
+      color: #dbeee2;
+      border: 1px solid #789383;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+    }
+
+    .media-overlay {
+      position: absolute;
+      right: 10px;
+      left: 10px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: #ecf6ef;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.68rem;
+      pointer-events: none;
+      text-shadow: 0 1px 3px #000000;
+    }
+
+    .media-overlay--top {
+      top: 9px;
+    }
+
+    .media-overlay--bottom {
+      bottom: 9px;
+    }
+
+    .map-legend {
+      position: absolute;
+      right: 10px;
+      bottom: 9px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+      color: #f0f4f0;
+      font-size: 0.68rem;
+      text-shadow: 0 1px 3px #000000;
+    }
+
+    .map-legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .legend-dot,
+    .legend-swatch {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+    }
+
+    .legend-dot {
+      border-radius: 50%;
+    }
+
+    .legend-dot--robot {
+      background: #ef9f35;
+    }
+
+    .legend-dot--goal {
+      background: #e15b5b;
+    }
+
+    .legend-swatch {
+      background: #1c2821;
+    }
+
+    .helper-text {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+
+    /* ===== 手动驾驶 ===== */
+    .teleop-layout {
+      display: grid;
+      grid-template-columns: minmax(220px, 0.9fr) minmax(180px, 1.1fr);
+      align-items: center;
+      gap: 20px;
+    }
+
+    .joystick-wrap {
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    .joystick {
+      position: relative;
+      width: min(100%, 270px);
+      aspect-ratio: 1;
+      touch-action: none;
+      cursor: crosshair;
+      background:
+        radial-gradient(circle, transparent 0 18%, rgba(255, 255, 255, 0.05) 18% 19%, transparent 19% 48%, rgba(255, 255, 255, 0.05) 48% 49%, transparent 49%),
+        #28332c;
+      border: 1px solid #52655a;
+      border-radius: 50%;
+      box-shadow: inset 0 0 0 14px rgba(255, 255, 255, 0.025);
+    }
+
+    .joystick::after {
+      position: absolute;
+      inset: 9%;
+      border: 1px dashed rgba(218, 235, 223, 0.3);
+      border-radius: 50%;
+      content: "";
+      pointer-events: none;
+    }
+
+    .joystick-axis {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      display: block;
+      background: rgba(218, 235, 223, 0.2);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .joystick-axis--horizontal {
+      width: 80%;
+      height: 1px;
+    }
+
+    .joystick-axis--vertical {
+      width: 1px;
+      height: 80%;
+    }
+
+    .joystick-knob {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 74px;
+      height: 74px;
+      color: #ffffff;
+      background: var(--green);
+      border: 5px solid #bfe2ce;
+      border-radius: 50%;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.26);
+      font-size: 0.65rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      transform: translate(-50%, -50%);
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .speed-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .range-field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .range-field > span {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .range-field output {
+      color: var(--ink);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.72rem;
+    }
+
+    #gen0App input[type="range"] {
+      min-height: 0;
+      padding: 0;
+      accent-color: var(--green);
+      border: 0;
+    }
+
+    .command-readout {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .command-readout span {
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 750;
+    }
+
+    .command-readout strong {
+      color: var(--green-dark);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.78rem;
+    }
+
+    .toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .toggle input {
+      position: absolute;
+      width: 1px !important;
+      height: 1px;
+      overflow: hidden;
+      opacity: 0;
+    }
+
+    .toggle-track {
+      position: relative;
+      display: inline-block;
+      width: 35px;
+      height: 20px;
+      background: #b9c5bc;
+      border-radius: 999px;
+      transition: background 150ms ease;
+    }
+
+    .toggle-track::after {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 14px;
+      height: 14px;
+      background: #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(21, 39, 27, 0.24);
+      content: "";
+      transition: transform 150ms ease;
+    }
+
+    .toggle input:checked + .toggle-track {
+      background: var(--green);
+    }
+
+    .toggle input:checked + .toggle-track::after {
+      transform: translateX(15px);
+    }
+
+    /* ===== Nav2 目标 ===== */
+    .goal-grid,
+    .metrics-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .goal-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .goal-status {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .status-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+
+    .status-line strong {
+      max-width: 72%;
+      overflow: hidden;
+      color: var(--ink);
+      font-size: 0.78rem;
+      text-align: right;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .progress-track {
+      height: 6px;
+      margin: 12px 0;
+      overflow: hidden;
+      background: #e5ebe6;
+      border-radius: 999px;
+    }
+
+    .progress-track span {
+      display: block;
+      width: 0;
+      height: 100%;
+      background: var(--green);
+      border-radius: inherit;
+      transition: width 220ms ease;
+    }
+
+    .metrics-grid--two {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .metrics-grid--four {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .metric {
+      min-width: 0;
+      padding: 10px 11px;
+      background: var(--panel-muted);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+
+    .metric span {
+      display: block;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 0.7rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .metric strong {
+      display: block;
+      overflow: hidden;
+      margin-top: 4px;
+      color: var(--ink);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.82rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .event-log {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-height: 138px;
+      margin-top: 12px;
+      padding: 10px;
+      overflow-y: auto;
+      color: #56635a;
+      background: #f8faf8;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.7rem;
+    }
+
+    .event-log:empty::before {
+      color: #9ba89e;
+      content: "暂无事件";
+    }
+
+    .event-item {
+      display: flex;
+      gap: 10px;
+    }
+
+    .event-item time {
+      color: #9ba89e;
+      white-space: nowrap;
+    }
+
+    .event-item--error {
+      color: var(--red);
+    }
+
+    .event-item--warn {
+      color: var(--amber);
+    }
+
+    /* ===== 语音控制面板（浅灰色消息栏） ===== */
+    .panel--voice .voice-layout {
+      display: flex;
+      align-items: stretch;
+      gap: 1rem;
+      margin-top: 0.5rem;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    .panel--voice .voice-button-wrapper {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: stretch;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .voice-speed-control {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 190px;
+      padding: 10px 12px;
+      background: var(--panel-muted);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .voice-speed-control > span {
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 750;
+    }
+
+    .voice-speed-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .voice-speed-row input[type="range"] {
+      flex: 1 1 auto;
+      min-width: 0;
+      accent-color: var(--green);
+    }
+
+    .voice-speed-row strong {
+      flex: 0 0 auto;
+      min-width: 48px;
+      text-align: right;
+      color: var(--ink);
+      font-size: 0.9rem;
+    }
+
+    .panel--voice .voice-result-wrapper {
+      flex: 1 1 0;
+      min-width: 160px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .button--voice {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      padding: 0.6rem 1.8rem 0.6rem 1.4rem;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 1rem;
+      background: var(--panel-muted);
+      color: var(--ink);
+      border: 1.5px solid var(--line);
+      cursor: pointer;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+      height: 100%;
+      min-height: 52px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .button--voice .voice-icon {
+      font-size: 1.5rem;
+      line-height: 1;
+      transition: transform 0.2s ease;
+    }
+
+    .button--voice .voice-label {
+      line-height: 1.2;
+    }
+
+    .button--voice:hover:not(:disabled) {
+      background: #e2eae4;
+      border-color: var(--green);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(25, 114, 83, 0.2);
+    }
+
+    .button--voice:active:not(:disabled) {
+      transform: scale(0.96);
+    }
+
+    .button--voice.is-listening {
+      background: #fde8e8;
+      border-color: var(--red);
+      color: var(--red);
+      animation: pulse-mic 1.2s ease-in-out infinite;
+      box-shadow: 0 0 0 0 rgba(170, 62, 62, 0.3);
+    }
+
+    .button--voice.is-listening .voice-icon {
+      animation: mic-bounce 0.6s ease-in-out infinite alternate;
+    }
+
+    .button--voice.is-done {
+      background: var(--green-soft);
+      border-color: var(--green);
+      color: var(--green-dark);
+      animation: none;
+    }
+
+    .button--voice:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    @keyframes pulse-mic {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(170, 62, 62, 0.3); }
+      50% { box-shadow: 0 0 0 12px rgba(170, 62, 62, 0); }
+    }
+
+    @keyframes mic-bounce {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.2); }
+    }
+
+    .voice-result {
+      flex: 1;
+      min-height: 52px;
+      padding: 0.7rem 1.2rem;
+      border-radius: 12px;
+      background: var(--panel-muted);
+      border: 1.5px solid var(--line);
+      display: flex;
+      align-items: center;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: var(--ink);
+      transition: border-color 0.3s ease, background 0.3s ease;
+      word-break: break-word;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .voice-result .voice-placeholder {
+      color: var(--muted);
+      font-style: italic;
+      user-select: none;
+    }
+
+    .voice-result.has-text {
+      color: var(--ink);
+      border-color: var(--green);
+      background: var(--panel-muted);
+    }
+
+    .voice-result .voice-text {
+      flex: 1;
+    }
+
+    .voice-result .voice-confidence {
+      flex: 0 0 auto;
+      margin-left: 0.75rem;
+      font-size: 0.7rem;
+      color: var(--muted);
+      background: var(--panel);
+      padding: 0.15rem 0.5rem;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+    }
+
+    .voice-status-text {
+      font-size: 0.7rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+    }
+
+    /* ===== 状态标签扩展 ===== */
+    .status-badge--recording {
+      background: #fde8e8;
+      border-color: var(--red);
+      color: var(--red);
+      animation: pulse-badge 1.2s ease-in-out infinite;
+    }
+
+    .status-badge--done {
+      background: var(--green-soft);
+      border-color: var(--green);
+      color: var(--green-dark);
+    }
+
+    @keyframes pulse-badge {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* ===== 移动端适配 ===== */
+    @media (max-width: 1050px) {
+      #gen0App {
+        width: min(100% - 32px, 1600px);
+      }
+
+      .app-topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .connection-controls {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .dashboard {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+          "camera"
+          "teleop"
+          "map"
+          "navigation"
+          "voice"
+          "diagnostics";
+      }
+    }
+
+    @media (max-width: 640px) {
+      #gen0App {
+        width: calc(100% - 24px);
+        padding-top: 22px;
+      }
+
+      .panel {
+        padding: 14px;
+      }
+
+      .teleop-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .camera-toolbar,
+      .teleop-toolbar,
+      .map-toolbar {
+        align-items: stretch;
+      }
+
+      .camera-toolbar .button,
+      .teleop-toolbar .button,
+      .map-toolbar .button {
+        width: 100%;
+      }
+
+      .goal-grid,
+      .metrics-grid--four {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .panel--voice .voice-layout {
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .panel--voice .voice-button-wrapper {
+        width: 100%;
+      }
+
+      .button--voice {
+        width: 100%;
+        justify-content: center;
+        padding: 0.7rem 1.2rem;
+        min-height: 48px;
+      }
+
+      .panel--voice .voice-result-wrapper {
+        width: 100%;
+        min-width: unset;
+      }
+
+      .voice-result {
+        min-height: 44px;
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+      }
+
+      .voice-result .voice-confidence {
+        font-size: 0.65rem;
+        padding: 0.1rem 0.4rem;
+      }
+
+      .app-footer {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .button--voice {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+        min-height: 42px;
+      }
+
+      .button--voice .voice-icon {
+        font-size: 1.2rem;
+      }
+
+      .voice-result {
+        font-size: 0.8rem;
+        min-height: 38px;
+        padding: 0.4rem 0.8rem;
+      }
+    }
+
+    .app-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      color: var(--muted);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.68rem;
+    }
+  </style>
 </head>
  
 <body>
@@ -42,6 +1166,7 @@
     </header>
 
     <main class="dashboard">
+      <!-- ===== 前置相机 ===== -->
       <section class="panel panel--camera" aria-labelledby="cameraHeading">
         <div class="panel-header">
           <div>
@@ -94,6 +1219,7 @@
         </div>
       </section>
 
+      <!-- ===== 手动驾驶 ===== -->
       <section class="panel panel--teleop" aria-labelledby="teleopHeading">
         <div class="panel-header">
           <div>
@@ -182,6 +1308,7 @@
         </div>
       </section>
 
+      <!-- ===== 导航地图 ===== -->
       <section class="panel panel--map" aria-labelledby="mapHeading">
         <div class="panel-header">
           <div>
@@ -235,6 +1362,7 @@
         <p class="helper-text">单击地图发送导航目标。</p>
       </section>
 
+      <!-- ===== Nav2 目标 ===== -->
       <section class="panel panel--navigation" aria-labelledby="navigationHeading">
         <div class="panel-header">
           <div>
@@ -313,6 +1441,43 @@
         </div>
       </section>
 
+      <!-- ===== ★ 语音控制（位于 Nav2 目标和状态与数据之间） ===== -->
+      <section class="panel panel--voice" aria-labelledby="voiceHeading">
+        <div class="panel-header">
+          <div>
+            <p class="panel-kicker">VOICE INTERACTION</p>
+            <h2 id="voiceHeading">语音控制</h2>
+          </div>
+          <span id="voiceBadge" class="status-badge status-badge--offline">
+            待命
+          </span>
+        </div>
+
+        <div class="voice-layout">
+          <div class="voice-button-wrapper">
+            <button id="voiceButton" class="button button--voice" type="button">
+              <span class="voice-icon">🎤</span>
+              <span class="voice-label">点击说话</span>
+            </button>
+            <label class="voice-speed-control" for="voiceSpeedScale">
+              <span>语音速度</span>
+              <div class="voice-speed-row">
+                <input id="voiceSpeedScale" type="range" min="0.25" max="1.5" step="0.05" value="0.75" />
+                <strong id="voiceSpeedValue">0.75x</strong>
+              </div>
+            </label>
+          </div>
+          <div class="voice-result-wrapper">
+            <div id="voiceResult" class="voice-result">
+              <span class="voice-placeholder">点击麦克风开始语音识别…</span>
+            </div>
+            <div class="voice-status-text" id="voiceStatusText">就绪</div>
+            <div class="voice-status-text">可说“去 1.2 3.4 朝向 90”直接导航</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== ★ 状态与数据（位于最下方） ===== -->
       <section class="panel panel--diagnostics" aria-labelledby="diagnosticsHeading">
         <div class="panel-header">
           <div>
@@ -351,10 +1516,381 @@
 
     <footer class="app-footer">
       <span>ROS2 topic bridge</span>
-      <span>/cmd_vel · /map · /odom · /gen0_model/front_camera</span>
+      <span>/voice_commands · /cmd_vel · /map · /odom · /gen0_model/front_camera</span>
     </footer>
   </div>
 
+  <!-- ===== 恢复外部 app.js 引用（所有核心功能） ===== -->
   <script src="./app.js?v=map-odom-20260905"></script>
+
+  <!-- ===== 语音控制 JavaScript（新增功能，与 app.js 互不干扰） ===== -->
+  <script>
+    (function() {
+      'use strict';
+
+      const voiceBtn = document.getElementById('voiceButton');
+      const voiceResult = document.getElementById('voiceResult');
+      const voiceBadge = document.getElementById('voiceBadge');
+      const voiceStatusText = document.getElementById('voiceStatusText');
+      const voiceSpeedScale = document.getElementById('voiceSpeedScale');
+      const voiceSpeedValue = document.getElementById('voiceSpeedValue');
+      const commandMap = {
+        forward: ['forward', 'go forward', 'ahead', 'move forward', '前进', '往前', '向前', '前进吧'],
+        backward: ['backward', 'go back', 'move back', 'back', '后退', '向后', '往后', '倒退'],
+        left: ['left', 'turn left', 'go left', '左转', '向左', '往左'],
+        right: ['right', 'turn right', 'go right', '右转', '向右', '往右'],
+        stop: ['stop', 'halt', 'freeze', 'pause', '停车', '停止', '别动', '停下'],
+      };
+      let isListening = false;
+      let recognition = null;
+      let finalTranscript = '';
+      let rosTopic = null;
+      let speedScaleTopic = null;
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        voiceBtn.disabled = true;
+        voiceBtn.innerHTML = '<span class="voice-icon">⚠️</span><span class="voice-label">浏览器不支持</span>';
+        voiceResult.innerHTML = '<span class="voice-placeholder">您的浏览器不支持语音识别，请使用 Chrome 或 Edge。</span>';
+        voiceBadge.textContent = '不支持';
+        voiceBadge.className = 'status-badge status-badge--offline';
+        return;
+      }
+
+      function getApi() {
+        return window.Gen0ControlAPI || null;
+      }
+
+      function getSpeedScale() {
+        return Number(voiceSpeedScale.value || 0.75);
+      }
+
+      function updateSpeedLabel() {
+        voiceSpeedValue.textContent = `${getSpeedScale().toFixed(2)}x`;
+      }
+
+      function publishSpeedScale() {
+        const api = getApi();
+        if (!api || !api.isConnected()) {
+          return false;
+        }
+
+        const ros = api.getRos();
+        if (!ros) {
+          return false;
+        }
+
+        if (!speedScaleTopic || speedScaleTopic.ros !== ros) {
+          speedScaleTopic = new window.ROSLIB.Topic({
+            ros,
+            name: '/voice_control/speed_scale',
+            messageType: 'std_msgs/msg/Float32',
+            queue_size: 1,
+          });
+        }
+
+        speedScaleTopic.publish(new window.ROSLIB.Message({ data: getSpeedScale() }));
+        return true;
+      }
+
+      function initRecognition() {
+        recognition = new SpeechRecognition();
+        recognition.lang = 'zh-CN';
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.maxAlternatives = 1;
+
+        recognition.onresult = function(event) {
+          let interim = '';
+          let final = '';
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              final += transcript;
+            } else {
+              interim += transcript;
+            }
+          }
+
+          finalTranscript = final || finalTranscript;
+
+          if (final) {
+            const recognized = final.trim();
+            showResult(recognized, event.results[event.results.length - 1][0].confidence);
+            voiceBadge.textContent = '已识别';
+            voiceBadge.className = 'status-badge status-badge--done';
+            voiceStatusText.textContent = '识别完成';
+            handleVoiceCommand(recognized);
+          } else if (interim) {
+            showResult(interim + '…', null);
+            voiceBadge.textContent = '识别中';
+            voiceBadge.className = 'status-badge status-badge--recording';
+            voiceStatusText.textContent = '正在聆听…';
+          }
+        };
+
+        recognition.onend = function() {
+          if (isListening) {
+            if (!finalTranscript) {
+              voiceResult.innerHTML = '<span class="voice-placeholder">没有听到任何内容，请再试一次</span>';
+              voiceBadge.textContent = '待命';
+              voiceBadge.className = 'status-badge status-badge--offline';
+              voiceStatusText.textContent = '未检测到语音';
+            }
+            isListening = false;
+            updateButtonState(false);
+          }
+        };
+
+        recognition.onerror = function(event) {
+          console.warn('语音识别错误:', event.error);
+          if (event.error === 'not-allowed') {
+            voiceResult.innerHTML = '<span class="voice-placeholder">❌ 请允许使用麦克风权限</span>';
+            voiceBadge.textContent = '无权限';
+            voiceBadge.className = 'status-badge status-badge--offline';
+            voiceStatusText.textContent = '麦克风被拒绝';
+          } else if (event.error === 'no-speech') {
+            voiceStatusText.textContent = '未检测到语音';
+          } else {
+            voiceResult.innerHTML = `<span class="voice-placeholder">⚠️ 识别错误: ${event.error}</span>`;
+            voiceBadge.textContent = '错误';
+            voiceBadge.className = 'status-badge status-badge--offline';
+            voiceStatusText.textContent = '错误';
+          }
+          if (isListening) {
+            isListening = false;
+            updateButtonState(false);
+          }
+        };
+      }
+
+      function showResult(text, confidence) {
+        const confidenceText = confidence !== null && confidence !== undefined
+          ? ` ${Math.round(confidence * 100)}%`
+          : '';
+        voiceResult.innerHTML = `
+          <span class="voice-text">${escapeHtml(text)}</span>
+          ${confidenceText ? `<span class="voice-confidence">${confidenceText}</span>` : ''}
+        `;
+        voiceResult.className = 'voice-result has-text';
+      }
+
+      function normalizeText(text) {
+        return text
+          .toLowerCase()
+          .replace(/[（）()［］[\]{}]/g, ' ')
+          .replace(/[，。！？,.!?:；;、]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+      }
+
+      function extractGoal(text) {
+        const normalized = normalizeText(text);
+        const patterns = [
+          /^(?:去|到|导航到|前往)+\s*(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)(?:\s*(?:朝向|yaw|角度)\s*(-?\d+(?:\.\d+)?))?$/,
+          /^(?:go to|navigate to)\s*(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)(?:\s*(?:yaw|heading)\s*(-?\d+(?:\.\d+)?))?$/,
+        ];
+        for (const pattern of patterns) {
+          const match = normalized.match(pattern);
+          if (match) {
+            return {
+              x: Number(match[1]),
+              y: Number(match[2]),
+              yaw: match[3] !== undefined ? Number(match[3]) : 0,
+            };
+          }
+        }
+        const fallback = normalized.match(
+          /(-?\d+(?:\.\d+)?)[^\d-]+(-?\d+(?:\.\d+)?)(?:[^\d-]+(-?\d+(?:\.\d+)?))?/,
+        );
+        if (
+          fallback &&
+          /(?:去|到|导航到|前往|go to|navigate to|坐标|coordinate|点|point|map)/.test(normalized)
+        ) {
+          return {
+            x: Number(fallback[1]),
+            y: Number(fallback[2]),
+            yaw: fallback[3] !== undefined ? Number(fallback[3]) : 0,
+          };
+        }
+        return null;
+      }
+
+      function matchCommand(text) {
+        const normalized = normalizeText(text);
+        for (const [action, aliases] of Object.entries(commandMap)) {
+          if (aliases.some((alias) => normalized.includes(normalizeText(alias)))) {
+            return action;
+          }
+        }
+        return null;
+      }
+
+      function publishVoiceCommand(text) {
+        const api = getApi();
+        if (!api || !api.isConnected()) {
+          return false;
+        }
+
+        const ros = api.getRos();
+        if (!ros) {
+          return false;
+        }
+
+        if (!rosTopic || rosTopic.ros !== ros) {
+          rosTopic = new window.ROSLIB.Topic({
+            ros,
+            name: '/voice_commands',
+            messageType: 'std_msgs/msg/String',
+            queue_size: 10,
+          });
+        }
+
+        rosTopic.publish(new window.ROSLIB.Message({ data: text }));
+        return true;
+      }
+
+      function handleVoiceCommand(text) {
+        const goal = extractGoal(text);
+        const action = matchCommand(text);
+        const api = getApi();
+        const published = publishVoiceCommand(text);
+
+        if (api) {
+          api.setLastMessage(text);
+          api.appendLog(`语音识别：${text}`);
+        }
+
+        if (goal && api) {
+          if (api.isConnected()) {
+            api.setGoalFromValues(goal.x, goal.y, goal.yaw, 'map');
+            api.sendNavigationGoal();
+            voiceStatusText.textContent = `已发送导航目标：${goal.x.toFixed(2)}, ${goal.y.toFixed(2)}`;
+            return;
+          }
+          voiceStatusText.textContent = '未连接 rosbridge';
+          return;
+        }
+
+        if (!action) {
+          if (api) {
+            api.appendLog(`未匹配到可执行指令：${text}`, 'warn');
+          }
+          voiceStatusText.textContent = published ? '已写入消息栏' : '未连接 rosbridge';
+          return;
+        }
+
+        if (api && action === 'stop') {
+          api.stopRobot(false);
+        }
+        voiceStatusText.textContent = `已识别指令：${action}`;
+      }
+
+      function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+      }
+
+      function updateButtonState(listening) {
+        if (listening) {
+          voiceBtn.className = 'button button--voice is-listening';
+          voiceBtn.innerHTML = '<span class="voice-icon">🔴</span><span class="voice-label">停止录音</span>';
+          voiceBadge.textContent = '录音中';
+          voiceBadge.className = 'status-badge status-badge--recording';
+          voiceStatusText.textContent = '正在录音…';
+        } else {
+          voiceBtn.className = 'button button--voice';
+          voiceBtn.innerHTML = '<span class="voice-icon">🎤</span><span class="voice-label">点击说话</span>';
+          if (finalTranscript) {
+            voiceBadge.textContent = '已识别';
+            voiceBadge.className = 'status-badge status-badge--done';
+            voiceStatusText.textContent = '识别完成';
+          } else {
+            voiceBadge.textContent = '待命';
+            voiceBadge.className = 'status-badge status-badge--offline';
+            voiceStatusText.textContent = '就绪';
+          }
+        }
+      }
+
+      window.addEventListener('gen0:ros-state', function(event) {
+        if (event.detail && event.detail.connected) {
+          publishSpeedScale();
+          voiceStatusText.textContent = '可发送语音指令';
+        } else {
+          rosTopic = null;
+          speedScaleTopic = null;
+          voiceStatusText.textContent = '等待 rosbridge 连接';
+        }
+      });
+
+      voiceSpeedScale.addEventListener('input', function() {
+        updateSpeedLabel();
+        publishSpeedScale();
+      });
+
+      function toggleRecording() {
+        if (!recognition) {
+          initRecognition();
+          if (!recognition) return;
+        }
+
+        if (isListening) {
+          try {
+            recognition.stop();
+          } catch (e) {}
+          isListening = false;
+          updateButtonState(false);
+          if (!finalTranscript) {
+            voiceResult.innerHTML = '<span class="voice-placeholder">录音已停止，未识别到内容</span>';
+            voiceResult.className = 'voice-result';
+          }
+        } else {
+          finalTranscript = '';
+          voiceResult.innerHTML = '<span class="voice-placeholder">🎤 正在聆听…</span>';
+          voiceResult.className = 'voice-result';
+
+          try {
+            recognition.start();
+            isListening = true;
+            updateButtonState(true);
+          } catch (e) {
+            if (e.name === 'InvalidStateError') {
+              try {
+                recognition.stop();
+                setTimeout(() => {
+                  recognition.start();
+                  isListening = true;
+                  updateButtonState(true);
+                }, 100);
+              } catch (e2) {
+                console.error('无法启动语音识别:', e2);
+                voiceResult.innerHTML = '<span class="voice-placeholder">⚠️ 无法启动麦克风，请刷新页面重试</span>';
+              }
+            } else {
+              console.error('语音识别启动失败:', e);
+              voiceResult.innerHTML = `<span class="voice-placeholder">⚠️ 启动失败: ${e.message}</span>`;
+            }
+          }
+        }
+      }
+
+      voiceBtn.addEventListener('click', toggleRecording);
+
+      updateSpeedLabel();
+      initRecognition();
+      updateButtonState(false);
+
+      window.addEventListener('beforeunload', function() {
+        if (recognition && isListening) {
+          try {
+            recognition.stop();
+          } catch (e) {}
+        }
+      });
+
+    })();
+  </script>
 </body>
 </html>

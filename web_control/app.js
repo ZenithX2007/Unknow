@@ -187,6 +187,7 @@
       subscribeCamera();
       subscribeMapAndOdom();
       createNavigationClient();
+      notifyRosState();
     });
     state.ros.on("error", (error) => {
       const detail = error && error.message ? `: ${error.message}` : "";
@@ -203,6 +204,7 @@
       setBadge(dom.mapBadge, "offline", "等待地图");
       setBadge(dom.navigationBadge, "offline", "空闲");
       appendLog("rosbridge 连接已关闭。", "warn");
+      notifyRosState();
     });
   }
 
@@ -222,6 +224,7 @@
     if (logEvent) {
       appendLog("已断开 rosbridge。");
     }
+    notifyRosState();
   }
 
   function teardownRos() {
@@ -822,6 +825,27 @@
     drawMap();
   }
 
+  function setGoalFromValues(x, y, yawDegrees, frame) {
+    if (!Number.isFinite(x) || !Number.isFinite(y)) {
+      return false;
+    }
+    dom.goalX.value = x.toFixed(2);
+    dom.goalY.value = y.toFixed(2);
+    if (Number.isFinite(yawDegrees)) {
+      dom.goalYaw.value = yawDegrees.toFixed(1);
+    }
+    if (frame) {
+      dom.goalFrame.value = frame;
+    }
+    state.goal = {
+      x,
+      y,
+      yaw: degToRad(Number(dom.goalYaw.value) || 0),
+    };
+    drawMap();
+    return true;
+  }
+
   function useCurrentPose() {
     if (!state.odom) {
       appendLog("尚未收到 /odom，无法填入当前位置。", "warn");
@@ -1166,7 +1190,7 @@
 
   function publishTwist(linear, angular) {
     if (!state.connected || !state.cmdVel) {
-      return;
+      return false;
     }
     state.cmdVel.publish(
       new window.ROSLIB.Message({
@@ -1174,6 +1198,7 @@
         angular: { x: 0, y: 0, z: angular },
       }),
     );
+    return true;
   }
 
   function stopRobot(cancelGoal) {
@@ -1409,10 +1434,52 @@
     return Math.atan2(Math.sin(angle), Math.cos(angle));
   }
 
+  function notifyRosState() {
+    window.dispatchEvent(
+      new CustomEvent("gen0:ros-state", {
+        detail: { connected: state.connected },
+      }),
+    );
+  }
+
   window.gen0WebControl = {
     connect: connectRos,
     disconnect: () => disconnectRos(true),
     stop: () => stopRobot(true),
     createNavigationClient: createNavigationClientOnRosReady,
+  };
+
+  window.Gen0ControlAPI = {
+    isConnected() {
+      return state.connected && Boolean(state.ros);
+    },
+    getRos() {
+      return state.ros;
+    },
+    getCmdVelTopicName() {
+      return dom.cmdVelTopic && dom.cmdVelTopic.value.trim()
+        ? dom.cmdVelTopic.value.trim()
+        : "/cmd_vel";
+    },
+    publishTwist(linear, angular) {
+      return publishTwist(linear, angular);
+    },
+    stopRobot(cancelGoal = false) {
+      stopRobot(cancelGoal);
+    },
+    appendLog(message, level) {
+      appendLog(message, level);
+    },
+    setGoalFromValues(x, y, yawDegrees, frame) {
+      return setGoalFromValues(x, y, yawDegrees, frame);
+    },
+    sendNavigationGoal() {
+      sendNavigationGoal();
+    },
+    setLastMessage(message) {
+      if (dom.lastMessage) {
+        dom.lastMessage.textContent = message;
+      }
+    },
   };
 })();

@@ -3,6 +3,7 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription, TimerAction
+from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_xml.launch_description_sources import XMLLaunchDescriptionSource
@@ -19,6 +20,9 @@ def generate_launch_description():
     gazebo_gui = LaunchConfiguration('gazebo_gui')
     rosbridge_port = LaunchConfiguration('rosbridge_port')
     web_port = LaunchConfiguration('web_port')
+    voice_control = LaunchConfiguration('voice_control')
+    voice_mapper = os.path.join(workspace_root, 'web_control', 'voice_control', 'src',
+                                'voice_cmd_bot', 'voice_cmd_bot', 'command_mapper.py')
 
     return LaunchDescription([
         DeclareLaunchArgument(
@@ -41,6 +45,12 @@ def generate_launch_description():
             'web_port',
             default_value='8000',
             description='Port used by the static web server.',
+        ),
+        DeclareLaunchArgument(
+            'voice_control',
+            default_value='true',
+            choices=['true', 'false'],
+            description='Start the voice command mapper for web voice control.',
         ),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
@@ -86,5 +96,10 @@ def generate_launch_description():
                     output='screen',
                 )
             ],
+        ),
+        ExecuteProcess(
+            condition=IfCondition(voice_control),
+            cmd=['python3', voice_mapper],
+            output='screen',
         ),
     ])

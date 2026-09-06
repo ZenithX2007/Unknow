@@ -260,6 +260,7 @@ body > :not(#gen0App) {
   grid-template-areas:
     "camera teleop"
     "map navigation"
+    "voice voice"
     "diagnostics diagnostics";
   gap: 16px;
   padding: 22px 0 28px;
@@ -288,6 +289,10 @@ body > :not(#gen0App) {
 
 .panel--navigation {
   grid-area: navigation;
+}
+
+.panel--voice {
+  grid-area: voice;
 }
 
 .panel--diagnostics {
@@ -777,15 +782,160 @@ body > :not(#gen0App) {
   color: var(--amber);
 }
 
-.app-footer {
+/* ===== 语音控制面板特殊样式（浅灰色消息栏） ===== */
+.panel--voice .voice-layout {
   display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  color: var(--muted);
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  font-size: 0.68rem;
+  align-items: stretch;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  width: 100%;
+  flex-wrap: wrap;
 }
 
+.panel--voice .voice-button-wrapper {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: stretch;
+}
+
+.panel--voice .voice-result-wrapper {
+  flex: 1 1 0;
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.button--voice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1.8rem 0.6rem 1.4rem;
+  border-radius: 60px;
+  font-weight: 600;
+  font-size: 1rem;
+  background: var(--panel-muted);
+  color: var(--ink);
+  border: 1.5px solid var(--line);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+  height: 100%;
+  min-height: 52px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.button--voice .voice-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.button--voice .voice-label {
+  line-height: 1.2;
+}
+
+.button--voice:hover:not(:disabled) {
+  background: #e2eae4;
+  border-color: var(--green);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(25, 114, 83, 0.2);
+}
+
+.button--voice:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.button--voice.is-listening {
+  background: #fde8e8;
+  border-color: var(--red);
+  color: var(--red);
+  animation: pulse-mic 1.2s ease-in-out infinite;
+  box-shadow: 0 0 0 0 rgba(170, 62, 62, 0.3);
+}
+
+.button--voice.is-listening .voice-icon {
+  animation: mic-bounce 0.6s ease-in-out infinite alternate;
+}
+
+.button--voice.is-done {
+  background: var(--green-soft);
+  border-color: var(--green);
+  color: var(--green-dark);
+  animation: none;
+}
+
+.button--voice:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@keyframes pulse-mic {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(170, 62, 62, 0.3); }
+  50% { box-shadow: 0 0 0 12px rgba(170, 62, 62, 0); }
+}
+
+@keyframes mic-bounce {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.2); }
+}
+
+.voice-result {
+  flex: 1;
+  min-height: 52px;
+  padding: 0.7rem 1.2rem;
+  border-radius: 12px;
+  background: var(--panel-muted);
+  border: 1.5px solid var(--line);
+  display: flex;
+  align-items: center;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--ink);
+  transition: border-color 0.3s ease, background 0.3s ease;
+  word-break: break-word;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.voice-result .voice-placeholder {
+  color: var(--muted);
+  font-style: italic;
+  user-select: none;
+}
+
+.voice-result.has-text {
+  color: var(--ink);
+  border-color: var(--green);
+  background: var(--panel-muted);
+}
+
+.voice-result .voice-text {
+  flex: 1;
+}
+
+.voice-result .voice-confidence {
+  flex: 0 0 auto;
+  margin-left: 0.75rem;
+  font-size: 0.7rem;
+  color: var(--muted);
+  background: var(--panel);
+  padding: 0.15rem 0.5rem;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+}
+
+.voice-status-text {
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+/* ===== 移动端适配 ===== */
 @media (max-width: 1050px) {
   #gen0App {
     width: min(100% - 32px, 1600px);
@@ -808,11 +958,12 @@ body > :not(#gen0App) {
       "teleop"
       "map"
       "navigation"
+      "voice"
       "diagnostics";
   }
 }
 
-@media (max-width: 650px) {
+@media (max-width: 640px) {
   #gen0App {
     width: calc(100% - 24px);
     padding-top: 22px;
@@ -843,8 +994,78 @@ body > :not(#gen0App) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  /* 语音控制移动端布局 */
+  .panel--voice .voice-layout {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .panel--voice .voice-button-wrapper {
+    width: 100%;
+  }
+
+  .button--voice {
+    width: 100%;
+    justify-content: center;
+    padding: 0.7rem 1.2rem;
+    min-height: 48px;
+  }
+
+  .panel--voice .voice-result-wrapper {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .voice-result {
+    min-height: 44px;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .voice-result .voice-confidence {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.4rem;
+  }
+
   .app-footer {
     align-items: flex-start;
     flex-direction: column;
   }
+}
+
+@media (max-width: 400px) {
+  .button--voice {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    min-height: 42px;
+  }
+
+  .button--voice .voice-icon {
+    font-size: 1.2rem;
+  }
+
+  .voice-result {
+    font-size: 0.8rem;
+    min-height: 38px;
+    padding: 0.4rem 0.8rem;
+  }
+}
+
+/* ===== 状态标签扩展 ===== */
+.status-badge--recording {
+  background: #fde8e8;
+  border-color: var(--red);
+  color: var(--red);
+  animation: pulse-badge 1.2s ease-in-out infinite;
+}
+
+.status-badge--done {
+  background: var(--green-soft);
+  border-color: var(--green);
+  color: var(--green-dark);
+}
+
+@keyframes pulse-badge {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
