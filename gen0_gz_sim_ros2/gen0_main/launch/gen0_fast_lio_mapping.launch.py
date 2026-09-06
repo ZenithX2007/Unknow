@@ -1011,8 +1011,10 @@ def generate_launch_description():
                         "output_origin_xy": ParameterValue(
                             actor_output_origin_xy, value_type=str
                         ),
-                        "publish_rate": 5.0,
-                        "live_pose_timeout": 1.0,
+                        # Dynamic actor observations must expire quickly so
+                        # pedestrians do not leave a stale trail in Nav2.
+                        "publish_rate": 20.0,
+                        "live_pose_timeout": 0.30,
                         "actor_radius": 0.45,
                         "actor_z_min": 0.15,
                         "actor_z_max": 1.45,

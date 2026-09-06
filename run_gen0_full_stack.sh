@@ -318,7 +318,7 @@ if [[ "$ACTOR_SOURCE" == "scenario" && -n "$ACTORS_SCENARIO" ]]; then
   require_file "$ACTORS_SCENARIO_PATH"
   require_file "$ACTOR_WORLD_SDF_PATH"
 fi
-if [[ "$QCNET_BACKEND" == "qcnet" ]]; then
+if [[ "$START_EPSILON" == "true" && "$QCNET_BACKEND" == "qcnet" ]]; then
   require_file "$QCNET_CKPT_PATH"
   if [[ ! -d "$QCNET_ROOT" ]]; then
     printf 'Required QCNet root directory not found: %s\n' "$QCNET_ROOT" >&2

@@ -143,7 +143,7 @@ Visualization Manager:
         Durability Policy: Transient Local
         Filter size: 10
         History Policy: Keep Last
-        Reliability Policy: Reliable
+        Reliability Policy: Best Effort
         Value: /map
       Update Topic:
         Depth: 5
@@ -565,14 +565,14 @@ Visualization Manager:
       Value: true
     - Class: rviz_default_plugins/Image
       Enabled: true
-      Name: Trash Detection Overlay
+      Name: Front Camera Image
       Normalize Range: true
       Topic:
         Depth: 5
         Durability Policy: Volatile
         History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /gen0_perception/trash_debug_image
+        Reliability Policy: Best Effort
+        Value: /gen0_model/front_camera
       Value: true
     - Class: rviz_common/Group
       Displays:
