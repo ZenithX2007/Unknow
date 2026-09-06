@@ -1,4 +1,6 @@
 import os
+import tempfile
+import xml.etree.ElementTree as ET
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
@@ -32,6 +34,35 @@ def launch_bool(context, name, default='false'):
     if not value:
         value = default
     return value == 'true'
+
+
+def world_without_traffic_vehicles(world_file_path):
+    tree = ET.parse(world_file_path)
+    root = tree.getroot()
+    world = root.find('world')
+    if world is None:
+        raise RuntimeError(f'World file has no <world> element: {world_file_path}')
+
+    removed = 0
+    for model in list(world.findall('model')):
+        if model.get('name') in {'car_008', 'car_009'}:
+            world.remove(model)
+            removed += 1
+
+    if removed == 0:
+        return world_file_path
+
+    world_dir = os.path.dirname(world_file_path)
+    world_name = os.path.splitext(os.path.basename(world_file_path))[0]
+    with tempfile.NamedTemporaryFile(
+        mode='wb',
+        prefix=f'.{world_name}_no_traffic_',
+        suffix='.sdf',
+        dir=world_dir,
+        delete=False,
+    ) as output:
+        tree.write(output, encoding='utf-8', xml_declaration=True)
+        return output.name
 
 
 def gazebo_environment(
@@ -176,6 +207,7 @@ def gazebo_launch(context, *args, **kwargs):
     actor_soft_stop_vehicle_name = LaunchConfiguration(
         'actor_soft_stop_vehicle_name'
     ).perform(context)
+    traffic_vehicles = launch_bool(context, 'traffic_vehicles', 'false')
     if render_env == 'auto':
         render_env = 'software' if gui else 'unset'
     partition = LaunchConfiguration('partition').perform(context)
@@ -187,6 +219,15 @@ def gazebo_launch(context, *args, **kwargs):
         light_world_file_path = os.path.join(world_dir, f'{world}_gui_light.sdf')
         if os.path.exists(light_world_file_path):
             world_file_path = light_world_file_path
+    if not traffic_vehicles:
+        original_world_file_path = world_file_path
+        world_file_path = world_without_traffic_vehicles(world_file_path)
+        if world_file_path != original_world_file_path:
+            traffic_message = 'disabled (car_008/car_009 omitted)'
+        else:
+            traffic_message = 'disabled (no traffic vehicle entries found)'
+    else:
+        traffic_message = 'enabled'
     gazebo_env = gazebo_environment(
         pkg_share_dir,
         partition,
@@ -242,6 +283,7 @@ def gazebo_launch(context, *args, **kwargs):
             )
         )
     actions.append(LogInfo(msg=f'Gazebo render_env={render_env}'))
+    actions.append(LogInfo(msg=f'Traffic vehicles: {traffic_message}'))
 
     actions += [gazebo_process, unpause_world_action(6.0)]
 
@@ -356,6 +398,12 @@ def generate_launch_description():
         default_value=f'gen0_{os.getpid()}',
         description='Gazebo transport partition for this launch instance.',
     )
+    traffic_vehicles_arg = DeclareLaunchArgument(
+        'traffic_vehicles',
+        default_value='false',
+        choices=['true', 'false'],
+        description='Load the moving car_008 and car_009 traffic vehicles.',
+    )
     actor_soft_stop_arg = DeclareLaunchArgument(
         'actor_soft_stop',
         default_value='false',
@@ -424,6 +472,7 @@ def generate_launch_description():
         render_env_arg,
         gui_visual_mode_arg,
         partition_arg,
+        traffic_vehicles_arg,
         actor_soft_stop_arg,
         actor_soft_stop_margin_arg,
         actor_soft_stop_release_margin_arg,

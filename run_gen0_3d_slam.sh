@@ -89,7 +89,14 @@ SIM_LIDAR_SURFACE_SAMPLES="${GEN0_SIM_LIDAR_SURFACE_SAMPLES:-1000000}"
 SIM_LIDAR_ADD_OBSTACLE_COLUMNS="${GEN0_SIM_LIDAR_ADD_OBSTACLE_COLUMNS:-false}"
 DYNAMIC_ACTOR_TOPICS="${GEN0_DYNAMIC_ACTOR_TOPICS:-}"
 ACTOR_COSTMAP_POSE_TOPICS="${GEN0_ACTOR_COSTMAP_POSE_TOPICS:-}"
-DYNAMIC_VEHICLE_TOPICS="${GEN0_DYNAMIC_VEHICLE_TOPICS:-/car/car_008/pose,/car/car_009/pose}"
+TRAFFIC_VEHICLES="${GEN0_TRAFFIC_VEHICLES:-false}"
+if [[ -n "${GEN0_DYNAMIC_VEHICLE_TOPICS+x}" ]]; then
+  DYNAMIC_VEHICLE_TOPICS="$GEN0_DYNAMIC_VEHICLE_TOPICS"
+elif [[ "$TRAFFIC_VEHICLES" == "true" ]]; then
+  DYNAMIC_VEHICLE_TOPICS="/car/car_008/pose,/car/car_009/pose"
+else
+  DYNAMIC_VEHICLE_TOPICS=""
+fi
 ACTOR_COSTMAP="${GEN0_ACTOR_COSTMAP:-true}"
 ACTOR_OBSTACLE_TOPIC="${GEN0_ACTOR_OBSTACLE_TOPIC:-/gen0_mapping/actor_obstacles}"
 ACTOR_OBSTACLE_FRAME="${GEN0_ACTOR_OBSTACLE_FRAME:-odom}"
@@ -462,7 +469,7 @@ export IGN_PARTITION="$PARTITION"
 export GZ_PARTITION="$PARTITION"
 
 log "Workspace: $WORKSPACE"
-log "World: $WORLD, actors_scenario: $ACTORS_SCENARIO, trash_scenario=$TRASH_SCENARIO, trash_cleanup=$TRASH_CLEANUP, trash_vehicle=${TRASH_VEHICLE_LENGTH}x${TRASH_VEHICLE_WIDTH}, trash_center_offset=(${TRASH_VEHICLE_CENTER_OFFSET_X},${TRASH_VEHICLE_CENTER_OFFSET_Y}), coverage_margin=$TRASH_COVERAGE_MARGIN, mesh_visual_center=$TRASH_USE_MESH_VISUAL_CENTER, trash_vehicle_pose=${TRASH_VEHICLE_POSE_TOPIC:-<odom>}[$TRASH_VEHICLE_POSE_INDEX], gazebo_gui=$GAZEBO_GUI, partition=$PARTITION"
+log "World: $WORLD, traffic_vehicles=$TRAFFIC_VEHICLES, actors_scenario: $ACTORS_SCENARIO, trash_scenario=$TRASH_SCENARIO, trash_cleanup=$TRASH_CLEANUP, trash_vehicle=${TRASH_VEHICLE_LENGTH}x${TRASH_VEHICLE_WIDTH}, trash_center_offset=(${TRASH_VEHICLE_CENTER_OFFSET_X},${TRASH_VEHICLE_CENTER_OFFSET_Y}), coverage_margin=$TRASH_COVERAGE_MARGIN, mesh_visual_center=$TRASH_USE_MESH_VISUAL_CENTER, trash_vehicle_pose=${TRASH_VEHICLE_POSE_TOPIC:-<odom>}[$TRASH_VEHICLE_POSE_INDEX], gazebo_gui=$GAZEBO_GUI, partition=$PARTITION"
 log "Simulated lidar: $SIMULATED_LIDAR, world_obj_path: $WORLD_OBJ_PATH"
 log "Front 3D source topic: $FRONT3D_SOURCE_TOPIC, simulated_topic=$SIMULATED_FRONT3D_TOPIC, gazebo_topic=$GAZEBO_FRONT3D_TOPIC"
 log "TF localization: ground_truth_localization=$GROUND_TRUTH_LOCALIZATION, static_odom_base=$STATIC_ODOM_BASE"
@@ -516,6 +523,7 @@ gazebo_launch=(
   static_odom_base:="$STATIC_ODOM_BASE"
   bridge_file:="$GAZEBO_BRIDGE_FILE"
   render_env:="$GAZEBO_RENDER_ENV"
+  traffic_vehicles:="$TRAFFIC_VEHICLES"
   actor_soft_stop:="$ACTOR_SOFT_STOP"
   actor_soft_stop_margin:="$ACTOR_SOFT_STOP_MARGIN"
   actor_soft_stop_release_margin:="$ACTOR_SOFT_STOP_RELEASE_MARGIN"
