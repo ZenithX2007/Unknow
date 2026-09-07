@@ -45,6 +45,11 @@ class Nav2PoseGuard(Node):
         self.declare_parameter('actor_forward_buffer', 0.8)
         self.declare_parameter('actor_reverse_buffer', 0.35)
         self.declare_parameter('actor_forward_lateral_clearance', 0.75)
+        self.declare_parameter('costmap_topic', '/local_costmap/costmap_raw')
+        self.declare_parameter('costmap_timeout', 0.4)
+        self.declare_parameter('costmap_obstacle_threshold', 90)
+        self.declare_parameter('costmap_forward_buffer', 0.8)
+        self.declare_parameter('costmap_lateral_margin', 0.25)
 
         self.input_cmd_vel_topic = self.get_parameter('input_cmd_vel_topic').value
         self.output_cmd_vel_topic = self.get_parameter('output_cmd_vel_topic').value
@@ -107,6 +112,19 @@ class Nav2PoseGuard(Node):
             0.05,
             float(self.get_parameter('actor_forward_lateral_clearance').value),
         )
+        self.costmap_topic = self.get_parameter('costmap_topic').value
+        self.costmap_timeout = max(
+            0.0, float(self.get_parameter('costmap_timeout').value)
+        )
+        self.costmap_obstacle_threshold = max(
+            1, int(self.get_parameter('costmap_obstacle_threshold').value)
+        )
+        self.costmap_forward_buffer = max(
+            0.0, float(self.get_parameter('costmap_forward_buffer').value)
+        )
+        self.costmap_lateral_margin = max(
+            0.0, float(self.get_parameter('costmap_lateral_margin').value)
+        )
 
         self.map_bounds = None
         self.last_odom = None
@@ -122,6 +140,8 @@ class Nav2PoseGuard(Node):
         self.actor_points_map = []
         self.actor_points_monotonic = 0.0
         self.actor_cloud_frame = None
+        self.local_costmap = None
+        self.local_costmap_monotonic = 0.0
 
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
@@ -141,6 +161,17 @@ class Nav2PoseGuard(Node):
             self.actor_obstacle_topic,
             self.actor_obstacle_callback,
             qos_profile_sensor_data,
+        )
+        costmap_qos = QoSProfile(
+            depth=1,
+            reliability=ReliabilityPolicy.RELIABLE,
+            durability=DurabilityPolicy.VOLATILE,
+        )
+        self.create_subscription(
+            OccupancyGrid,
+            self.costmap_topic,
+            self.costmap_callback,
+            costmap_qos,
         )
         if self.reference_odom_enabled:
             self.create_subscription(
@@ -164,6 +195,11 @@ class Nav2PoseGuard(Node):
             f'margin={self.actor_safety_margin:.2f}m, '
             f'forward_buffer={self.actor_forward_buffer:.2f}m, '
             f'forward_lateral_clearance={self.actor_forward_lateral_clearance:.2f}m.'
+        )
+        self.get_logger().info(
+            'Nav2 fused costmap emergency guard enabled: '
+            f'{self.costmap_topic}, threshold={self.costmap_obstacle_threshold}, '
+            f'timeout={self.costmap_timeout:.2f}s.'
         )
         if self.min_turning_radius > 0.0:
             self.get_logger().info(
@@ -200,6 +236,12 @@ class Nav2PoseGuard(Node):
 
     def odom_callback(self, msg):
         self.last_odom = msg
+
+    def costmap_callback(self, msg):
+        if msg.info.width <= 0 or msg.info.height <= 0 or msg.info.resolution <= 0.0:
+            return
+        self.local_costmap = msg
+        self.local_costmap_monotonic = time.monotonic()
 
     def reference_odom_callback(self, msg):
         self.last_reference_odom = msg
@@ -263,6 +305,10 @@ class Nav2PoseGuard(Node):
     def cmd_callback(self, msg):
         valid, reason = self.pose_is_valid()
         if valid:
+            costmap_blocked, costmap_reason = self.costmap_collision_guard(msg)
+            if costmap_blocked:
+                self.publish_zero(costmap_reason)
+                return
             actor_blocked, actor_reason = self.actor_collision_guard(msg)
             if actor_blocked:
                 self.publish_zero(actor_reason)
@@ -338,6 +384,83 @@ class Nav2PoseGuard(Node):
                     f'local=({local_x:.2f},{local_y:.2f}) '
                     f'cloud={self.actor_cloud_frame or "unknown"}'
                 )
+        return False, ''
+
+    def costmap_collision_guard(self, msg):
+        if self.local_costmap is None:
+            return False, ''
+        if (
+            self.costmap_timeout > 0.0
+            and time.monotonic() - self.local_costmap_monotonic
+            > self.costmap_timeout
+        ):
+            return False, ''
+
+        linear_x = float(msg.linear.x)
+        angular_z = float(msg.angular.z)
+        if not math.isfinite(linear_x) or not math.isfinite(angular_z):
+            return True, 'non-finite command while Nav2 costmap guard is active'
+        if linear_x <= 0.02 or abs(angular_z) >= 0.05:
+            return False, ''
+
+        try:
+            transform = self.tf_buffer.lookup_transform(
+                self.local_costmap.header.frame_id or self.map_frame,
+                self.base_frame,
+                Time(),
+            )
+        except TransformException:
+            return False, ''
+
+        vehicle_x = transform.transform.translation.x
+        vehicle_y = transform.transform.translation.y
+        vehicle_yaw = self.yaw_from_transform(transform)
+        half_length = self.actor_vehicle_length * 0.5
+        half_width = self.actor_vehicle_width * 0.5
+        min_x = -0.1
+        max_x = half_length + self.costmap_forward_buffer
+        lateral_limit = half_width + self.costmap_lateral_margin
+
+        grid = self.local_costmap
+        origin = grid.info.origin.position
+        cos_yaw = math.cos(vehicle_yaw)
+        sin_yaw = math.sin(vehicle_yaw)
+        resolution = float(grid.info.resolution)
+        width = int(grid.info.width)
+        height = int(grid.info.height)
+        # Limit the scan to the forward emergency corridor instead of
+        # traversing the complete rolling costmap for every cmd_vel message.
+        search_radius = math.hypot(max_x, lateral_limit)
+        grid_min_x = max(0, int(math.floor(
+            (vehicle_x - search_radius - origin.x) / resolution
+        )))
+        grid_max_x = min(width - 1, int(math.ceil(
+            (vehicle_x + search_radius - origin.x) / resolution
+        )))
+        grid_min_y = max(0, int(math.floor(
+            (vehicle_y - search_radius - origin.y) / resolution
+        )))
+        grid_max_y = min(height - 1, int(math.ceil(
+            (vehicle_y + search_radius - origin.y) / resolution
+        )))
+
+        for ix in range(grid_min_x, grid_max_x + 1):
+            for iy in range(grid_min_y, grid_max_y + 1):
+                index = iy * width + ix
+                if index >= len(grid.data) or grid.data[index] < self.costmap_obstacle_threshold:
+                    continue
+                point_x = origin.x + (ix + 0.5) * resolution
+                point_y = origin.y + (iy + 0.5) * resolution
+                rel_x = point_x - vehicle_x
+                rel_y = point_y - vehicle_y
+                local_x = cos_yaw * rel_x + sin_yaw * rel_y
+                local_y = -sin_yaw * rel_x + cos_yaw * rel_y
+                if min_x <= local_x <= max_x and abs(local_y) <= lateral_limit:
+                    return True, (
+                        f'forward fused costmap occupied: '
+                        f'local=({local_x:.2f},{local_y:.2f}) '
+                        f'cost={grid.data[index]}'
+                    )
         return False, ''
 
     @staticmethod

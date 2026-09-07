@@ -543,6 +543,11 @@ def generate_launch_description():
                         'input_cmd_vel_topic': '/control/cmd_vel_raw',
                         'output_cmd_vel_topic': '/cmd_vel',
                         'map_topic': '/map',
+                        'costmap_topic': '/local_costmap/costmap_raw',
+                        'costmap_timeout': 0.4,
+                        'costmap_obstacle_threshold': 90,
+                        'costmap_forward_buffer': 0.8,
+                        'costmap_lateral_margin': 0.25,
                         'odom_topic': odom_topic,
                         'reference_odom_topic': reference_odom_topic,
                         'max_reference_odom_error': ParameterValue(
