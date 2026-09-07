@@ -572,7 +572,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /gen0_perception/trash_debug_image
+        Value: /yolo/detected_image
       Value: true
     - Class: rviz_common/Group
       Displays:

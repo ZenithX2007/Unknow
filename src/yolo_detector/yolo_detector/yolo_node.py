@@ -15,9 +15,9 @@ class YoloDetector(Node):
         
         # 模型路径（请根据你的实际情况修改）
         # 这里假设 best.pt 已经放在工作空间根目录
-        self.declare_parameter('model_path', '"D:\_desktop\D_desktopxw6Rio9mOoSR\best_road.pt"')
+        self.declare_parameter('model_path', '/home/zjxue2007/Unknow/best_road.pt')
         self.declare_parameter('confidence', 0.50)
-        self.declare_parameter('output_dir', '/root/autodl-tmp/yolo_trials/current')
+        self.declare_parameter('output_dir', '/tmp/gen0_yolo')
         self.declare_parameter('save_every_n', 10)
         model_path = os.path.expanduser(self.get_parameter('model_path').value)
         self.confidence = float(self.get_parameter('confidence').value)

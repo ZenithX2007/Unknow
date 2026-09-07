@@ -479,7 +479,7 @@
             </sensor>
         </link>
         <link name="front_camera_link">
-            <pose>1.10 0 0.48 0 0 0</pose>
+            <pose>1.9 0 1.0 0 0.349 0</pose>
             <inertial>
                 <mass>0.1</mass>
                 <inertia>
@@ -509,7 +509,7 @@
                 <topic>camera/images</topic>
 
                 <camera>
-                    <horizontal_fov>1.047</horizontal_fov>
+                    <horizontal_fov>0.8727</horizontal_fov>
                    
                     <image>
                         <width>1600</width>

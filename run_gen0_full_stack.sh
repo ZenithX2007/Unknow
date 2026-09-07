@@ -22,6 +22,7 @@ TRASH_SCENARIO="${GEN0_TRASH_SCENARIO-$DEFAULT_TRASH_SCENARIO}"
 START_BASE_STACK="${GEN0_START_BASE_STACK:-true}"
 START_NAV2="${GEN0_START_NAV2:-true}"
 START_EPSILON="${GEN0_START_EPSILON:-true}"
+START_YOLO="${GEN0_START_YOLO:-true}"
 
 ODOM_TOPIC="${GEN0_FULL_STACK_ODOM_TOPIC:-/gen0_mapping/stable_odom}"
 PROJECTED_MAP_BACKEND="${GEN0_PROJECTED_MAP_BACKEND:-octomap}"
@@ -340,6 +341,17 @@ log "Actor source: $ACTOR_SOURCE, scenario_path=${ACTORS_SCENARIO_PATH:-none}, b
 log "EPSILON sidecar: control_source=$EPSILON_CONTROL_SOURCE, epsilon_raw=$EPSILON_CMD_VEL_TOPIC, mux_output=$GUARDED_CMD_VEL_TOPIC, final=$FINAL_CMD_VEL_TOPIC, selected_topic=$EPSILON_SELECTED_SOURCE_TOPIC, qcnet_backend=$QCNET_BACKEND, qcnet_device=$QCNET_DEVICE"
 log "Logs: $LOG_DIR"
 log "ROS logs: $ROS_LOG_DIR"
+
+if [[ "$START_YOLO" == "true" ]]; then
+  start_script \
+    yolo_detector \
+    ros2 run yolo_detector yolo_node \
+      --ros-args \
+      -p model_path:="${GEN0_YOLO_MODEL_PATH:-$WORKSPACE/best_road.pt}" \
+      -p confidence:="${GEN0_YOLO_CONFIDENCE:-0.50}" \
+      -p output_dir:="${GEN0_YOLO_OUTPUT_DIR:-/tmp/gen0_yolo}" \
+      -p save_every_n:="${GEN0_YOLO_SAVE_EVERY_N:-10}"
+fi
 
 if [[ "$START_BASE_STACK" == "true" ]]; then
   start_script \
