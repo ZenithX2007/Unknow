@@ -461,7 +461,8 @@
             </sensor>
         </link>
         <link name="front_camera_link">
-            <pose>1.9 0 1.6 0 0 0</pose>
+            <!-- Road-domain dataset/deployment camera: low mount, 20 deg down. -->
+            <pose>1.9 0 2.0 0 0.849 0</pose>
             <inertial>
                 <mass>0.1</mass>
                 <inertia>
@@ -491,7 +492,7 @@
                 <topic>camera/images</topic>
 
                 <camera>
-                    <horizontal_fov>1.047</horizontal_fov>
+                    <horizontal_fov>0.8727</horizontal_fov>
                    
                     <image>
                         <width>1600</width>
@@ -514,6 +515,74 @@
                     <camera_info_topic_name>camera/camera_info</camera_info_topic_name> -->
                     <!-- <frame_name>front_camera_joint</frame_name>
                 </plugin> -->
+            </sensor>
+        </link>
+
+        <!-- Dedicated road-view camera for remote driving.  The existing
+             front_camera remains the downward work camera used by YOLO. -->
+        <link name="driver_camera_link">
+            <pose>2.05 0 2.25 0 0.10 0</pose>
+            <inertial>
+                <mass>0.1</mass>
+                <inertia>
+                    <ixx>0.000166667</ixx>
+                    <iyy>0.000166667</iyy>
+                    <izz>0.000166667</izz>
+                </inertia>
+            </inertial>
+            <visual name="driver_camera_visual">
+                <visibility_flags>0x02</visibility_flags>
+                <geometry><box><size>0.12 0.12 0.09</size></box></geometry>
+                <material>
+                    <ambient>0.03 0.16 0.12 1</ambient>
+                    <diffuse>0.05 0.35 0.25 1</diffuse>
+                </material>
+            </visual>
+            <sensor name="driver_camera" type="camera">
+                <pose>0 0 0 0 0 0</pose>
+                <topic>driver_camera/images</topic>
+                <camera>
+                    <horizontal_fov>1.2217</horizontal_fov>
+                    <image>
+                        <width>1280</width>
+                        <height>720</height>
+                        <format>R8G8B8</format>
+                    </image>
+                    <clip>
+                        <near>0.1</near>
+                        <far>150</far>
+                    </clip>
+                </camera>
+                <update_rate>15</update_rate>
+                <always_on>1</always_on>
+                <visualize>false</visualize>
+            </sensor>
+        </link>
+
+        <!-- Vehicle-centred RGB bird's-eye camera.  Its image-up direction is
+             base_link +X, so the fixed web arrow always matches the bonnet. -->
+        <link name="scene_overview_camera_link">
+            <pose>0 0 35 0 1.57079632679 0</pose>
+            <inertial>
+                <mass>0.001</mass>
+                <inertia>
+                    <ixx>0.000001</ixx><iyy>0.000001</iyy><izz>0.000001</izz>
+                </inertia>
+            </inertial>
+            <sensor name="scene_overview" type="camera">
+                <topic>scene_overview/images</topic>
+                <camera>
+                    <horizontal_fov>1.4</horizontal_fov>
+                    <image>
+                        <width>1280</width>
+                        <height>800</height>
+                        <format>R8G8B8</format>
+                    </image>
+                    <clip><near>1.0</near><far>100.0</far></clip>
+                </camera>
+                <update_rate>2</update_rate>
+                <always_on>1</always_on>
+                <visualize>false</visualize>
             </sensor>
         </link>
 
@@ -686,6 +755,14 @@
         <joint name='front_camera_joint' type='fixed'>
             <parent>base_link</parent>
             <child>front_camera_link</child>
+        </joint>
+        <joint name='driver_camera_joint' type='fixed'>
+            <parent>base_link</parent>
+            <child>driver_camera_link</child>
+        </joint>
+        <joint name='scene_overview_camera_joint' type='fixed'>
+            <parent>base_link</parent>
+            <child>scene_overview_camera_link</child>
         </joint>
         
 

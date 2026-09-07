@@ -1,0 +1,10 @@
+{
+  "name": "GEN0 智能清扫车控制台",
+  "short_name": "GEN0 Control",
+  "description": "GEN0 清扫车语音、任务与远程监控 APP",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#06110f",
+  "theme_color": "#06110f",
+  "lang": "zh-CN"
+}

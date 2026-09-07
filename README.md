@@ -67,10 +67,17 @@ GEN0_SIM_LIDAR_MAX_RANGE=15 GEN0_SIM_LIDAR_MAX_POINTS=4000 ./run_gen0_3d_slam.sh
 GEN0_SIM_LIDAR_SURFACE_SAMPLES=800000 GEN0_SIM_LIDAR_WORLD_VOXEL_SIZE=0.12 ./run_gen0_3d_slam.sh
 GEN0_DRIVE_SPEED=0.15 ./run_gen0_3d_slam.sh
 GEN0_MAPPING_DRIVE=false ./run_gen0_3d_slam.sh
+GEN0_CAMERA_VIEW=false ./run_gen0_3d_slam.sh
+GEN0_CAMERA_TOPIC=/gen0_model/front_camera ./run_gen0_3d_slam.sh
 GEN0_PREVIEW_MAX_POINTS=25000 ./run_gen0_3d_slam.sh
 GEN0_FAST_LIO_PCD_SAVE=true GEN0_FAST_LIO_MAP_FILE_PATH=/tmp/my_map_prior.pcd ./run_gen0_3d_slam.sh
 GEN0_RELOCALIZATION=true GEN0_PRIOR_MAP_PATH=/path/to/prior_map.pcd ./run_gen0_3d_slam.sh
 ```
+
+The launcher opens a resizable **Gen0 Sweeper - Front Camera** window by
+default. It displays the bridged `/gen0_model/front_camera` stream, its native
+resolution, and the measured frame rate. Press `q` or `Esc` to close only the
+camera viewer. Set `GEN0_CAMERA_VIEW=false` when running without WSLg/X11.
 
 `GEN0_SIMULATED_LIDAR=false` disables the OBJ-based simulated LiDAR fallback and
 uses only Gazebo's `/gen0_model/front3d/lidar/points` output. This is useful
@@ -355,3 +362,109 @@ Then follow the terminal workflow in `docs/demo_workflow.md`.
 - `docs/system_overview.md`: package map and algorithm notes
 - `docs/file_inventory.md`: source, generated output, and third-party inventory
 - `docs/validation_report_2026-07-20.md`: validation notes from the upstream branch
+
+## Validated LLM Task Agent (MVP)
+
+`src/gen0_llm_agent` converts natural-language commands into a strictly validated
+plan and executes only three registered skills: `navigate`, `search_object`, and
+`stop`. The LLM never emits ROS interfaces or velocity commands. `navigate` uses
+the existing `/navigate_to_pose` Nav2 action, perception subscribes to the
+structured `/yolo/detections` output from the existing YOLO node, and the trusted
+stop adapter selects the existing velocity mux's highest-priority `stop` mode on
+`/epsilon/control_mode`; it never publishes directly to `/cmd_vel`. A valid
+`map -> base_link` transform is required before navigation. In simulation,
+`/actors/detections` is also mapped to the `person` world-model event, while
+camera detections continue to arrive through `/yolo/detections`.
+
+Data flow:
+
+```text
+/llm_agent/command (std_msgs/String)
+  -> planner -> strict schema validation -> Skill Registry -> Task Executor
+  -> /navigate_to_pose (Nav2)
+/yolo/detections -> World Model -> person interrupt -> cancel Nav2 -> stop adapter
+/llm_agent/status (std_msgs/String JSON)
+```
+
+Build and launch:
+
+```bash
+source /opt/ros/humble/setup.bash
+python3 -m pip install -r requirements.txt
+colcon build --symlink-install --packages-select gen0_llm_agent yolo_detector
+source install/setup.bash
+ros2 launch gen0_llm_agent llm_agent.launch.py provider:=mock
+```
+
+Submit a command and inspect status:
+
+```bash
+ros2 topic pub --once /llm_agent/command std_msgs/msg/String \
+  "{data: '去坐标 (10, 5)，途中如果发现行人就停车。'}"
+ros2 topic echo /llm_agent/status
+```
+
+The default `mock` provider requires no key and is suitable for CI and Gazebo.
+For an OpenAI-compatible endpoint, configure environment variables without
+committing secrets:
+
+```bash
+export GEN0_LLM_API_KEY='...'
+export GEN0_LLM_BASE_URL='https://api.openai.com/v1'
+export GEN0_LLM_MODEL='gpt-4o-mini'
+ros2 launch gen0_llm_agent llm_agent.launch.py provider:=openai_compatible
+```
+
+The emergency service is always available independently of the planner:
+
+```bash
+ros2 service call /llm_agent/stop std_srvs/srv/Trigger '{}'
+```
+
+`search_object(person)` requires the configured `yolo_detector` weight to contain
+a `person` class. The repository's `best_road.pt` contains road-litter classes and
+does not contain `person`; set `GEN0_YOLO_MODEL` or the node's `model_path`
+parameter to a person-capable YOLO weight when testing the pedestrian-stop flow.
+The Gazebo actor stream `/actors/detections` independently provides the simulated
+`person` safety event, so pedestrian-stop testing does not depend on a particular
+camera model.
+
+### Stable map + pedestrian avoidance + mobile HMI
+
+The stable full-stack launcher now starts the browser/PWA interface, rosbridge,
+camera compressors, YOLO and the LLM agent by default, while retaining the backup
+branch's FAST-LIO relocalization, static map, Nav2, actor costmap, EPSILON/QCNet
+pedestrian avoidance, command mux and final pose guard:
+
+```bash
+source /opt/ros/humble/setup.bash
+colcon build --symlink-install
+source install/setup.bash
+GEN0_QCNET_BACKEND=constant_velocity ./run_gen0_full_stack.sh
+```
+
+Use `GEN0_QCNET_BACKEND=qcnet` only when the QCNet checkpoint and CUDA Python
+environment are installed. Optional HMI settings are:
+
+```bash
+GEN0_WEB_PORT=8000
+GEN0_ROSBRIDGE_PORT=9090
+GEN0_LLM_PROVIDER=mock
+GEN0_YOLO_MODEL=/absolute/path/to/model.pt
+GEN0_ENABLE_YOLO=true
+GEN0_START_HMI=true
+```
+
+From another computer or phone, forward ports 8000 and 9090 through SSH, open
+`http://localhost:8000`, and connect the page to `ws://localhost:9090`. The web
+app is installable as a PWA from a supported mobile browser. Manual velocity is
+published only to `/web_control/cmd_vel_raw`; the existing EPSILON command mux
+selects `teleop` and the existing pose guard remains the sole final publisher to
+`/cmd_vel`. Submitting a new LLM navigation task returns the mux to `auto`, and
+both stop buttons select the mux's highest-priority `stop` mode.
+
+To attach only the HMI and LLM components to an already-running stable stack:
+
+```bash
+ros2 launch sweeper_integration web_control_agent.launch.py
+```

@@ -1,17 +1,21 @@
 from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.conditions import IfCondition
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
-from launch.substitutions import PathJoinSubstitution
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 
 
-def static_transform(name, parent_frame, child_frame, x, y, z):
+def static_transform(
+        name, parent_frame, child_frame, x, y, z,
+        roll=0.0, pitch=0.0, yaw=0.0):
     return Node(
         package='tf2_ros',
         executable='static_transform_publisher',
         name=name,
         arguments=[
             '--x', str(x), '--y', str(y), '--z', str(z),
-            '--roll', '0', '--pitch', '0', '--yaw', '0',
+            '--roll', str(roll), '--pitch', str(pitch), '--yaw', str(yaw),
             '--frame-id', parent_frame,
             '--child-frame-id', child_frame,
         ],
@@ -27,12 +31,16 @@ def generate_launch_description():
     ])
 
     return LaunchDescription([
+        DeclareLaunchArgument(
+            'ground_truth_odometry', default_value='true',
+            choices=['true', 'false']),
         Node(
             package='sweeper_integration',
             executable='ground_truth_odometry',
             name='ground_truth_odometry',
             output='screen',
             parameters=[config, {'use_sim_time': True}],
+            condition=IfCondition(LaunchConfiguration('ground_truth_odometry')),
         ),
         static_transform(
             'base_footprint_to_base_link',
@@ -49,7 +57,11 @@ def generate_launch_description():
         static_transform(
             'front_camera_tf',
             'base_link', 'gen0_model/front_camera_link/front_camera',
-            1.9, 0.0, 1.6),
+            1.9, 0.0, 2.0, 0.0, 0.849, 0.0),
+        static_transform(
+            'driver_camera_tf',
+            'base_link', 'gen0_model/driver_camera_link/driver_camera',
+            2.05, 0.0, 2.25, 0.0, 0.10, 0.0),
         static_transform(
             'imu_tf',
             'base_link', 'gen0_model/imu_link/imu_sensor', 0.0, 0.0, 0.0),

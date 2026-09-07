@@ -22,6 +22,12 @@ TRASH_SCENARIO="${GEN0_TRASH_SCENARIO-$DEFAULT_TRASH_SCENARIO}"
 START_BASE_STACK="${GEN0_START_BASE_STACK:-true}"
 START_NAV2="${GEN0_START_NAV2:-true}"
 START_EPSILON="${GEN0_START_EPSILON:-true}"
+START_HMI="${GEN0_START_HMI:-true}"
+HMI_ROSBRIDGE_PORT="${GEN0_ROSBRIDGE_PORT:-9090}"
+HMI_WEB_PORT="${GEN0_WEB_PORT:-8000}"
+LLM_PROVIDER="${GEN0_LLM_PROVIDER:-mock}"
+YOLO_MODEL="${GEN0_YOLO_MODEL:-$WORKSPACE/best_road.pt}"
+ENABLE_YOLO="${GEN0_ENABLE_YOLO:-true}"
 
 ODOM_TOPIC="${GEN0_FULL_STACK_ODOM_TOPIC:-/gen0_mapping/stable_odom}"
 PROJECTED_MAP_BACKEND="${GEN0_PROJECTED_MAP_BACKEND:-octomap}"
@@ -289,14 +295,17 @@ require_file "$NAV2_THROUGH_POSES_BT"
 if [[ "$NAV2_MAP_SOURCE" == "yaml" ]]; then
   require_file "$NAV2_MAP"
 fi
+if [[ "$START_HMI" == "true" && "$ENABLE_YOLO" == "true" ]]; then
+  require_file "$YOLO_MODEL"
+fi
 
 source_ros_setup /opt/ros/humble/setup.bash
 source_ros_setup "$WORKSPACE/install/setup.bash"
 
-for package_name in epsilon_planning qcnet_prediction gen0_nav2_path_exporter; do
+for package_name in epsilon_planning qcnet_prediction gen0_nav2_path_exporter gen0_llm_agent sweeper_integration gen0_main yolo_detector rosbridge_server; do
   if ! ros2 pkg prefix "$package_name" >/dev/null 2>&1; then
     printf 'ROS package %s is not in the sourced workspace.\n' "$package_name" >&2
-    printf 'Build first: colcon build --symlink-install --packages-select vehicle_msgs epsilon_core qcnet_prediction epsilon_planning gen0_nav2_path_exporter\n' >&2
+    printf 'Build first: colcon build --symlink-install (and install ros-humble-rosbridge-server).\n' >&2
     exit 1
   fi
 done
@@ -340,6 +349,17 @@ log "Actor source: $ACTOR_SOURCE, scenario_path=${ACTORS_SCENARIO_PATH:-none}, b
 log "EPSILON sidecar: control_source=$EPSILON_CONTROL_SOURCE, epsilon_raw=$EPSILON_CMD_VEL_TOPIC, mux_output=$GUARDED_CMD_VEL_TOPIC, final=$FINAL_CMD_VEL_TOPIC, selected_topic=$EPSILON_SELECTED_SOURCE_TOPIC, qcnet_backend=$QCNET_BACKEND, qcnet_device=$QCNET_DEVICE"
 log "Logs: $LOG_DIR"
 log "ROS logs: $ROS_LOG_DIR"
+
+if [[ "$START_HMI" == "true" ]]; then
+  start_script \
+    web_llm_hmi \
+    ros2 launch sweeper_integration web_control_agent.launch.py \
+      "rosbridge_port:=$HMI_ROSBRIDGE_PORT" \
+      "web_port:=$HMI_WEB_PORT" \
+      "llm_provider:=$LLM_PROVIDER" \
+      "enable_yolo:=$ENABLE_YOLO" \
+      "yolo_model:=$YOLO_MODEL"
+fi
 
 if [[ "$START_BASE_STACK" == "true" ]]; then
   start_script \
@@ -455,6 +475,9 @@ if [[ "$START_NAV2" == "true" ]]; then
 fi
 
 log "Full stack is running. Send a Nav2 goal; EPSILON receives /plan_smoothed and muxes final control through $GUARDED_CMD_VEL_TOPIC -> $FINAL_CMD_VEL_TOPIC."
+if [[ "$START_HMI" == "true" ]]; then
+  log "Mobile web control: http://localhost:$HMI_WEB_PORT (rosbridge ws://localhost:$HMI_ROSBRIDGE_PORT, LLM provider=$LLM_PROVIDER)."
+fi
 
 while true; do
   for i in "${!PIDS[@]}"; do

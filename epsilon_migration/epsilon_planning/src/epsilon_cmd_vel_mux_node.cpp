@@ -18,6 +18,7 @@ public:
   {
     declare_parameter<std::string>("epsilon_cmd_vel_topic", "/epsilon/cmd_vel_raw");
     declare_parameter<std::string>("nav2_cmd_vel_topic", "/control/nav2_cmd_vel_raw");
+    declare_parameter<std::string>("teleop_cmd_vel_topic", "/web_control/cmd_vel_raw");
     declare_parameter<std::string>("output_cmd_vel_topic", "/control/cmd_vel_raw");
     declare_parameter<std::string>("control_source", "nav2");
     declare_parameter<std::string>("control_mode_topic", "/epsilon/control_mode");
@@ -31,6 +32,7 @@ public:
 
     epsilon_cmd_vel_topic_ = get_parameter("epsilon_cmd_vel_topic").as_string();
     nav2_cmd_vel_topic_ = get_parameter("nav2_cmd_vel_topic").as_string();
+    teleop_cmd_vel_topic_ = get_parameter("teleop_cmd_vel_topic").as_string();
     output_cmd_vel_topic_ = get_parameter("output_cmd_vel_topic").as_string();
     control_source_ = get_parameter("control_source").as_string();
     control_mode_topic_ = get_parameter("control_mode_topic").as_string();
@@ -56,6 +58,9 @@ public:
     nav2_sub_ = create_subscription<geometry_msgs::msg::Twist>(
       nav2_cmd_vel_topic_, qos,
       std::bind(&EpsilonCmdVelMuxNode::Nav2Callback, this, std::placeholders::_1));
+    teleop_sub_ = create_subscription<geometry_msgs::msg::Twist>(
+      teleop_cmd_vel_topic_, qos,
+      std::bind(&EpsilonCmdVelMuxNode::TeleopCallback, this, std::placeholders::_1));
     if (!control_mode_topic_.empty()) {
       mode_sub_ = create_subscription<std_msgs::msg::String>(
         control_mode_topic_, 10,
@@ -77,9 +82,9 @@ public:
 
     RCLCPP_INFO(
       get_logger(),
-      "cmd_vel mux ready: source=%s epsilon=%s nav2=%s output=%s timeout=%.2fs status=%s selected_topic=%s fallback_to_nav2=%s",
+      "cmd_vel mux ready: source=%s epsilon=%s nav2=%s teleop=%s output=%s timeout=%.2fs status=%s selected_topic=%s fallback_to_nav2=%s",
       control_source_.c_str(), epsilon_cmd_vel_topic_.c_str(), nav2_cmd_vel_topic_.c_str(),
-      output_cmd_vel_topic_.c_str(), input_timeout_, epsilon_status_topic_.c_str(),
+      teleop_cmd_vel_topic_.c_str(), output_cmd_vel_topic_.c_str(), input_timeout_, epsilon_status_topic_.c_str(),
       selected_source_topic_.c_str(),
       fallback_to_nav2_ ? "true" : "false");
   }
@@ -87,7 +92,8 @@ public:
 private:
   static bool IsValidSource(const std::string & source)
   {
-    return source == "auto" || source == "nav2" || source == "epsilon" || source == "stop";
+    return source == "auto" || source == "nav2" || source == "epsilon" ||
+           source == "teleop" || source == "stop";
   }
 
   static bool IsFiniteTwist(const geometry_msgs::msg::Twist & msg)
@@ -109,6 +115,12 @@ private:
     latest_nav2_time_ = std::chrono::steady_clock::now();
   }
 
+  void TeleopCallback(const geometry_msgs::msg::Twist::SharedPtr msg)
+  {
+    latest_teleop_ = *msg;
+    latest_teleop_time_ = std::chrono::steady_clock::now();
+  }
+
   void StatusCallback(const std_msgs::msg::String::SharedPtr msg)
   {
     epsilon_ready_ = msg->data == "ok" || msg->data.rfind("ok ", 0) == 0;
@@ -119,7 +131,7 @@ private:
   {
     if (!IsValidSource(msg->data)) {
       RCLCPP_WARN(
-        get_logger(), "ignoring invalid control source '%s'; use auto, nav2, epsilon, or stop",
+        get_logger(), "ignoring invalid control source '%s'; use auto, nav2, epsilon, teleop, or stop",
         msg->data.c_str());
       return;
     }
@@ -146,13 +158,14 @@ private:
       };
     const bool epsilon_fresh = is_fresh(latest_epsilon_.has_value(), latest_epsilon_time_);
     const bool nav2_fresh = is_fresh(latest_nav2_.has_value(), latest_nav2_time_);
+    const bool teleop_fresh = is_fresh(latest_teleop_.has_value(), latest_teleop_time_);
     const bool epsilon_status_fresh =
       epsilon_ready_ && latest_epsilon_status_time_.has_value() &&
       (epsilon_status_timeout_ <= 0.0 ||
       std::chrono::duration<double>(now - *latest_epsilon_status_time_).count() <=
       epsilon_status_timeout_);
 
-    const auto twist_for_source = [this, epsilon_fresh, nav2_fresh](
+    const auto twist_for_source = [this, epsilon_fresh, nav2_fresh, teleop_fresh](
         const std::string & source) -> geometry_msgs::msg::Twist {
         if (source == "epsilon" && epsilon_fresh) {
           return *latest_epsilon_;
@@ -160,15 +173,21 @@ private:
         if (source == "nav2" && nav2_fresh) {
           return *latest_nav2_;
         }
+        if (source == "teleop" && teleop_fresh) {
+          return *latest_teleop_;
+        }
         return geometry_msgs::msg::Twist();
       };
-    const auto source_available = [epsilon_fresh, nav2_fresh, epsilon_status_fresh](
+    const auto source_available = [epsilon_fresh, nav2_fresh, teleop_fresh, epsilon_status_fresh](
         const std::string & source) {
         if (source == "epsilon") {
           return epsilon_fresh && epsilon_status_fresh;
         }
         if (source == "nav2") {
           return nav2_fresh;
+        }
+        if (source == "teleop") {
+          return teleop_fresh;
         }
         return source == "stop";
       };
@@ -188,6 +207,8 @@ private:
       }
     } else if (control_source_ == "nav2" && nav2_fresh) {
       selected_source = "nav2";
+    } else if (control_source_ == "teleop" && teleop_fresh) {
+      selected_source = "teleop";
     }
 
     selected = twist_for_source(selected_source);
@@ -257,6 +278,7 @@ private:
 
   std::string epsilon_cmd_vel_topic_;
   std::string nav2_cmd_vel_topic_;
+  std::string teleop_cmd_vel_topic_;
   std::string output_cmd_vel_topic_;
   std::string control_source_;
   std::string control_mode_topic_;
@@ -270,8 +292,10 @@ private:
 
   std::optional<geometry_msgs::msg::Twist> latest_epsilon_;
   std::optional<geometry_msgs::msg::Twist> latest_nav2_;
+  std::optional<geometry_msgs::msg::Twist> latest_teleop_;
   std::chrono::steady_clock::time_point latest_epsilon_time_;
   std::chrono::steady_clock::time_point latest_nav2_time_;
+  std::chrono::steady_clock::time_point latest_teleop_time_;
   std::optional<std::chrono::steady_clock::time_point> latest_epsilon_status_time_;
   std::optional<std::chrono::steady_clock::time_point> last_source_switch_time_;
   bool epsilon_ready_{false};
@@ -280,6 +304,7 @@ private:
 
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr epsilon_sub_;
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr nav2_sub_;
+  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr teleop_sub_;
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr mode_sub_;
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr status_sub_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr selected_source_pub_;

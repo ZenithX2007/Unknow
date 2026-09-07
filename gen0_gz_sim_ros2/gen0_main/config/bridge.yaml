@@ -29,6 +29,16 @@
   ros_type_name: "sensor_msgs/msg/Image"
   gz_type_name: "gz.msgs.Image"
   direction: GZ_TO_ROS
+- ros_topic_name: "/gen0_model/driver_camera"
+  gz_topic_name: "/driver_camera/images"
+  ros_type_name: "sensor_msgs/msg/Image"
+  gz_type_name: "gz.msgs.Image"
+  direction: GZ_TO_ROS
+- ros_topic_name: "/scene_overview"
+  gz_topic_name: "/scene_overview/images"
+  ros_type_name: "sensor_msgs/msg/Image"
+  gz_type_name: "gz.msgs.Image"
+  direction: GZ_TO_ROS
 - ros_topic_name: "/gen0_model/imu/data"
   gz_topic_name: "/imu"
   ros_type_name: "sensor_msgs/msg/Imu"
@@ -41,6 +51,11 @@
   direction: GZ_TO_ROS
 - ros_topic_name: "/gen0_model/camera_info"
   gz_topic_name: "/camera/camera_info"
+  ros_type_name: "sensor_msgs/msg/CameraInfo"
+  gz_type_name: "gz.msgs.CameraInfo"
+  direction: GZ_TO_ROS
+- ros_topic_name: "/gen0_model/driver_camera_info"
+  gz_topic_name: "/driver_camera/camera_info"
   ros_type_name: "sensor_msgs/msg/CameraInfo"
   gz_type_name: "gz.msgs.CameraInfo"
   direction: GZ_TO_ROS
@@ -126,6 +141,11 @@
   direction: GZ_TO_ROS
 - ros_topic_name: "/car/car_008/pose"
   gz_topic_name: "/model/car_008/pose"
+  ros_type_name: "geometry_msgs/msg/PoseStamped"
+  gz_type_name: "ignition.msgs.Pose"
+  direction: GZ_TO_ROS
+- ros_topic_name: "/car/car_009/pose"
+  gz_topic_name: "/model/car_009/pose"
   ros_type_name: "geometry_msgs/msg/PoseStamped"
   gz_type_name: "ignition.msgs.Pose"
   direction: GZ_TO_ROS
