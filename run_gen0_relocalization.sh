@@ -84,7 +84,10 @@ ACTOR_SOFT_STOP_RELEASE_MARGIN="${GEN0_ACTOR_SOFT_STOP_RELEASE_MARGIN:-0.85}"
 ACTOR_SOFT_STOP_VEHICLE_NAME="${GEN0_ACTOR_SOFT_STOP_VEHICLE_NAME:-gen0_model}"
 TRASH_SCENARIO_PATH="${GEN0_TRASH_SCENARIO_PATH:-}"
 
-if [[ -z "$DYNAMIC_ACTOR_TOPICS" && -n "$ACTORS_SCENARIO" ]]; then
+# Only use the legacy simulated-LiDAR actor injection when the caller did not
+# configure the variable. The full stack explicitly passes an empty value so
+# pedestrians, like traffic vehicles, are handled by the actor costmap only.
+if [[ -z "${GEN0_DYNAMIC_ACTOR_TOPICS+x}" && -n "$ACTORS_SCENARIO" ]]; then
   for actor_index in {1..20}; do
     actor_topic="/actor/pedestrian_${actor_index}/pose"
     if [[ -n "$DYNAMIC_ACTOR_TOPICS" ]]; then
