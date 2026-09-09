@@ -21,6 +21,7 @@ def generate_launch_description():
     web_root = os.path.join(workspace_root, 'web_control')
 
     rosbridge_port = LaunchConfiguration('rosbridge_port')
+    rosbridge_address = LaunchConfiguration('rosbridge_address')
     web_port = LaunchConfiguration('web_port')
     provider = LaunchConfiguration('llm_provider')
     enable_yolo = LaunchConfiguration('enable_yolo')
@@ -29,6 +30,9 @@ def generate_launch_description():
     return LaunchDescription([
         SetEnvironmentVariable('PATH', '/usr/bin:/bin:/usr/sbin:/sbin'),
         DeclareLaunchArgument('rosbridge_port', default_value='9090'),
+        DeclareLaunchArgument(
+            'rosbridge_address', default_value='0.0.0.0',
+            description='Listen address; 0.0.0.0 permits same-LAN phone access'),
         DeclareLaunchArgument('web_port', default_value='8000'),
         DeclareLaunchArgument('llm_provider', default_value='mock'),
         DeclareLaunchArgument(
@@ -40,6 +44,7 @@ def generate_launch_description():
                 rosbridge_share, 'launch', 'rosbridge_websocket_launch.xml')),
             launch_arguments={
                 'port': rosbridge_port,
+                'address': rosbridge_address,
                 'send_action_goals_in_new_thread': 'true',
             }.items(),
         ),

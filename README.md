@@ -485,3 +485,30 @@ Point WebToApp at `https://sweeper.example.com/`, not localhost. The page gives
 the deployment-time WSS setting priority, automatically connects when configured,
 and refuses insecure `ws://` from an HTTPS page. See `web_control/README_start.md`
 for tunnel creation, DNS routing, validation, security, and the legacy AutoDL note.
+
+### Phone APP connecting to each user's local ROS 2 computer
+
+Cloudflare is not required when the phone and computer are on the same Wi-Fi.
+The dashboard now defaults to **Local computer** mode: enter only the computer's
+LAN IP and keep port `9090`. The page builds and remembers the WebSocket URL.
+
+On the ROS 2 computer:
+
+```bash
+GEN0_QCNET_BACKEND=constant_velocity ./run_gen0_full_stack.sh
+./deploy/local_mobile/show_connection_info.sh
+```
+
+The helper prints the exact IP to enter and checks whether rosbridge is listening.
+The rosbridge launch defaults to `0.0.0.0` so a phone on the same LAN can reach it.
+For an APK that does not depend on AutoDL or any hosted website, build the offline
+web bundle:
+
+```bash
+./deploy/local_mobile/build_web_bundle.sh
+```
+
+Package `gen0-mobile-web.zip` as Local HTML/Offline Website, not as a wrapper around
+an online URL. `roslib` is vendored, so the dashboard itself has no CDN dependency.
+See `deploy/local_mobile/README.md` for firewall rules, WebView permissions,
+connection steps, and troubleshooting.

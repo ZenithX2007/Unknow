@@ -23,5 +23,8 @@ __pycache__/
 # Local editor settings
 .vscode/
 
+# Generated mobile/offline web bundle
+gen0-mobile-web.zip
+
 # Large local FAST-LIO map dumps. Commit selected prior/projected maps explicitly.
 gen0_gz_sim_ros2/gen0_main/maps/recovered_fast_lio_*.pcd

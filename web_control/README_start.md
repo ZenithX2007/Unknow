@@ -1,5 +1,18 @@
 # Gen0 ROS2 网页控制台
 
+## 最简单的手机局域网用法
+
+如果每位用户都在自己的电脑运行 ROS 2，不需要 AutoDL 或 Cloudflare。启动完整系统后
+执行：
+
+```bash
+./deploy/local_mobile/show_connection_info.sh
+```
+
+手机和电脑连接同一个 Wi-Fi，在 APP 中选择“本地电脑（同一 Wi-Fi）”，填写脚本输出的
+电脑 IP，端口保持 `9090`，然后点击连接。完整的 APK 离线网页打包、防火墙和排错步骤见
+`deploy/local_mobile/README.md`。
+
 > 稳定地图整合版默认将手机/网页遥控发布到
 > `/web_control/cmd_vel_raw`，并通过 `/epsilon/control_mode` 选择 `teleop`。
 > EPSILON command mux 与 `nav2_pose_guard` 继续作为唯一安全输出链路。
@@ -102,8 +115,9 @@ AutoDL 仍可用 SSH 将 `8000`、`9090` 转发到电脑，再访问
 - 作业相机：`/gen0_model/front_camera` 保留给 YOLO 垃圾识别
 - 地图和状态：订阅 `/map` 与 `/odom`
 
-默认 rosbridge 地址为 `ws://localhost:9090`，浏览器页面默认指向这个端口。相机支持
-`sensor_msgs/msg/Image` 和 `sensor_msgs/msg/CompressedImage` 两种显示模式。
+页面默认采用“本地电脑”模式，由用户填写电脑局域网 IP，并使用端口 `9090` 生成
+`ws://电脑IP:9090`。相机支持 `sensor_msgs/msg/Image` 和
+`sensor_msgs/msg/CompressedImage` 两种显示模式。
 公网驾驶应使用压缩流，避免原始 RGB 图像阻塞 rosbridge 和浏览器主线程。
 
 ## 一次性启动入口

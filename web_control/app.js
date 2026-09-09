@@ -51,6 +51,13 @@
   function init() {
     [
       "rosbridgeUrl",
+      "rosbridgeUrlLabel",
+      "connectionMode",
+      "localHostField",
+      "localHost",
+      "localPortField",
+      "localPort",
+      "connectionHint",
       "connectButton",
       "disconnectButton",
       "connectionBadge",
@@ -126,10 +133,18 @@
       : "";
     const savedUrl = window.localStorage.getItem("gen0.rosbridgeUrl");
     if (configuredUrl) {
+      dom.connectionMode.value = "advanced";
       dom.rosbridgeUrl.value = configuredUrl;
     } else if (savedUrl) {
       dom.rosbridgeUrl.value = savedUrl;
     }
+    const savedMode = window.localStorage.getItem("gen0.connectionMode");
+    if (!configuredUrl && (savedMode === "local" || savedMode === "advanced")) {
+      dom.connectionMode.value = savedMode;
+    }
+    dom.localHost.value = window.localStorage.getItem("gen0.localHost") || "";
+    dom.localPort.value = window.localStorage.getItem("gen0.localPort") || "9090";
+    updateConnectionMode();
     dom.cameraTopic.value = window.localStorage.getItem("gen0.cameraTopic") ||
       "/gen0_model/driver_camera/compressed";
     dom.cameraMessageType.value =
@@ -176,6 +191,9 @@
   }
 
   function bindEvents() {
+    dom.connectionMode.addEventListener("change", updateConnectionMode);
+    dom.localHost.addEventListener("input", updateLocalRosbridgeUrl);
+    dom.localPort.addEventListener("input", updateLocalRosbridgeUrl);
     dom.connectButton.addEventListener("click", connectRos);
     dom.disconnectButton.addEventListener("click", () => disconnectRos(true));
     dom.subscribeCameraButton.addEventListener("click", subscribeCamera);
@@ -235,6 +253,29 @@
     });
   }
 
+  function updateConnectionMode() {
+    const localMode = dom.connectionMode.value === "local";
+    dom.localHostField.classList.toggle("is-hidden", !localMode);
+    dom.localPortField.classList.toggle("is-hidden", !localMode);
+    dom.rosbridgeUrl.readOnly = localMode;
+    dom.rosbridgeUrlLabel.textContent = localMode
+      ? "生成的 rosbridge 地址"
+      : "rosbridge 完整地址";
+    dom.connectionHint.textContent = localMode
+      ? "手机与运行 ROS 2 的电脑需连接同一个 Wi-Fi；请输入电脑的 IP，不要填手机的 IP。"
+      : "公网使用 wss://；Cloudflare 部署通常为 wss://ros.你的域名。";
+    window.localStorage.setItem("gen0.connectionMode", dom.connectionMode.value);
+    if (localMode) updateLocalRosbridgeUrl();
+  }
+
+  function updateLocalRosbridgeUrl() {
+    const host = dom.localHost.value.trim();
+    const port = dom.localPort.value.trim() || "9090";
+    dom.rosbridgeUrl.value = host ? `ws://${host}:${port}` : "";
+    window.localStorage.setItem("gen0.localHost", host);
+    window.localStorage.setItem("gen0.localPort", port);
+  }
+
   function connectRos() {
     if (typeof window.ROSLIB === "undefined") {
       setBadge(dom.connectionBadge, "error", "缺少 roslib");
@@ -245,12 +286,26 @@
       return;
     }
 
+    if (dom.connectionMode.value === "local") {
+      updateLocalRosbridgeUrl();
+      if (!dom.localHost.value.trim()) {
+        setBadge(dom.connectionBadge, "error", "请输入电脑 IP");
+        appendLog("请填写运行 ROS 2 的电脑局域网 IP，例如 192.168.1.105。", "error");
+        dom.localHost.focus();
+        return;
+      }
+    }
+
     disconnectRos(false);
     const url = dom.rosbridgeUrl.value.trim() || "ws://localhost:9090";
-    if (window.location.protocol === "https:" && url.startsWith("ws://")) {
+    if (window.location.protocol === "https:" && url.startsWith("ws://") &&
+        dom.connectionMode.value !== "local") {
       setBadge(dom.connectionBadge, "error", "需要 WSS");
       appendLog("当前网页使用 HTTPS，rosbridge 地址必须使用 wss://，否则浏览器会拦截连接。", "error");
       return;
+    }
+    if (window.location.protocol === "https:" && url.startsWith("ws://")) {
+      appendLog("正在连接局域网 WS；APK/WebView 必须允许 Mixed Content 与明文局域网流量。", "warn");
     }
     if (!/^wss?:\/\/[^\s]+$/i.test(url)) {
       setBadge(dom.connectionBadge, "error", "地址无效");

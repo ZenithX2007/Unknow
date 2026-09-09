@@ -176,6 +176,26 @@ body > :not(#gen0App) {
   flex: 1 1 230px;
 }
 
+.field--mode {
+  flex: 0 1 205px;
+}
+
+.field--port {
+  flex: 0 0 84px;
+}
+
+.connection-hint {
+  flex: 1 0 100%;
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-align: right;
+}
+
+.is-hidden {
+  display: none !important;
+}
+
 .field--full {
   width: 100%;
   margin-top: 13px;
@@ -988,6 +1008,10 @@ body > :not(#gen0App) {
   .connection-controls {
     width: 100%;
     justify-content: flex-start;
+  }
+
+  .connection-hint {
+    text-align: left;
   }
 
   .dashboard {

@@ -1,4 +1,4 @@
-const CACHE = "gen0-control-v4-cloudflare";
+const CACHE = "gen0-control-v5-local-pc";
 const ASSETS = [
   "./",
   "./index.html",
@@ -6,6 +6,7 @@ const ASSETS = [
   "./runtime-config.js",
   "./app.js",
   "./manifest.webmanifest",
+  "./vendor/roslib.min.js",
 ];
 
 self.addEventListener("install", (event) => {
