@@ -1,0 +1,3 @@
+deploy/cloudflare/*.sh text eol=lf
+deploy/cloudflare/*.yml text eol=lf
+web_control/runtime-config.js text eol=lf

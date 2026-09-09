@@ -40,6 +40,60 @@ Agent 接口为：
 
 出于防误触设计，语音识别结束后不会自动执行；必须检查识别文本并明确点击“提交任务”。
 
+## Cloudflare Tunnel 公网发布（手机 APP 推荐）
+
+公网部署使用两个子域名：网页域名转发本机 `8000`，rosbridge 域名转发本机
+`9090`。浏览器打开 HTTPS 网页后会通过 WSS 连接 rosbridge，不需要将端口直接暴露到公网。
+
+假设域名为 `sweeper.example.com` 和 `ros.sweeper.example.com`：
+
+```bash
+# 安装 cloudflared 后，只需登录一次
+cloudflared tunnel login
+cloudflared tunnel create gen0-sweeper
+cloudflared tunnel route dns gen0-sweeper sweeper.example.com
+cloudflared tunnel route dns gen0-sweeper ros.sweeper.example.com
+
+# 把输出的 tunnel UUID、Linux 用户名和两个域名填入配置
+mkdir -p ~/.cloudflared
+cp deploy/cloudflare/config.yml.example ~/.cloudflared/config.yml
+
+# 给网页写入公开的 WSS 地址（该文件不包含密钥）
+./deploy/cloudflare/configure_web.sh ros.sweeper.example.com
+```
+
+启动完整 ROS 2 系统后，另开终端运行 Tunnel：
+
+```bash
+cloudflared tunnel --config ~/.cloudflared/config.yml run gen0-sweeper
+```
+
+用手机访问 `https://sweeper.example.com/`。页面会自动连接
+`wss://ros.sweeper.example.com`。WebToApp 中也应填写这个 HTTPS 公网地址，而不是
+`localhost`。APP 需要开启网络和麦克风权限；语音识别必须运行在 HTTPS 安全上下文中。
+
+`runtime-config.js` 是公开浏览器配置，严禁写 API key、Tunnel 凭据或其他秘密。
+建议在 Cloudflare Zero Trust 中为两个域名配置访问控制；对实际车辆进行公网遥控前，
+还应限制允许的操作者，并保留车辆侧急停。
+
+快速检查：
+
+```bash
+curl -I http://127.0.0.1:8000/
+timeout 3 bash -c '</dev/tcp/127.0.0.1/9090' && echo rosbridge-ready
+cloudflared tunnel ingress validate
+```
+
+如果修改了公网 rosbridge 域名，重新执行 `configure_web.sh`，然后在手机端清除旧 PWA
+缓存或刷新页面。HTTPS 页面若填写 `ws://` 地址，控制台会明确拒绝，以避免浏览器的
+Mixed Content 拦截造成“地址连接了但一直订阅不上”的假象。
+
+### AutoDL 备注（非当前推荐部署）
+
+AutoDL 仍可用 SSH 将 `8000`、`9090` 转发到电脑，再访问
+`http://localhost:8000` 并手动填写 `ws://localhost:9090`。网页不再自动推导 AutoDL
+平台域名；手机 APP 公网发布统一使用上面的 Cloudflare Tunnel 方案。
+
 这个目录附带一个静态网页，直接走 ROS 2 的 rosbridge 链路控制当前仓库里的 Gen0 车体：
 
 - 手动驾驶：发布 `geometry_msgs/msg/Twist` 到 `/cmd_vel`

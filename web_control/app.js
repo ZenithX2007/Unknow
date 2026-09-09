@@ -120,13 +120,13 @@
       dom[id] = document.getElementById(id);
     });
 
+    const runtimeConfig = window.GEN0_WEB_CONFIG || {};
+    const configuredUrl = typeof runtimeConfig.rosbridgeUrl === "string"
+      ? runtimeConfig.rosbridgeUrl.trim()
+      : "";
     const savedUrl = window.localStorage.getItem("gen0.rosbridgeUrl");
-    const autoRemoteUrl = window.location.protocol === "https:" &&
-      /^u[^u]/.test(window.location.hostname)
-      ? `wss://${window.location.host.replace(/^u/, "uu")}`
-      : null;
-    if (autoRemoteUrl && (!savedUrl || /localhost|127\.0\.0\.1/.test(savedUrl))) {
-      dom.rosbridgeUrl.value = autoRemoteUrl;
+    if (configuredUrl) {
+      dom.rosbridgeUrl.value = configuredUrl;
     } else if (savedUrl) {
       dom.rosbridgeUrl.value = savedUrl;
     }
@@ -162,6 +162,9 @@
       navigator.serviceWorker.register("./service-worker.js").catch(() => {});
     }
     appendLog("页面已加载，等待连接 rosbridge。");
+    if (runtimeConfig.autoConnect === true) {
+      window.setTimeout(connectRos, 250);
+    }
     window.setInterval(publishTeleopCommand, 100);
     window.setInterval(updateCameraHealth, 500);
     window.addEventListener("resize", () => {
@@ -244,6 +247,16 @@
 
     disconnectRos(false);
     const url = dom.rosbridgeUrl.value.trim() || "ws://localhost:9090";
+    if (window.location.protocol === "https:" && url.startsWith("ws://")) {
+      setBadge(dom.connectionBadge, "error", "需要 WSS");
+      appendLog("当前网页使用 HTTPS，rosbridge 地址必须使用 wss://，否则浏览器会拦截连接。", "error");
+      return;
+    }
+    if (!/^wss?:\/\/[^\s]+$/i.test(url)) {
+      setBadge(dom.connectionBadge, "error", "地址无效");
+      appendLog("rosbridge 地址必须以 ws:// 或 wss:// 开头。", "error");
+      return;
+    }
     window.localStorage.setItem("gen0.rosbridgeUrl", url);
     setBadge(dom.connectionBadge, "connecting", "连接中");
     appendLog(`正在连接 ${url}。`);

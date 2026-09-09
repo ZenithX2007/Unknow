@@ -1,5 +1,12 @@
-const CACHE = "gen0-control-v3";
-const ASSETS = ["./", "./index.html", "./style.css", "./app.js", "./manifest.webmanifest"];
+const CACHE = "gen0-control-v4-cloudflare";
+const ASSETS = [
+  "./",
+  "./index.html",
+  "./style.css",
+  "./runtime-config.js",
+  "./app.js",
+  "./manifest.webmanifest",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ASSETS)));

@@ -468,3 +468,20 @@ To attach only the HMI and LLM components to an already-running stable stack:
 ```bash
 ros2 launch sweeper_integration web_control_agent.launch.py
 ```
+
+### Cloudflare Tunnel deployment for WebToApp
+
+For a phone-installable public endpoint, route one Cloudflare hostname to the
+dashboard on `127.0.0.1:8000` and a second hostname to rosbridge on
+`127.0.0.1:9090`. Start from `deploy/cloudflare/config.yml.example`, then write
+the public WSS endpoint into the browser runtime configuration:
+
+```bash
+./deploy/cloudflare/configure_web.sh ros.sweeper.example.com
+cloudflared tunnel --config ~/.cloudflared/config.yml run gen0-sweeper
+```
+
+Point WebToApp at `https://sweeper.example.com/`, not localhost. The page gives
+the deployment-time WSS setting priority, automatically connects when configured,
+and refuses insecure `ws://` from an HTTPS page. See `web_control/README_start.md`
+for tunnel creation, DNS routing, validation, security, and the legacy AutoDL note.
