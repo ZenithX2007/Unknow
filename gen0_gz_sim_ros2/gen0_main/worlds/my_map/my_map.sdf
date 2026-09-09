@@ -75,7 +75,7 @@
 
     <model name="car_008">
       <self_collide>true</self_collide>
-      <pose>11.0 -3.5 2.57 0 0 1.91</pose>
+      <pose>-4.92 5.28 2.57 0 0 -0.518</pose>
       <include merge="true">
         <uri>../models/car_008/model.sdf</uri>
       </include>
@@ -84,31 +84,11 @@
           <loop>true</loop>
           <waypoint>
             <time>0.0</time>
-            <pose>11.0 -3.5 2.57 0 0 1.91</pose>
+            <pose>-4.92 5.28 2.57 0 0 -0.518</pose>
           </waypoint>
           <waypoint>
-            <time>8.0</time>
-            <pose>8.0 5.0 2.61 0 0 -2.68</pose>
-          </waypoint>
-          <waypoint>
-            <time>12.0</time>
-            <pose>5.0 3.5 2.61 0 0 -2.09</pose>
-          </waypoint>
-          <waypoint>
-            <time>16.0</time>
-            <pose>3.0 0 2.57 0 0 -1.05</pose>
-          </waypoint>
-          <waypoint>
-            <time>20.0</time>
-            <pose>5.0 -3.5 2.53 0 0 -0.46</pose>
-          </waypoint>
-          <waypoint>
-            <time>24.0</time>
-            <pose>8.0 -5.0 2.53 0 0 0.46</pose>
-          </waypoint>
-          <waypoint>
-            <time>28.0</time>
-            <pose>11.0 -3.5 2.57 0 0 1.91</pose>
+            <time>11.6</time>
+            <pose>35.25 -17.59 2.57 0 0 -0.518</pose>
           </waypoint>
         </trajectory>
       </plugin>
@@ -116,7 +96,7 @@
 
     <model name="car_009">
       <self_collide>true</self_collide>
-      <pose>-16.182 -26.069 2.572 0 0 -0.5</pose>
+      <pose>33.766 -20.197 2.572 0 0 2.624</pose>
       <include merge="true">
         <uri>../models/car_008/model.sdf</uri>
       </include>
@@ -125,47 +105,11 @@
           <loop>true</loop>
           <waypoint>
             <time>0.0</time>
-            <pose>-16.182 -26.069 2.572 0 0 -0.5</pose>
+            <pose>33.766 -20.197 2.572 0 0 2.624</pose>
           </waypoint>
           <waypoint>
-            <time>6.0</time>
-            <pose>-8.682 -30.069 2.552 0 0 -0.5</pose>
-          </waypoint>
-          <waypoint>
-            <time>12.0</time>
-            <pose>-1.682 -34.069 2.652 0 0 -0.5</pose>
-          </waypoint>
-          <waypoint>
-            <time>18.0</time>
-            <pose>5.818 -38.069 2.558 0 0 -0.5</pose>
-          </waypoint>
-          <waypoint>
-            <time>24.0</time>
-            <pose>13.318 -42.069 2.569 0 0 -0.5</pose>
-          </waypoint>
-          <waypoint>
-            <time>30.0</time>
-            <pose>20.318 -46.069 2.582 0 0 -0.5</pose>
-          </waypoint>
-          <waypoint>
-            <time>36.0</time>
-            <pose>13.318 -42.069 2.569 0 0 2.64</pose>
-          </waypoint>
-          <waypoint>
-            <time>42.0</time>
-            <pose>5.818 -38.069 2.558 0 0 2.64</pose>
-          </waypoint>
-          <waypoint>
-            <time>48.0</time>
-            <pose>-1.682 -34.069 2.652 0 0 2.64</pose>
-          </waypoint>
-          <waypoint>
-            <time>54.0</time>
-            <pose>-8.682 -30.069 2.552 0 0 2.64</pose>
-          </waypoint>
-          <waypoint>
-            <time>60.0</time>
-            <pose>-16.182 -26.069 2.572 0 0 2.64</pose>
+            <time>11.6</time>
+            <pose>-6.404 2.673 2.572 0 0 2.624</pose>
           </waypoint>
       </trajectory>
       </plugin>
@@ -188,31 +132,31 @@
       <trajectory id="1" type="walking" tension="1">
         <waypoint>
           <time>0.00</time>
-          <pose>-14.98 -22.50 4.0 0 0 -0.5</pose>
+          <pose>-3.667445 -2.629009 4.0 0 0 -0.535080</pose>
         </waypoint>
         <waypoint>
           <time>7.00</time>
-          <pose>-7.56 -26.70 4.0 0 0 -0.5</pose>
+          <pose>3.731740 -6.865572 4.0 0 0 -0.535080</pose>
         </waypoint>
         <waypoint>
           <time>12.60</time>
-          <pose>-1.62 -30.06 4.0 0 0 -0.5</pose>
+          <pose>9.653130 -10.258261 4.0 0 0 -0.535080</pose>
         </waypoint>
         <waypoint>
           <time>19.60</time>
-          <pose>5.81 -34.26 4.0 0 0 -0.5</pose>
+          <pose>17.057420 -14.503422 4.0 0 0 -0.535080</pose>
         </waypoint>
         <waypoint>
           <time>26.60</time>
-          <pose>13.23 -38.46 4.0 0 0 -0.5</pose>
+          <pose>24.456605 -18.739984 4.0 0 0 -0.535080</pose>
         </waypoint>
         <waypoint>
           <time>35.00</time>
-          <pose>22.14 -43.50 4.0 0 0 -0.5</pose>
+          <pose>33.338690 -23.829018 4.0 0 0 -0.535080</pose>
         </waypoint>
       </trajectory>
     </script>
-  </actor><model name="pedestrian_1_collision_proxy"><pose>-14.98 -22.50 4.0 0 0 -0.5</pose><static>false</static><self_collide>false</self_collide><allow_auto_disable>false</allow_auto_disable><link name="collision"><gravity>false</gravity><kinematic>true</kinematic><inertial><mass>1.0</mass><inertia><ixx>0.1</ixx><iyy>0.1</iyy><izz>0.1</izz></inertia></inertial><collision name="body"><geometry><cylinder><radius>0.45</radius><length>1.6</length></cylinder></geometry></collision></link></model><actor name="pedestrian_2">
+  </actor><model name="pedestrian_1_collision_proxy"><pose>-3.667445 -2.629009 4.0 0 0 -0.535080</pose><static>false</static><self_collide>false</self_collide><allow_auto_disable>false</allow_auto_disable><link name="collision"><gravity>false</gravity><kinematic>true</kinematic><inertial><mass>1.0</mass><inertia><ixx>0.1</ixx><iyy>0.1</iyy><izz>0.1</izz></inertia></inertial><collision name="body"><geometry><cylinder><radius>0.45</radius><length>1.6</length></cylinder></geometry></collision></link></model><actor name="pedestrian_2">
     <plugin filename="libActorPose.so" name="ignition::gazebo::systems::ActorPose">
     </plugin>
     <skin>
@@ -229,15 +173,15 @@
       <trajectory id="1" type="talking_2" tension="1">
         <waypoint>
           <time>0.00</time>
-          <pose>-11.8 -35.30 4.1 0 0 0.95</pose>
+          <pose>8.962570 1.170349 4.1 0 0 -1.985080</pose>
         </waypoint>
         <waypoint>
           <time>10.00</time>
-          <pose>-11.8 -35.30 4.1 0 0 0.95</pose>
+          <pose>8.962570 1.170349 4.1 0 0 -1.985080</pose>
         </waypoint>
       </trajectory>
     </script>
-  </actor><model name="pedestrian_2_collision_proxy"><pose>-11.8 -35.30 4.1 0 0 0.95</pose><static>false</static><self_collide>false</self_collide><allow_auto_disable>false</allow_auto_disable><link name="collision"><gravity>false</gravity><kinematic>true</kinematic><inertial><mass>1.0</mass><inertia><ixx>0.1</ixx><iyy>0.1</iyy><izz>0.1</izz></inertia></inertial><collision name="body"><geometry><cylinder><radius>0.45</radius><length>1.6</length></cylinder></geometry></collision></link></model><actor name="pedestrian_3">
+  </actor><model name="pedestrian_2_collision_proxy"><pose>8.962570 1.170349 4.1 0 0 -1.985080</pose><static>false</static><self_collide>false</self_collide><allow_auto_disable>false</allow_auto_disable><link name="collision"><gravity>false</gravity><kinematic>true</kinematic><inertial><mass>1.0</mass><inertia><ixx>0.1</ixx><iyy>0.1</iyy><izz>0.1</izz></inertia></inertial><collision name="body"><geometry><cylinder><radius>0.45</radius><length>1.6</length></cylinder></geometry></collision></link></model><actor name="pedestrian_3">
     <plugin filename="libActorPose.so" name="ignition::gazebo::systems::ActorPose">
     </plugin>
     <skin>
@@ -254,15 +198,15 @@
       <trajectory id="1" type="talking" tension="1">
         <waypoint>
           <time>0.00</time>
-          <pose>-13.3 -34.50 4.1 0 0 1.0</pose>
+          <pose>7.508961 2.051838 4.1 0 0 -2.035080</pose>
         </waypoint>
         <waypoint>
           <time>10.00</time>
-          <pose>-13.3 -34.50 4.1 0 0 1.0</pose>
+          <pose>7.508961 2.051838 4.1 0 0 -2.035080</pose>
         </waypoint>
       </trajectory>
     </script>
-  </actor><model name="pedestrian_3_collision_proxy"><pose>-13.3 -34.50 4.1 0 0 1.0</pose><static>false</static><self_collide>false</self_collide><allow_auto_disable>false</allow_auto_disable><link name="collision"><gravity>false</gravity><kinematic>true</kinematic><inertial><mass>1.0</mass><inertia><ixx>0.1</ixx><iyy>0.1</iyy><izz>0.1</izz></inertia></inertial><collision name="body"><geometry><cylinder><radius>0.45</radius><length>1.6</length></cylinder></geometry></collision></link></model><actor name="pedestrian_4">
+  </actor><model name="pedestrian_3_collision_proxy"><pose>7.508961 2.051838 4.1 0 0 -2.035080</pose><static>false</static><self_collide>false</self_collide><allow_auto_disable>false</allow_auto_disable><link name="collision"><gravity>false</gravity><kinematic>true</kinematic><inertial><mass>1.0</mass><inertia><ixx>0.1</ixx><iyy>0.1</iyy><izz>0.1</izz></inertia></inertial><collision name="body"><geometry><cylinder><radius>0.45</radius><length>1.6</length></cylinder></geometry></collision></link></model><actor name="pedestrian_4">
     <plugin filename="libActorPose.so" name="ignition::gazebo::systems::ActorPose">
     </plugin>
     <skin>
@@ -279,27 +223,27 @@
       <trajectory id="1" type="walking" tension="1">
         <waypoint>
           <time>0.00</time>
-          <pose>-1.8 -29.9 3.9 0 0 -0.5</pose>
+          <pose>9.423663 -10.185151 3.9 0 0 -0.535080</pose>
         </waypoint>
         <waypoint>
           <time>5.0</time>
-          <pose>2.8 -32.50 3.9 0 0 -2.14</pose>
+          <pose>14.007514 -12.813518 3.9 0 0 1.104920</pose>
         </waypoint>
         <waypoint>
           <time>15.00</time>
-          <pose>-0.69 -41.8 3.9 0 0 -2.14</pose>
+          <pose>20.223119 -5.065205 3.9 0 0 1.104920</pose>
         </waypoint>
         <waypoint>
           <time>17.00</time>
-          <pose>-0.69 -41.8 3.9 0 0 -0.57</pose>
+          <pose>20.223119 -5.065205 3.9 0 0 -0.465080</pose>
         </waypoint>
         <waypoint>
           <time>40.00</time>
-          <pose>26.2 -57.3 3.9 0 0 -0.57</pose>
+          <pose>47.277810 -20.275917 3.9 0 0 -0.465080</pose>
         </waypoint>
       </trajectory>
     </script>
-  </actor><model name="pedestrian_4_collision_proxy"><pose>-1.8 -29.9 3.9 0 0 -0.5</pose><static>false</static><self_collide>false</self_collide><allow_auto_disable>false</allow_auto_disable><link name="collision"><gravity>false</gravity><kinematic>true</kinematic><inertial><mass>1.0</mass><inertia><ixx>0.1</ixx><iyy>0.1</iyy><izz>0.1</izz></inertia></inertial><collision name="body"><geometry><cylinder><radius>0.45</radius><length>1.6</length></cylinder></geometry></collision></link></model><actor name="pedestrian_5">
+  </actor><model name="pedestrian_4_collision_proxy"><pose>9.423663 -10.185151 3.9 0 0 -0.535080</pose><static>false</static><self_collide>false</self_collide><allow_auto_disable>false</allow_auto_disable><link name="collision"><gravity>false</gravity><kinematic>true</kinematic><inertial><mass>1.0</mass><inertia><ixx>0.1</ixx><iyy>0.1</iyy><izz>0.1</izz></inertia></inertial><collision name="body"><geometry><cylinder><radius>0.45</radius><length>1.6</length></cylinder></geometry></collision></link></model><actor name="pedestrian_5">
     <plugin filename="libActorPose.so" name="ignition::gazebo::systems::ActorPose">
     </plugin>
     <skin>
@@ -317,23 +261,23 @@
       <trajectory id="1" type="walking" tension="1">
         <waypoint>
           <time>0.00</time>
-          <pose>-3.3 -29.2 3.0 0 0 -2.14</pose>
+          <pose>8.056045 -9.252617 3.0 0 0 1.104920</pose>
         </waypoint>
         <waypoint>
           <time>10.00</time>
-          <pose>-7.6 -37.8 3.1 0 0 -2.14</pose>
+          <pose>13.256248 -1.165102 3.1 0 0 1.104920</pose>
         </waypoint>
         <waypoint>
           <time>12.00</time>
-          <pose>-7.6 -37.8 3.1 0 0 -0.57</pose>
+          <pose>13.256248 -1.165102 3.1 0 0 -0.465080</pose>
         </waypoint>
         <waypoint>
           <time>45.00</time>
-          <pose>26.2 -57.3 3.1 0 0 -0.57</pose>
+          <pose>47.277810 -20.275917 3.1 0 0 -0.465080</pose>
         </waypoint>
       </trajectory>
     </script>
-  </actor><model name="pedestrian_5_collision_proxy"><pose>-3.3 -29.2 3.0 0 0 -2.14</pose><static>false</static><self_collide>false</self_collide><allow_auto_disable>false</allow_auto_disable><link name="collision"><gravity>false</gravity><kinematic>true</kinematic><inertial><mass>1.0</mass><inertia><ixx>0.1</ixx><iyy>0.1</iyy><izz>0.1</izz></inertia></inertial><collision name="body"><geometry><cylinder><radius>0.45</radius><length>1.6</length></cylinder></geometry></collision></link></model><actor name="pedestrian_6">
+  </actor><model name="pedestrian_5_collision_proxy"><pose>8.056045 -9.252617 3.0 0 0 1.104920</pose><static>false</static><self_collide>false</self_collide><allow_auto_disable>false</allow_auto_disable><link name="collision"><gravity>false</gravity><kinematic>true</kinematic><inertial><mass>1.0</mass><inertia><ixx>0.1</ixx><iyy>0.1</iyy><izz>0.1</izz></inertia></inertial><collision name="body"><geometry><cylinder><radius>0.45</radius><length>1.6</length></cylinder></geometry></collision></link></model><actor name="pedestrian_6">
     <plugin filename="libActorPose.so" name="ignition::gazebo::systems::ActorPose">
     </plugin>
     <skin>
@@ -351,23 +295,23 @@
       <trajectory id="1" type="walking" tension="1">
         <waypoint>
           <time>60.0</time>
-          <pose>29.8 -22.3 3.0 0 0 1.069</pose>
+          <pose>-0.615963 -4.983269 3.0 0 0 1.069</pose>
         </waypoint>
         <waypoint>
           <time>70.0</time>
-          <pose>33.5 -13.3 3.0 0 0 1.069</pose>
+          <pose>3.084037 4.016731 3.0 0 0 1.069</pose>
         </waypoint>
         <waypoint>
           <time>72.0</time>
-          <pose>33.5 -13.3 3.0 0 0 2.6415</pose>
+          <pose>3.084037 4.016731 3.0 0 0 2.6415</pose>
         </waypoint>
         <waypoint>
           <time>87.0</time>
-          <pose>12.8 -1.22 3.0 0 0 2.6415</pose>
+          <pose>-17.615963 16.096731 3.0 0 0 2.6415</pose>
         </waypoint>
       </trajectory>
     </script>
-  </actor><model name="pedestrian_6_collision_proxy"><pose>29.8 -22.3 3.0 0 0 1.069</pose><static>false</static><self_collide>false</self_collide><allow_auto_disable>false</allow_auto_disable><link name="collision"><gravity>false</gravity><kinematic>true</kinematic><inertial><mass>1.0</mass><inertia><ixx>0.1</ixx><iyy>0.1</iyy><izz>0.1</izz></inertia></inertial><collision name="body"><geometry><cylinder><radius>0.45</radius><length>1.6</length></cylinder></geometry></collision></link></model><actor name="pedestrian_7">
+  </actor><model name="pedestrian_6_collision_proxy"><pose>-0.615963 -4.983269 3.0 0 0 1.069</pose><static>false</static><self_collide>false</self_collide><allow_auto_disable>false</allow_auto_disable><link name="collision"><gravity>false</gravity><kinematic>true</kinematic><inertial><mass>1.0</mass><inertia><ixx>0.1</ixx><iyy>0.1</iyy><izz>0.1</izz></inertia></inertial><collision name="body"><geometry><cylinder><radius>0.45</radius><length>1.6</length></cylinder></geometry></collision></link></model><actor name="pedestrian_7">
     <plugin filename="libActorPose.so" name="ignition::gazebo::systems::ActorPose">
     </plugin>
     <skin>
@@ -385,27 +329,27 @@
       <trajectory id="1" type="walking" tension="1">
         <waypoint>
           <time>0.0</time>
-          <pose>27.3 -67.2 4.0 0 0 -0.57</pose>
+          <pose>56.352355 -16.168286 4.0 0 0 -0.465080</pose>
         </waypoint>
         <waypoint>
           <time>4.0</time>
-          <pose>35.67 -74.1 4.0 0 0 -0.57</pose>
+          <pose>66.558213 -19.843522 4.0 0 0 -0.465080</pose>
         </waypoint>
         <waypoint>
           <time>6.0</time>
-          <pose>33.67 -74.1 4.0 0 0 2.6415</pose>
+          <pose>65.537299 -18.123715 4.0 0 0 2.606605</pose>
         </waypoint>
         <waypoint>
           <time>10.0</time>
-          <pose>27.3 -67.2 4.0 0 0 2.6415</pose>
+          <pose>56.352355 -16.168286 4.0 0 0 2.606605</pose>
         </waypoint>
         <waypoint>
           <time>12.0</time>
-          <pose>27.3 -67.2 4.0 0 0 -0.57</pose>
+          <pose>56.352355 -16.168286 4.0 0 0 -0.465080</pose>
         </waypoint>
       </trajectory>
     </script>
-  </actor><model name="pedestrian_7_collision_proxy"><pose>27.3 -67.2 4.0 0 0 -0.57</pose><static>false</static><self_collide>false</self_collide><allow_auto_disable>false</allow_auto_disable><link name="collision"><gravity>false</gravity><kinematic>true</kinematic><inertial><mass>1.0</mass><inertia><ixx>0.1</ixx><iyy>0.1</iyy><izz>0.1</izz></inertia></inertial><collision name="body"><geometry><cylinder><radius>0.45</radius><length>1.6</length></cylinder></geometry></collision></link></model><actor name="pedestrian_8">
+  </actor><model name="pedestrian_7_collision_proxy"><pose>56.352355 -16.168286 4.0 0 0 -0.465080</pose><static>false</static><self_collide>false</self_collide><allow_auto_disable>false</allow_auto_disable><link name="collision"><gravity>false</gravity><kinematic>true</kinematic><inertial><mass>1.0</mass><inertia><ixx>0.1</ixx><iyy>0.1</iyy><izz>0.1</izz></inertia></inertial><collision name="body"><geometry><cylinder><radius>0.45</radius><length>1.6</length></cylinder></geometry></collision></link></model><actor name="pedestrian_8">
     <plugin filename="libActorPose.so" name="ignition::gazebo::systems::ActorPose">
     </plugin>
     <skin>
@@ -422,27 +366,27 @@
       <trajectory id="1" type="walking" tension="1">
         <waypoint>
           <time>0.00</time>
-          <pose>6.5788 -34.8975 4.1 0 0 -2.14</pose>
+          <pose>17.998048 -14.839099 4.1 0 0 1.104920</pose>
         </waypoint>
         <waypoint>
           <time>5.00</time>
-          <pose>1.9128 -43.4391 4.1 0 0 -2.14</pose>
+          <pose>22.961204 -6.466671 4.1 0 0 1.104920</pose>
         </waypoint>
         <waypoint>
           <time>6.00</time>
-          <pose>1.9128 -43.4391 4.1 0 0 1.0</pose>
+          <pose>22.961204 -6.466671 4.1 0 0 -2.035080</pose>
         </waypoint>
         <waypoint>
           <time>11.00</time>
-          <pose>6.5788 -34.8975 4.1 0 0 1.0</pose>
+          <pose>17.998048 -14.839099 4.1 0 0 -2.035080</pose>
         </waypoint>
         <waypoint>
           <time>12.00</time>
-          <pose>6.5788 -34.8975 4.1 0 0 -2.14</pose>
+          <pose>17.998048 -14.839099 4.1 0 0 1.104920</pose>
         </waypoint>
       </trajectory>
     </script>
-  </actor><model name="pedestrian_8_collision_proxy"><pose>6.5788 -34.8975 4.1 0 0 -2.14</pose><static>false</static><self_collide>false</self_collide><allow_auto_disable>false</allow_auto_disable><link name="collision"><gravity>false</gravity><kinematic>true</kinematic><inertial><mass>1.0</mass><inertia><ixx>0.1</ixx><iyy>0.1</iyy><izz>0.1</izz></inertia></inertial><collision name="body"><geometry><cylinder><radius>0.45</radius><length>1.6</length></cylinder></geometry></collision></link></model><actor name="pedestrian_9">
+  </actor><model name="pedestrian_8_collision_proxy"><pose>17.998048 -14.839099 4.1 0 0 1.104920</pose><static>false</static><self_collide>false</self_collide><allow_auto_disable>false</allow_auto_disable><link name="collision"><gravity>false</gravity><kinematic>true</kinematic><inertial><mass>1.0</mass><inertia><ixx>0.1</ixx><iyy>0.1</iyy><izz>0.1</izz></inertia></inertial><collision name="body"><geometry><cylinder><radius>0.45</radius><length>1.6</length></cylinder></geometry></collision></link></model><actor name="pedestrian_9">
     <plugin filename="libActorPose.so" name="ignition::gazebo::systems::ActorPose">
     </plugin>
     <skin>
@@ -459,25 +403,25 @@
       <trajectory id="1" type="walking" tension="1">
         <waypoint>
           <time>0.00</time>
-          <pose>5.0617 -44.8505 4.1 0 0 1.0</pose>
+          <pose>25.782250 -8.453961 4.1 0 0 -2.035080</pose>
         </waypoint>
         <waypoint>
           <time>5.00</time>
-          <pose>9.2902 -36.4660 4.1 0 0 1.0</pose>
+          <pose>20.730859 -16.369989 4.1 0 0 -2.035080</pose>
         </waypoint>
         <waypoint>
           <time>6.00</time>
-          <pose>9.2902 -36.4660 4.1 0 0 -2.14</pose>
+          <pose>20.730859 -16.369989 4.1 0 0 1.104920</pose>
         </waypoint>
         <waypoint>
           <time>11.00</time>
-          <pose>5.0617 -44.8505 4.1 0 0 -2.14</pose>
+          <pose>25.782250 -8.453961 4.1 0 0 1.104920</pose>
         </waypoint>
         <waypoint>
           <time>12.00</time>
-          <pose>5.0617 -44.8505 4.1 0 0 1.0</pose>
+          <pose>25.782250 -8.453961 4.1 0 0 -2.035080</pose>
         </waypoint>
       </trajectory>
     </script>
-  </actor><model name="pedestrian_9_collision_proxy"><pose>5.0617 -44.8505 4.1 0 0 1.0</pose><static>false</static><self_collide>false</self_collide><allow_auto_disable>false</allow_auto_disable><link name="collision"><gravity>false</gravity><kinematic>true</kinematic><inertial><mass>1.0</mass><inertia><ixx>0.1</ixx><iyy>0.1</iyy><izz>0.1</izz></inertia></inertial><collision name="body"><geometry><cylinder><radius>0.45</radius><length>1.6</length></cylinder></geometry></collision></link></model></world>
+  </actor><model name="pedestrian_9_collision_proxy"><pose>25.782250 -8.453961 4.1 0 0 -2.035080</pose><static>false</static><self_collide>false</self_collide><allow_auto_disable>false</allow_auto_disable><link name="collision"><gravity>false</gravity><kinematic>true</kinematic><inertial><mass>1.0</mass><inertia><ixx>0.1</ixx><iyy>0.1</iyy><izz>0.1</izz></inertia></inertial><collision name="body"><geometry><cylinder><radius>0.45</radius><length>1.6</length></cylinder></geometry></collision></link></model></world>
 </sdf>

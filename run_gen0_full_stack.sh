@@ -23,6 +23,13 @@ START_BASE_STACK="${GEN0_START_BASE_STACK:-true}"
 START_NAV2="${GEN0_START_NAV2:-true}"
 START_EPSILON="${GEN0_START_EPSILON:-true}"
 START_YOLO="${GEN0_START_YOLO:-true}"
+START_FIXED_ROUTE="${GEN0_START_FIXED_ROUTE:-false}"
+if [[ "$START_FIXED_ROUTE" == "true" ]]; then
+  # Nav2 may still be launched for RViz inspection, but its velocity chain
+  # must stay off Gazebo while the fixed-route controller owns /cmd_vel.
+  START_NAV2="${GEN0_START_NAV2:-true}"
+  START_EPSILON=false
+fi
 
 ODOM_TOPIC="${GEN0_FULL_STACK_ODOM_TOPIC:-/gen0_mapping/stable_odom}"
 PROJECTED_MAP_BACKEND="${GEN0_PROJECTED_MAP_BACKEND:-octomap}"
@@ -62,6 +69,11 @@ else
   GUARDED_CMD_VEL_TOPIC="${GEN0_EPSILON_MUX_OUTPUT_CMD_VEL_TOPIC:-/control/cmd_vel_raw}"
 fi
 FINAL_CMD_VEL_TOPIC="${GEN0_FINAL_CMD_VEL_TOPIC:-/cmd_vel}"
+if [[ "$START_FIXED_ROUTE" == "true" ]]; then
+  NAV2_RAW_CMD_VEL_TOPIC="${GEN0_NAV2_PREVIEW_RAW_CMD_VEL_TOPIC:-/preview/nav2_cmd_vel_raw}"
+  GUARDED_CMD_VEL_TOPIC="${GEN0_NAV2_PREVIEW_GUARDED_CMD_VEL_TOPIC:-/preview/cmd_vel_raw}"
+  FINAL_CMD_VEL_TOPIC="${GEN0_NAV2_PREVIEW_FINAL_CMD_VEL_TOPIC:-/preview/cmd_vel}"
+fi
 # Full-stack Nav2 already consumes the normalized stable odometry topic.  Do
 # not compare it with raw /odom by default: stable_odom intentionally resets
 # the simulation origin, so the two streams differ by the Gazebo spawn pose.
@@ -470,7 +482,17 @@ if [[ "$START_NAV2" == "true" ]]; then
       "${NAV2_LAUNCH_ARGS[@]}"
 fi
 
-log "Full stack is running. Send a Nav2 goal; EPSILON receives /plan_smoothed and muxes final control through $GUARDED_CMD_VEL_TOPIC -> $FINAL_CMD_VEL_TOPIC."
+if [[ "$START_FIXED_ROUTE" == "true" ]]; then
+  start_script fixed_cleaning_controller ros2 run gen0_main fixed_cleaning_controller \
+    --ros-args -p speed:="${GEN0_FIXED_ROUTE_SPEED:-1.0}" \
+    -p cmd_vel_topic:="${GEN0_FIXED_ROUTE_CMD_VEL_TOPIC:-/cmd_vel}"
+fi
+
+if [[ "$START_FIXED_ROUTE" == "true" ]]; then
+  log "Fixed cleaning route is running independently of Nav2/EPSILON; no Nav2 goal is required."
+else
+  log "Full stack is running. Send a Nav2 goal; EPSILON receives /plan_smoothed and muxes final control through $GUARDED_CMD_VEL_TOPIC -> $FINAL_CMD_VEL_TOPIC."
+fi
 
 while true; do
   for i in "${!PIDS[@]}"; do

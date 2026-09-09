@@ -80,6 +80,7 @@ setup(
         'trash_cleanup_node = gen0_main.trash_cleanup_node:main',
         'trash_fusion_detector = gen0_main.trash_fusion_detector:main',
         'camera_viewer = gen0_main.camera_viewer:main',
+        'fixed_cleaning_controller = gen0_main.fixed_cleaning_controller:main',
         ],
     },
 )

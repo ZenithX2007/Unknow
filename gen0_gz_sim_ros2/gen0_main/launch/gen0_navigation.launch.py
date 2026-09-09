@@ -564,6 +564,13 @@ def generate_launch_description():
                         'min_turning_radius': 6.62,
                         'curvature_warn_period': 2.0,
                         'max_pose_jump': 3.0,
+                        'car009_yield_enabled': True,
+                        'car009_pose_topic': '/car/car_009/pose',
+                        'car009_rear_trigger': 12.0,
+                        'car009_lane_tolerance': 1.25,
+                        'car009_yield_duration': 2.5,
+                        'car009_return_duration': 2.5,
+                        'car009_yield_angular_z': 0.28,
                     }
                 ],
             ),

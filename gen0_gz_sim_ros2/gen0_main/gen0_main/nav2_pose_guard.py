@@ -3,7 +3,7 @@ import math
 import time
 
 import rclpy
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import PoseStamped, Twist
 from nav_msgs.msg import OccupancyGrid, Odometry
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy, qos_profile_sensor_data
@@ -45,6 +45,13 @@ class Nav2PoseGuard(Node):
         self.declare_parameter('actor_forward_buffer', 0.8)
         self.declare_parameter('actor_reverse_buffer', 0.35)
         self.declare_parameter('actor_forward_lateral_clearance', 0.75)
+        self.declare_parameter('car009_yield_enabled', True)
+        self.declare_parameter('car009_pose_topic', '/car/car_009/pose')
+        self.declare_parameter('car009_rear_trigger', 12.0)
+        self.declare_parameter('car009_lane_tolerance', 1.25)
+        self.declare_parameter('car009_yield_duration', 2.5)
+        self.declare_parameter('car009_return_duration', 2.5)
+        self.declare_parameter('car009_yield_angular_z', 0.28)
 
         self.input_cmd_vel_topic = self.get_parameter('input_cmd_vel_topic').value
         self.output_cmd_vel_topic = self.get_parameter('output_cmd_vel_topic').value
@@ -107,6 +114,13 @@ class Nav2PoseGuard(Node):
             0.05,
             float(self.get_parameter('actor_forward_lateral_clearance').value),
         )
+        self.car009_yield_enabled = bool(self.get_parameter('car009_yield_enabled').value)
+        self.car009_pose_topic = self.get_parameter('car009_pose_topic').value
+        self.car009_rear_trigger = max(2.0, float(self.get_parameter('car009_rear_trigger').value))
+        self.car009_lane_tolerance = max(0.3, float(self.get_parameter('car009_lane_tolerance').value))
+        self.car009_yield_duration = max(0.5, float(self.get_parameter('car009_yield_duration').value))
+        self.car009_return_duration = max(0.5, float(self.get_parameter('car009_return_duration').value))
+        self.car009_yield_angular_z = abs(float(self.get_parameter('car009_yield_angular_z').value))
 
         self.map_bounds = None
         self.last_odom = None
@@ -122,6 +136,10 @@ class Nav2PoseGuard(Node):
         self.actor_points_map = []
         self.actor_points_monotonic = 0.0
         self.actor_cloud_frame = None
+        self.car009_pose = None
+        self.car009_pose_monotonic = 0.0
+        self.car009_yield_state = 'normal'
+        self.car009_yield_started = 0.0
 
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
@@ -142,6 +160,10 @@ class Nav2PoseGuard(Node):
             self.actor_obstacle_callback,
             qos_profile_sensor_data,
         )
+        if self.car009_yield_enabled and self.car009_pose_topic:
+            self.create_subscription(
+                PoseStamped, self.car009_pose_topic, self.car009_pose_callback, 10
+            )
         if self.reference_odom_enabled:
             self.create_subscription(
                 Odometry,
@@ -200,6 +222,10 @@ class Nav2PoseGuard(Node):
 
     def odom_callback(self, msg):
         self.last_odom = msg
+
+    def car009_pose_callback(self, msg):
+        self.car009_pose = msg.pose
+        self.car009_pose_monotonic = time.monotonic()
 
     def reference_odom_callback(self, msg):
         self.last_reference_odom = msg
@@ -267,10 +293,67 @@ class Nav2PoseGuard(Node):
             if actor_blocked:
                 self.publish_zero(actor_reason)
                 return
-            self.cmd_pub.publish(self.limit_ackermann_curvature(msg))
+            command = self.car009_yield_command(msg)
+            self.cmd_pub.publish(self.limit_ackermann_curvature(command))
             return
 
         self.publish_zero(reason)
+
+    def car009_yield_command(self, msg):
+        """Temporarily move the sweeper left so car_009 can pass safely."""
+        if not self.car009_yield_enabled or self.car009_pose is None:
+            return msg
+        if (time.monotonic() - self.car009_pose_monotonic) > 1.0:
+            return msg
+        if float(msg.linear.x) <= 0.05:
+            return msg
+
+        try:
+            transform = self.tf_buffer.lookup_transform(self.map_frame, self.base_frame, Time())
+        except TransformException:
+            return msg
+        vehicle_x = transform.transform.translation.x
+        vehicle_y = transform.transform.translation.y
+        vehicle_yaw = self.yaw_from_transform(transform)
+        rel_x = self.car009_pose.position.x - vehicle_x
+        rel_y = self.car009_pose.position.y - vehicle_y
+        cos_yaw = math.cos(vehicle_yaw)
+        sin_yaw = math.sin(vehicle_yaw)
+        car_local_x = cos_yaw * rel_x + sin_yaw * rel_y
+        car_local_y = -sin_yaw * rel_x + cos_yaw * rel_y
+        approaching = (
+            -self.car009_rear_trigger <= car_local_x <= -2.0
+            and abs(car_local_y) <= self.car009_lane_tolerance
+        )
+        now = time.monotonic()
+        if self.car009_yield_state == 'normal' and approaching:
+            self.car009_yield_state = 'left'
+            self.car009_yield_started = now
+            self.get_logger().info('car_009 approaching from rear; sweeper yielding left.')
+        elif self.car009_yield_state == 'left' and now - self.car009_yield_started >= self.car009_yield_duration:
+            self.car009_yield_state = 'hold'
+            self.car009_yield_started = now
+        elif self.car009_yield_state == 'hold' and (car_local_x > 3.0 or now - self.car009_yield_started >= 6.0):
+            self.car009_yield_state = 'right'
+            self.car009_yield_started = now
+        elif self.car009_yield_state == 'right' and now - self.car009_yield_started >= self.car009_return_duration:
+            self.car009_yield_state = 'normal'
+
+        if self.car009_yield_state == 'normal':
+            return msg
+        command = Twist()
+        command.linear.x = min(float(msg.linear.x), 1.2)
+        command.linear.y = msg.linear.y
+        command.linear.z = msg.linear.z
+        command.angular.x = msg.angular.x
+        command.angular.y = msg.angular.y
+        if self.car009_yield_state == 'left':
+            command.angular.z = self.car009_yield_angular_z
+        elif self.car009_yield_state == 'right':
+            command.angular.z = -self.car009_yield_angular_z
+        else:
+            command.angular.z = 0.0
+        return command
 
     def timer_callback(self):
         valid, reason = self.pose_is_valid()

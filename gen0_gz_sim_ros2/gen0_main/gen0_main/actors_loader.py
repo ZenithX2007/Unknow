@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import math
 import xml.etree.ElementTree as ET
 import rclpy
 from rclpy.node import Node
@@ -17,6 +18,9 @@ class ActorsLoader(Node):
         self.declare_parameter('world', " ")
         self.actors_scenario = self.get_parameter('actors_scenario').value
         self.world = self.get_parameter('world').value
+        # Keep the source scenario unchanged and mirror its trajectories at load time.
+        env_mirror = os.environ.get('GEN0_MIRROR_ACTORS', 'true').strip().lower()
+        self.mirror_trajectories = env_mirror not in ('0', 'false', 'no', 'off')
         self.package_directory = get_package_share_directory('gen0_main')
         self.actor_topics = []  # List of all topics of actors for poses
         self.car_topics = []    # List of all car topics
@@ -67,6 +71,12 @@ class ActorsLoader(Node):
             for actor in actors_scenario_root.findall('actor'):
                 actor_string = ET.tostring(actor, encoding='unicode')
                 new_actor_element = ET.fromstring(actor_string)
+                # Keep pedestrian_6 unsymmetrized, but offset it along car_009's route.
+                if self.mirror_trajectories:
+                    if new_actor_element.get('name') == 'pedestrian_6':
+                        self.translate_pedestrian_6_toward_car009(new_actor_element)
+                    else:
+                        self.mirror_actor_trajectory(new_actor_element)
                 for plugin in new_actor_element.findall('plugin'):
                     if plugin.get('filename') == 'ActorPose':
                         plugin.set('filename', 'libActorPose.so')
@@ -78,6 +88,75 @@ class ActorsLoader(Node):
                 
         # Write the modified world file back
         world_tree.write(world_file_path)
+
+        if self.mirror_trajectories:
+            self.get_logger().info(
+                'Mirrored pedestrian trajectories across '
+                'y = -0.5693*x - 17.8725; '
+                'pedestrian_6 translated 35 m toward car_009'
+            )
+
+    @staticmethod
+    def mirror_actor_trajectory(actor):
+        """Reflect every waypoint and its heading across the requested Gazebo line."""
+        # The line is a*x + b*y + c = 0, equivalent to y = -0.5693*x - 17.8725.
+        a, b, c = -0.5693, -1.0, -17.8725
+        denominator = a * a + b * b
+        for pose_element in actor.findall('./script/trajectory/waypoint/pose'):
+            if not pose_element.text:
+                continue
+            values = pose_element.text.split()
+            if len(values) < 3:
+                continue
+            try:
+                x, y = float(values[0]), float(values[1])
+            except ValueError:
+                continue
+
+            distance = (a * x + b * y + c) / denominator
+            reflected_x = x - 2.0 * a * distance
+            reflected_y = y - 2.0 * b * distance
+            values[0] = f'{reflected_x:.6f}'
+            values[1] = f'{reflected_y:.6f}'
+
+            # Reflect the walking direction too, so animation follows the path.
+            if len(values) >= 6:
+                try:
+                    yaw = float(values[5])
+                    vx, vy = math.cos(yaw), math.sin(yaw)
+                    normal_length = math.sqrt(denominator)
+                    nx, ny = a / normal_length, b / normal_length
+                    dot = vx * nx + vy * ny
+                    reflected_yaw = math.atan2(
+                        vy - 2.0 * dot * ny,
+                        vx - 2.0 * dot * nx,
+                    )
+                    values[5] = f'{reflected_yaw:.6f}'
+                except ValueError:
+                    pass
+            pose_element.text = ' '.join(values)
+
+    @staticmethod
+    def translate_pedestrian_6_toward_car009(actor):
+        """Translate pedestrian_6 35 m in car_009's travel direction."""
+        # car_009 travels from (35.25, -17.59) toward (-4.92, 5.28).
+        start_x, start_y = 35.25, -17.59
+        end_x, end_y = -4.92, 5.28
+        length = math.hypot(end_x - start_x, end_y - start_y)
+        offset_x = 35.0 * (end_x - start_x) / length
+        offset_y = 35.0 * (end_y - start_y) / length
+        for pose_element in actor.findall('./script/trajectory/waypoint/pose'):
+            if not pose_element.text:
+                continue
+            values = pose_element.text.split()
+            if len(values) < 3:
+                continue
+            try:
+                values[0] = f'{float(values[0]) + offset_x:.6f}'
+                values[1] = f'{float(values[1]) + offset_y:.6f}'
+            except ValueError:
+                continue
+            pose_element.text = ' '.join(values)
 
     @staticmethod
     def create_collision_proxy(actor):
