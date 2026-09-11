@@ -21,13 +21,27 @@ class FixedCleaningController(Node):
         self.declare_parameter('front_offset', 1.75)
         self.declare_parameter('front_center_tolerance', 0.1)
         self.route_start = (-20.6991, -22.4324)
-        # All main-road trash except the explicitly excluded items. The final
-        # point is a parking goal, not a trash target.
+        # The road is split by y = -0.5693*x - 36.5197.  The first sweep
+        # follows the vehicle-side (positive signed-distance) trash from the
+        # start toward the east end.  After the turnaround point, the second
+        # sweep returns west through the opposite-side trash.
+        #
+        # Every point except the final parking point is approached using the
+        # front-bumper midpoint check below.  Leaves are excluded by the
+        # scenario/cleanup nodes, so only collectible trash is listed here.
         self.route = [
-            (-12.357, -27.965), (-10.762, -28.222), (-7.524, -29.184),
-            (-7.212, -31.053), (-5.617, -31.310), (-0.473, -34.398),
-            (0.726, -36.182), (4.549, -39.835), (9.847, -42.583),
-            (16.95, -43.85), (18.3, -44.65), (19.47, -45.30),
+            # Sweep 1: start (-20.70, -22.43) -> east end (19.47, -45.30).
+            (-17.501, -24.877), (-15.906, -25.134), (-14.440, -25.606),
+            (-12.357, -27.965), (-7.212, -31.053), (-5.617, -31.310),
+            (-4.151, -31.782), (-2.068, -34.141), (-0.473, -34.398),
+            (6.138, -37.958), (9.816, -40.574), (10.570, -38.870),
+            (10.816, -41.574), (11.816, -41.574), (16.950, -43.850),
+            (19.470, -45.300),
+            # Turn around, then sweep 2 back west through the other side.
+            (17.490, -48.780), (17.317, -47.376), (4.549, -39.835),
+            (-11.694, -30.859),
+            # Final parking/finish point, not a trash target.
+            (-22.680, -25.910),
         ]
         self.pose = None
         self.index = 0
