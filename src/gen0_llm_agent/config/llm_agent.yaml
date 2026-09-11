@@ -1,0 +1,18 @@
+gen0_llm_agent:
+  ros__parameters:
+    provider: mock
+    command_topic: /llm_agent/command
+    status_topic: /llm_agent/status
+    detections_topic: /yolo/detections
+    actor_detections_topic: /actors/detections
+    navigate_action: /navigate_to_pose
+    stop_mode_topic: /epsilon/control_mode
+    map_frame: map
+    base_frame: base_link
+    motion_cmd_vel_topic: /cmd_vel
+    motion_forward_speed_mps: 0.30
+    motion_turn_speed_mps: 0.30
+    motion_turn_angular_speed_radps: 0.06
+    stop_repeats: 5
+    stop_latch_seconds: 1.0
+    tick_period: 0.1

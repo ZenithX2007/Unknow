@@ -1,0 +1,15 @@
+# Copy to ~/.cloudflared/config.yml and replace every value in angle brackets.
+tunnel: <TUNNEL_UUID>
+credentials-file: /home/<LINUX_USER>/.cloudflared/<TUNNEL_UUID>.json
+
+ingress:
+  # Phone/WebToApp loads the dashboard from this hostname.
+  - hostname: <WEB_HOSTNAME>
+    service: http://127.0.0.1:8000
+
+  # rosbridge WebSocket. Cloudflare Tunnel transports WebSockets automatically.
+  - hostname: <ROSBRIDGE_HOSTNAME>
+    service: http://127.0.0.1:9090
+
+  # Required final catch-all rule.
+  - service: http_status:404

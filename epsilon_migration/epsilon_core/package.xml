@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>epsilon_core</name>
+  <version>0.1.0</version>
+  <description>ROS 2 build of EPSILON core planning algorithms without ROS 1 wrappers.</description>
+  <maintainer email="user@example.com">Unknow Maintainers</maintainer>
+  <license>BSD-3-Clause</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <build_depend>eigen</build_depend>
+  <build_depend>libopencv-dev</build_depend>
+  <build_depend>protobuf</build_depend>
+
+  <exec_depend>eigen</exec_depend>
+  <exec_depend>libopencv-dev</exec_depend>
+  <exec_depend>protobuf</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

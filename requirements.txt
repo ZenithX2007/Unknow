@@ -1,0 +1,4 @@
+transforms3d
+ultralytics
+open3d
+jsonschema>=4.0

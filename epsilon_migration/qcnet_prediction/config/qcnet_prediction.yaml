@@ -1,0 +1,28 @@
+qcnet_prediction_node:
+  ros__parameters:
+    backend: qcnet
+    qcnet_root: /home/zjxue2007/QCNet
+    ckpt_path: /home/zjxue2007/QCNet_AV2.ckpt
+    device: cuda
+
+    ego_id: 0
+    arena_info_static_topic: /epsilon/arena_info_static
+    arena_info_dynamic_topic: /epsilon/arena_info_dynamic
+    predicted_trajectories_topic: /epsilon/predicted_trajectories
+    prediction_rate: 5.0
+
+    history_steps: 50
+    future_steps: 60
+    prediction_dt: 0.1
+    min_history_steps: 3
+    max_history_age: 6.0
+    max_predicted_agents: 16
+    publish_top_k_modes: 1
+
+    source_position_is_rear_axle: true
+    output_position_is_rear_axle: false
+
+    default_vehicle_width: 1.9
+    default_vehicle_length: 4.88
+    default_vehicle_wheel_base: 2.8
+    default_vehicle_d_cr: 1.34

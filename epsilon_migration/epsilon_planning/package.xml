@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>epsilon_planning</name>
+  <version>0.1.0</version>
+  <description>ROS 2 integration nodes for EPSILON core planning.</description>
+  <maintainer email="user@example.com">Unknow Maintainers</maintainer>
+  <license>BSD-3-Clause</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>ament_index_cpp</depend>
+  <depend>epsilon_core</depend>
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+  <depend>vehicle_msgs</depend>
+
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>gen0_nav2_path_exporter</exec_depend>
+  <exec_depend>qcnet_prediction</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

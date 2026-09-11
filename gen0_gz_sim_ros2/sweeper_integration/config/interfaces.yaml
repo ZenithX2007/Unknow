@@ -1,0 +1,14 @@
+ground_truth_odometry:
+  ros__parameters:
+    pose_topic: /gen0_model/links/poses
+    odom_topic: /odom
+    # PoseArray discards Gazebo link names and its order is not stable.
+    # A negative value tracks the pose nearest the spawn position, then nearest
+    # the prior vehicle pose. Use a non-negative index only for a stable source.
+    pose_index: -1
+    initial_x: -20.6991
+    initial_y: -22.4324
+    initial_z: 2.85
+    odom_frame: odom
+    base_frame: base_footprint
+    publish_tf: true
