@@ -96,7 +96,7 @@
   <library_visual_scenes>
     <visual_scene id="Scene" name="Scene">
       <node id="Bottle_E_A_Lying" name="Bottle_E_A_Lying" type="NODE">
-        <matrix sid="transform">1 0 0 3.58498 0 1 0 -1.347152 0 0 1 8.00937e-8 0 0 0 1</matrix>
+        <matrix sid="transform">1 0 0 -0.008661745 0 1 0 0.00118509 0 0 1 8.00937e-8 0 0 0 1</matrix>
         <instance_geometry url="#Bottle_E_A_Lying-mesh" name="Bottle_E_A_Lying">
           <bind_material>
             <technique_common>

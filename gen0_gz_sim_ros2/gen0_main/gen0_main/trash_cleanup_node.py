@@ -222,6 +222,10 @@ class TrashCleanupNode(Node):
 
         items = {}
         for index, item in enumerate(scenario):
+            model_name = str(item.get("model", ""))
+            item_name = str(item.get("name", ""))
+            if model_name.startswith("trash_leaf") or item_name.startswith("trash_leaf"):
+                continue
             pose = item.get("pose", [])
             if len(pose) < 2:
                 self.get_logger().warning(f"Skipping trash item without xy pose: {item}")

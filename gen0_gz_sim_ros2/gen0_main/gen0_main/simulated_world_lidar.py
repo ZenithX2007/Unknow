@@ -416,6 +416,10 @@ class SimulatedWorldLidar(Node):
 
         centers = []
         for item in items:
+            model = str(item.get("model", ""))
+            name = str(item.get("name", ""))
+            if model.startswith("trash_leaf") or name.startswith("trash_leaf"):
+                continue
             pose = item.get("pose", [])
             if len(pose) < 3:
                 continue

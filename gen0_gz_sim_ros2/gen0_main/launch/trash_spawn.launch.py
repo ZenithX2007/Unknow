@@ -68,6 +68,9 @@ def spawn_actions(context, *args, **kwargs):
     for index, item in enumerate(items):
         model = item["model"]
         name = item.get("name", f"{model}_{index}")
+        # Fallen leaves are intentionally excluded from the simulated scene.
+        if model.startswith("trash_leaf") or name.startswith("trash_leaf"):
+            continue
         pose = item["pose"]
         model_sdf = os.path.join(package_share, "models", model, "model.sdf")
         if not os.path.exists(model_sdf):

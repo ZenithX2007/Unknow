@@ -99,7 +99,7 @@
   <library_visual_scenes>
     <visual_scene id="Scene" name="Scene">
       <node id="Can_Food_Damaged_LableB_001" name="Can_Food_Damaged_LableB.001" type="NODE">
-        <matrix sid="transform">1 0 0 7.430828 0 1 0 -0.9261284 0 0 1 0 0 0 0 1</matrix>
+        <matrix sid="transform">1 0 0 0.00109786 0 1 0 0.0012061 0 0 1 0 0 0 0 1</matrix>
         <instance_geometry url="#Can_Food_Damaged_LableB_001-mesh" name="Can_Food_Damaged_LableB.001">
           <bind_material>
             <technique_common>
