@@ -2,3 +2,6 @@ deploy/cloudflare/*.sh text eol=lf
 deploy/cloudflare/*.yml text eol=lf
 deploy/local_mobile/*.sh text eol=lf
 web_control/runtime-config.js text eol=lf
+deploy/j6/artifacts/*.hbm binary
+deploy/j6/*.yaml text eol=lf
+deploy/j6/metrics/*.yaml text eol=lf

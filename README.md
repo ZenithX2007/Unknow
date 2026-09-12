@@ -518,3 +518,11 @@ Package `gen0-mobile-web.zip` as Local HTML/Offline Website, not as a wrapper ar
 an online URL. `roslib` is vendored, so the dashboard itself has no CDN dependency.
 See `deploy/local_mobile/README.md` for firewall rules, WebView permissions,
 connection steps, and troubleshooting.
+
+## Journey 6 quantized YOLO model
+
+Branch `hhh` includes the OpenExplorer-compiled Journey 6E/M artifact at
+`deploy/j6/artifacts/best_road_j6e.hbm`. It is an INT8 PTQ build of
+`best_road.pt` for the `nash-e` BPU. Check `deploy/j6/README.md` and
+`deploy/j6/model_manifest.yaml` before deployment; the existing desktop
+Ultralytics detector must continue using `best_road.pt`, not the HBM file.
