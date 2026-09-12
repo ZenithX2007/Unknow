@@ -149,6 +149,15 @@ log() {
   printf '[%(%F %T)T] %s\n' -1 "$*"
 }
 
+as_float_arg() {
+  local value="$1"
+  if [[ "$value" == *.* ]]; then
+    printf '%s\n' "$value"
+  else
+    printf '%s\n' "${value}.0"
+  fi
+}
+
 source_ros_setup() {
   set +u
   source "$1"
@@ -331,7 +340,7 @@ if [[ "$ACTOR_SOURCE" == "scenario" && -n "$ACTORS_SCENARIO" ]]; then
   require_file "$ACTORS_SCENARIO_PATH"
   require_file "$ACTOR_WORLD_SDF_PATH"
 fi
-if [[ "$QCNET_BACKEND" == "qcnet" ]]; then
+if [[ "$START_EPSILON" == "true" && "$QCNET_BACKEND" == "qcnet" ]]; then
   require_file "$QCNET_CKPT_PATH"
   if [[ ! -d "$QCNET_ROOT" ]]; then
     printf 'Required QCNet root directory not found: %s\n' "$QCNET_ROOT" >&2
@@ -483,9 +492,87 @@ if [[ "$START_NAV2" == "true" ]]; then
 fi
 
 if [[ "$START_FIXED_ROUTE" == "true" ]]; then
-  start_script fixed_cleaning_controller ros2 run gen0_main fixed_cleaning_controller \
-    --ros-args -p speed:="${GEN0_FIXED_ROUTE_SPEED:-1.0}" \
+  FIXED_ROUTE_ARGS=(
+    --ros-args
+    -p "speed:=$(as_float_arg "${GEN0_FIXED_ROUTE_SPEED:-1.0}")"
     -p cmd_vel_topic:="${GEN0_FIXED_ROUTE_CMD_VEL_TOPIC:-/cmd_vel}"
+  )
+  if [[ -n "${GEN0_FIXED_ROUTE_POINTS:-}" ]]; then
+    FIXED_ROUTE_ARGS+=(-p "route_points:=${GEN0_FIXED_ROUTE_POINTS}")
+  fi
+  if [[ -n "${GEN0_FIXED_ROUTE_ENABLE_OBSTACLE_AVOIDANCE:-}" ]]; then
+    FIXED_ROUTE_ARGS+=(-p "enable_obstacle_avoidance:=${GEN0_FIXED_ROUTE_ENABLE_OBSTACLE_AVOIDANCE}")
+  fi
+  if [[ -n "${GEN0_FIXED_ROUTE_SCAN_TOPIC:-}" ]]; then
+    FIXED_ROUTE_ARGS+=(-p "scan_topic:=${GEN0_FIXED_ROUTE_SCAN_TOPIC}")
+  fi
+  if [[ -n "${GEN0_FIXED_ROUTE_AVOID_SIDE:-}" ]]; then
+    FIXED_ROUTE_ARGS+=(-p "avoid_side:=${GEN0_FIXED_ROUTE_AVOID_SIDE}")
+  fi
+  if [[ -n "${GEN0_FIXED_ROUTE_FRONT_SCAN_DISTANCE:-}" ]]; then
+    FIXED_ROUTE_ARGS+=(-p "front_scan_distance:=$(as_float_arg "${GEN0_FIXED_ROUTE_FRONT_SCAN_DISTANCE}")")
+  fi
+  if [[ -n "${GEN0_FIXED_ROUTE_FRONT_SCAN_ANGLE_DEG:-}" ]]; then
+    FIXED_ROUTE_ARGS+=(-p "front_scan_angle_deg:=$(as_float_arg "${GEN0_FIXED_ROUTE_FRONT_SCAN_ANGLE_DEG}")")
+  fi
+  if [[ -n "${GEN0_FIXED_ROUTE_LANE_CENTER_YAW_INDEX:-}" ]]; then
+    FIXED_ROUTE_ARGS+=(-p "lane_center_yaw_index:=${GEN0_FIXED_ROUTE_LANE_CENTER_YAW_INDEX}")
+  fi
+  if [[ -n "${GEN0_FIXED_ROUTE_POST_TURN_LANE_OFFSET:-}" ]]; then
+    FIXED_ROUTE_ARGS+=(-p "post_turn_lane_offset:=$(as_float_arg "${GEN0_FIXED_ROUTE_POST_TURN_LANE_OFFSET}")")
+  fi
+  if [[ -n "${GEN0_FIXED_ROUTE_LANE_OFFSET_MAX:-}" ]]; then
+    FIXED_ROUTE_ARGS+=(-p "lane_offset_max:=$(as_float_arg "${GEN0_FIXED_ROUTE_LANE_OFFSET_MAX}")")
+  fi
+  if [[ -n "${GEN0_FIXED_ROUTE_LANE_OFFSET_STEP:-}" ]]; then
+    FIXED_ROUTE_ARGS+=(-p "lane_offset_step:=$(as_float_arg "${GEN0_FIXED_ROUTE_LANE_OFFSET_STEP}")")
+  fi
+  if [[ -n "${GEN0_FIXED_ROUTE_LANE_RETURN_STEP:-}" ]]; then
+    FIXED_ROUTE_ARGS+=(-p "lane_return_step:=$(as_float_arg "${GEN0_FIXED_ROUTE_LANE_RETURN_STEP}")")
+  fi
+  if [[ -n "${GEN0_FIXED_ROUTE_YAW_TO_PATH_BLEND:-}" ]]; then
+    FIXED_ROUTE_ARGS+=(-p "yaw_to_path_blend:=$(as_float_arg "${GEN0_FIXED_ROUTE_YAW_TO_PATH_BLEND}")")
+  fi
+  if [[ -n "${GEN0_FIXED_ROUTE_FRONT_CENTER_WAYPOINT_ADVANCE:-}" ]]; then
+    FIXED_ROUTE_ARGS+=(-p "front_center_waypoint_advance:=${GEN0_FIXED_ROUTE_FRONT_CENTER_WAYPOINT_ADVANCE}")
+  fi
+  if [[ -n "${GEN0_FIXED_ROUTE_STRICT_WAYPOINT_MODE:-}" ]]; then
+    FIXED_ROUTE_ARGS+=(-p "strict_waypoint_mode:=${GEN0_FIXED_ROUTE_STRICT_WAYPOINT_MODE}")
+  fi
+  if [[ -n "${GEN0_FIXED_ROUTE_LOST_CYCLES:-}" ]]; then
+    FIXED_ROUTE_ARGS+=(-p "obstacle_lost_cycles:=${GEN0_FIXED_ROUTE_LOST_CYCLES}")
+  fi
+  if [[ -n "${GEN0_FIXED_ROUTE_CAR009_YIELD_ENABLED:-}" ]]; then
+    FIXED_ROUTE_ARGS+=(-p "car009_yield_enabled:=${GEN0_FIXED_ROUTE_CAR009_YIELD_ENABLED}")
+  fi
+  if [[ -n "${GEN0_FIXED_ROUTE_CAR009_POSE_TOPIC:-}" ]]; then
+    FIXED_ROUTE_ARGS+=(-p "car009_pose_topic:=${GEN0_FIXED_ROUTE_CAR009_POSE_TOPIC}")
+  fi
+  if [[ -n "${GEN0_FIXED_ROUTE_CAR009_APPROACH_DISTANCE:-}" ]]; then
+    FIXED_ROUTE_ARGS+=(-p "car009_approach_distance:=$(as_float_arg "${GEN0_FIXED_ROUTE_CAR009_APPROACH_DISTANCE}")")
+  fi
+  if [[ -n "${GEN0_FIXED_ROUTE_CAR009_YAW_BAND:-}" ]]; then
+    FIXED_ROUTE_ARGS+=(-p "car009_yaw_band:=$(as_float_arg "${GEN0_FIXED_ROUTE_CAR009_YAW_BAND}")")
+  fi
+  if [[ -n "${GEN0_FIXED_ROUTE_CAR009_YIELD_LATERAL_TOLERANCE:-}" ]]; then
+    FIXED_ROUTE_ARGS+=(-p "car009_yield_lateral_tolerance:=$(as_float_arg "${GEN0_FIXED_ROUTE_CAR009_YIELD_LATERAL_TOLERANCE}")")
+  fi
+  if [[ -n "${GEN0_FIXED_ROUTE_CAR009_YIELD_OFFSET:-}" ]]; then
+    FIXED_ROUTE_ARGS+=(-p "car009_yield_offset:=$(as_float_arg "${GEN0_FIXED_ROUTE_CAR009_YIELD_OFFSET}")")
+  fi
+  if [[ -n "${GEN0_FIXED_ROUTE_CAR009_YIELD_CLEAR_TIME:-}" ]]; then
+    FIXED_ROUTE_ARGS+=(-p "car009_yield_clear_time:=$(as_float_arg "${GEN0_FIXED_ROUTE_CAR009_YIELD_CLEAR_TIME}")")
+  fi
+  if [[ -n "${GEN0_FIXED_ROUTE_FRONT_CENTER_TOLERANCE:-}" ]]; then
+    FIXED_ROUTE_ARGS+=(-p "front_center_tolerance:=$(as_float_arg "${GEN0_FIXED_ROUTE_FRONT_CENTER_TOLERANCE}")")
+  fi
+  if [[ -n "${GEN0_FIXED_ROUTE_ANCHOR_TO_CURRENT:-}" ]]; then
+    FIXED_ROUTE_ARGS+=(-p "anchor_to_current_pose:=${GEN0_FIXED_ROUTE_ANCHOR_TO_CURRENT}")
+  fi
+  if [[ -n "${GEN0_FIXED_ROUTE_ANCHOR_ROUTE_ROTATION:-}" ]]; then
+    FIXED_ROUTE_ARGS+=(-p "anchor_route_rotation:=${GEN0_FIXED_ROUTE_ANCHOR_ROUTE_ROTATION}")
+  fi
+  start_script fixed_cleaning_controller ros2 run gen0_main fixed_cleaning_controller "${FIXED_ROUTE_ARGS[@]}"
 fi
 
 if [[ "$START_FIXED_ROUTE" == "true" ]]; then
