@@ -379,7 +379,7 @@ class TrashCleanupNode(Node):
         now = self.get_clock().now().nanoseconds * 1e-9
 
         for name, item in list(self.remaining.items()):
-            covered = self.vehicle_fully_covers_trash(
+            covered = self.vehicle_front_passes_trash(
                 vehicle_x, vehicle_y, vehicle_yaw, item
             )
             self.log_debug_item(
@@ -410,7 +410,7 @@ class TrashCleanupNode(Node):
                 del self.remaining[name]
                 self.publish_cleanup_status()
                 self.get_logger().info(
-                    f"Removed {name}; fully covered by vehicle footprint; "
+                    f"Removed {name}; front cleaning edge passed trash; "
                     f"offset=({self.vehicle_center_offset_x:.2f}, "
                     f"{self.vehicle_center_offset_y:.2f}) m; "
                     f"trash_local_x=[{bounds[0]:.2f}, {bounds[1]:.2f}], "
@@ -436,6 +436,27 @@ class TrashCleanupNode(Node):
             if abs(local_y) > self.vehicle_half_width:
                 return False
         return True
+
+    def vehicle_front_passes_trash(self, vehicle_x, vehicle_y, vehicle_yaw, item):
+        """Return true when the vehicle's front cleaning edge reaches trash.
+
+        The old test waited until the whole trash footprint was underneath the
+        vehicle.  That delayed visual removal and could miss a narrow pass.
+        Use the front edge plus a small forward window, while retaining the
+        trash footprint's lateral overlap with the vehicle.
+        """
+        local = [
+            world_to_local(corner_x, corner_y, vehicle_x, vehicle_y, vehicle_yaw)
+            for corner_x, corner_y in trash_corners(item)
+        ]
+        xs = [point[0] for point in local]
+        ys = [point[1] for point in local]
+        front = self.vehicle_half_length
+        # The window is the front 25 cm of the vehicle; this is the cleaning
+        # edge passage interval and avoids deleting distant objects.
+        if min(xs) > front or max(xs) < front - 0.25:
+            return False
+        return max(ys) >= -self.vehicle_half_width and min(ys) <= self.vehicle_half_width
 
     def log_debug_item(
         self,

@@ -659,10 +659,13 @@ if [[ "$RELOCALIZATION" == "true" && "$MAPPING_DRIVE" == "true" ]]; then
         enabled:=true \
         drive_speed:="$DRIVE_SPEED" \
         front3d_topic:="$FRONT3D_SOURCE_TOPIC"
-    start_trash_cleanup_if_enabled
+  else
+    log "Timed out waiting for relocalized odometry; fixed route can still run if odom is later recovered."
   fi
+  start_trash_cleanup_if_enabled
 elif [[ "$RELOCALIZATION" == "true" ]]; then
   log "Skipping relocalized odometry wait because GEN0_MAPPING_DRIVE=$MAPPING_DRIVE"
+  start_trash_cleanup_if_enabled
 else
   if [[ "$RELOCALIZATION" != "true" ]]; then
     sleep 8

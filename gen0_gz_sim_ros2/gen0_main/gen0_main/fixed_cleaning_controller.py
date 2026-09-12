@@ -173,8 +173,16 @@ class FixedCleaningController(Node):
         dt = .02 if self.last_stamp is None else self.pose_stamp - self.last_stamp
         self.last_stamp = self.pose_stamp
         if not 0 < dt <= .25:
-            self.tracker.fail('Simulation time reset or jumped; restart at the validated spawn pose')
-            self.stop('failed', self.tracker.reason)
+            # Gazebo can pause/reset its clock while cleanup services remove a
+            # model.  Do not invalidate the route on that single discontinuity:
+            # discard this sample, clear the spatial finite-difference
+            # reference, and establish a fresh time base on the next pose.
+            self.tracker.previous_front = None
+            self.tracker.last_speed = 0.
+            self.get_logger().warning(
+                f'Simulation time discontinuity (dt={dt:.3f}s); '
+                'pausing one control sample and resynchronizing')
+            self.stop('waiting_time_sync', '仿真时间跳变，正在重新同步')
             return
         require = bool(self.get_parameter('require_cleanup_confirmation').value)
         if require and (self.cleanup is None or now - self.cleanup_received > 3.):

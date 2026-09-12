@@ -259,6 +259,7 @@ class Tracker:
         self.progress = 0.
         self.covered = set()
         self.previous_front = None
+        self.start_validated = False
         self.state = 'ready'
         self.reason = ''
         self.last_speed = 0.
@@ -276,13 +277,14 @@ class Tracker:
         theta = base_pose[2]
         h = direction(theta)
         front = np.array(base_pose[:2]) + g.front_offset * h
-        if self.previous_front is None:
+        if self.previous_front is None and not self.start_validated:
             yaw_error = math.atan2(math.sin(theta - plan.states[0, 2]), math.cos(theta - plan.states[0, 2]))
             if np.linalg.norm(front - plan.front[0]) > .15 or abs(yaw_error) > .10:
                 return self.fail(f'Vehicle is not at the validated start pose: '
                                  f'x={base_pose[0]:.3f}, y={base_pose[1]:.3f}, yaw={theta:.3f}; '
                                  'reset before starting or check pose_index')
-        else:
+            self.start_validated = True
+        elif self.previous_front is not None:
             delta = front - self.previous_front
             if np.linalg.norm(delta) > max(.15, dt * 2):
                 return self.fail('Vehicle pose jumped; tracking stopped')
