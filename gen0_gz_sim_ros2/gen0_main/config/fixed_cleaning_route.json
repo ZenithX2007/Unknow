@@ -1,0 +1,42 @@
+{
+  "world": "my_map",
+  "start": [
+    -20.6991,
+    -22.4324,
+    -0.5406
+  ],
+  "finish": [
+    -22.68,
+    -25.91
+  ],
+  "front_offset": 1.75,
+  "turn_center": [
+    29.25,
+    -52.0
+  ],
+  "turn_radius": 3.6,
+  "turn_heading": -0.518,
+  "minimum_clearance": 0.25,
+  "outbound": [
+    "trash_crushed_can_01_01",
+    "trash_paper_crumple_01_01",
+    "trash_small_bottle_01_01",
+    "trash_food_can_01_01",
+    "trash_crushed_can_01_02",
+    "trash_paper_crumple_01_02",
+    "trash_small_bottle_01_02",
+    "trash_food_can_01_02",
+    "trash_coffee_cup_01_02",
+    "trash_small_bottle_01_03",
+    "trash_can_01_01",
+    "trash_coffee_cup_01_03",
+    "trash_food_can_01_03"
+  ],
+  "inbound": [
+    "trash_can_01_03",
+    "trash_crushed_can_01_03",
+    "trash_paper_crumple_01_03",
+    "trash_coffee_cup_01_01",
+    "trash_can_01_02"
+  ]
+}

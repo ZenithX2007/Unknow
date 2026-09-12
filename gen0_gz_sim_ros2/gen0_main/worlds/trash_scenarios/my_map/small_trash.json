@@ -57,17 +57,17 @@
   {
     "name": "trash_can_01_02",
     "model": "trash_can_01",
-    "pose": [10.816, -41.574, 2.85, 0.0, 0.0, -0.37]
+    "pose": [-20.816, -26.874, 2.85, 0.0, 0.0, -0.37]
   },
   {
     "name": "trash_crushed_can_01_03",
     "model": "trash_crushed_can_01",
-    "pose": [10.570, -38.870, 2.85, 0.0, 0.0, 2.26]
+    "pose": [10.570, -43.870, 2.85, 0.0, 0.0, 2.26]
   },
   {
     "name": "trash_paper_crumple_01_03",
     "model": "trash_paper_crumple_01",
-    "pose": [4.549, -39.835, 2.85, 0.0, 0.0, 2.99]
+    "pose": [6.549, -40.835, 2.85, 0.0, 0.0, 2.99]
   },
   {
     "name": "trash_small_bottle_01_03",

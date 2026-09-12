@@ -5,6 +5,11 @@ workflow. The normal full-stack entry point and startup sequence are unchanged.
 
 ## Architecture
 
+For the current one-round-trip cleaning task, see
+[`fixed_cleaning_workflow.md`](fixed_cleaning_workflow.md). Its dedicated entry
+point remains `run_gen0_full_stack.sh` with `GEN0_START_FIXED_ROUTE=true`;
+the backend generates an Ackermann-feasible route and tracks the cleaning point.
+
 `run_gen0_full_stack.sh` starts `run_gen0_relocalization.sh`, which starts
 Gazebo, the `my_map` world, sensors, FAST-LIO, relocalization, pedestrians,
 actor obstacle processing, and the base RViz. When enabled, the full-stack

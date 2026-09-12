@@ -16,8 +16,11 @@ import rclpy
 from rcl_interfaces.msg import SetParametersResult
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, QoSProfile
+from std_msgs.msg import String
 
 from .trash_model_geometry import load_trash_model_geometry
+from .gazebo_pose_selection import select_world_pose
 
 
 TRASH_FOOTPRINTS = {
@@ -108,8 +111,20 @@ class TrashCleanupNode(Node):
 
         self.update_vehicle_footprint()
         self.package_share = Path(get_package_share_directory("gen0_main"))
+        self.selected_world_pose_index = None
+        self.world_start = None
+        if self.vehicle_pose_index < 0:
+            world = ET.parse(self.package_share / f'worlds/{self.world}/{self.world}.sdf')
+            values = list(map(float, world.find(".//world/model[@name='gen0_model']/pose").text.split()))
+            self.world_start = (values[0], values[1], values[5])
         self.model_geometry_offsets = {}
         self.remaining = self.load_trash_items()
+        self.cleaning_targets = sorted(self.remaining)
+        self.cleanup_status_pub = self.create_publisher(
+            String, '/gen0_cleaning/cleanup_status',
+            QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL))
+        self.cleanup_status_timer = self.create_timer(0.5, self.publish_cleanup_status)
+        self.publish_cleanup_status()
         self.last_attempt = {}
         self.last_debug_time = 0.0
         self.last_odom_msg = None
@@ -142,6 +157,12 @@ class TrashCleanupNode(Node):
             f"vehicle_pose_source={pose_source}; "
             f"offset axes: +x forward, +y left"
         )
+
+    def publish_cleanup_status(self):
+        self.cleanup_status_pub.publish(String(data=json.dumps({
+            'world': self.world, 'scenario': self.trash_scenario,
+            'targets': self.cleaning_targets, 'remaining': sorted(self.remaining),
+        })))
 
     def update_vehicle_footprint(self):
         self.vehicle_half_length = max(
@@ -310,7 +331,14 @@ class TrashCleanupNode(Node):
         self.evaluate_vehicle_pose_msg(msg)
 
     def evaluate_vehicle_pose_msg(self, msg, force_attempt=False, force_debug=False):
-        if len(msg.poses) <= self.vehicle_pose_index:
+        index = self.vehicle_pose_index
+        if index < 0:
+            if self.selected_world_pose_index is None:
+                self.selected_world_pose_index = select_world_pose(msg.poses, self.world_start)
+            index = self.selected_world_pose_index
+            if index is None:
+                return
+        if len(msg.poses) <= index:
             self.get_logger().warning(
                 f"PoseArray has {len(msg.poses)} poses, cannot read index "
                 f"{self.vehicle_pose_index}",
@@ -318,7 +346,7 @@ class TrashCleanupNode(Node):
             )
             return
 
-        pose = msg.poses[self.vehicle_pose_index]
+        pose = msg.poses[index]
         self.evaluate_pose(
             pose.position.x,
             pose.position.y,
@@ -380,6 +408,7 @@ class TrashCleanupNode(Node):
             if self.remove_gazebo_entity(name):
                 bounds = trash_local_bounds(vehicle_x, vehicle_y, vehicle_yaw, item)
                 del self.remaining[name]
+                self.publish_cleanup_status()
                 self.get_logger().info(
                     f"Removed {name}; fully covered by vehicle footprint; "
                     f"offset=({self.vehicle_center_offset_x:.2f}, "
